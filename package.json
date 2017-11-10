@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "webpack": "webpack",
-    "webpack-dev-server": "webpack-dev-server"
+    "webpack-dev-server": "webpack-dev-server",
+    "ntsc": "ntsc -p . --listEmittedFiles --rootDir ./src -t ES5 -w"
   },
   "repository": "https://github.com/steevehook/typescript.git",
   "author": "steevehook <s.cirlig@developmentaid.org>",
@@ -19,6 +20,7 @@
     "eslint": "^4.10.0",
     "eslint-loader": "^1.9.0",
     "json-loader": "^0.5.7",
+    "ntypescript": "^1.201706190042.1",
     "ts-loader": "^3.1.1",
     "tslint": "^5.8.0",
     "typescript": "^2.6.1",
