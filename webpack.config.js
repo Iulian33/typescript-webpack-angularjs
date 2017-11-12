@@ -1,6 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ExtractTextWebpackPlugin = require('extract-text-webpack-plugin');
 
 module.exports = () => {
     return {
@@ -13,6 +15,31 @@ module.exports = () => {
         },
         module: {
             rules: [
+                {
+                    test: /\.(html)$/,
+                    use: {
+                        loader: 'html-loader',
+                        loader: 'html-loader',
+                        options: {
+                            minimize: true
+                        }
+                    }
+                },
+                {
+                    test: /\.css$/,
+                    use: ['style-loader', 'css-loader']
+                },
+                {
+                    test: /\.scss$/,
+                    use: ExtractTextWebpackPlugin.extract({
+                        fallback: 'style-loader',
+                        use: 'css-loader!sass-loader'
+                    })
+                },
+                {
+                    test: /\.(png|woff|woff2|eot|ttf|svg)(\?.*$|$)/,
+                    use: 'url-loader?limit=100000000'
+                },
                 {
                     test: /\.js$/,
                     loader: 'eslint-loader',
@@ -36,7 +63,7 @@ module.exports = () => {
                 },
                 {
                     test: /\.tsx?$/,
-                    loader: 'ts-loader'
+                    loader: 'awesome-typescript-loader'
                 }
             ]
         },
@@ -44,19 +71,28 @@ module.exports = () => {
             extensions: ['.js', '.json', '.ts', '.tsx']
         },
         plugins: [
+            new ExtractTextWebpackPlugin('[name].css'),
             new webpack.ProvidePlugin({
                 $: 'jquery',
-                jQuery: 'jquery'
+                jQuery: 'jquery',
+                'window.jQuery': 'jquery',
+                'window.jquery': 'jquery'
             }),
             new CleanWebpackPlugin(['dist'], {
                 root: path.resolve(__dirname),
                 verbose: true
+            }),
+            new HtmlWebpackPlugin({
+                template: path.resolve(__dirname, 'src', 'index.html'),
+                hash: true,
+                chunks: ['app']
             })
         ],
         devServer: {
             contentBase: path.resolve(__dirname),
             inline: true,
             port: 3000
-        }
+        },
+        devtool: "source-map"
     };
 };

@@ -24,7 +24,13 @@
         "timeEnd",
         "trace"
       ]
-    }
+    },
+    "quotemark": false,
+    "ordered-imports": false,
+    "eofline": false,
+    "trailing-comma": false,
+    "object-literal-sort-keys": false,
+    "no-var-requires": false
   },
   "jsRules": {
     "max-line-length": {

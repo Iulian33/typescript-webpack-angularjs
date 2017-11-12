@@ -5,7 +5,19 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
+    "outDir": "./dist",
     "target": "es5",
-    "declaration": true
-  }
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "types": [
+      "angular"
+    ]
+  },
+  "include": [
+    "./src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
