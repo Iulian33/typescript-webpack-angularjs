@@ -1,8 +1,12 @@
 import * as angular from 'angular';
-import {HomeModule} from './home/home.module';
+import {IModule} from "angular";
+import HomeModule from './home/home.module';
+import PlaygroundModule from './playground/playground.module';
 
-export const ComponentsModule = angular
+const ComponentsModule: IModule = angular
     .module('app.components', [
-        HomeModule
-    ])
-    .name;
+        HomeModule.name,
+        PlaygroundModule.name
+    ]);
+
+export default ComponentsModule;

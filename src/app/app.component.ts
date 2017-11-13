@@ -1,9 +1,11 @@
-export const AppComponent = {
+import {IComponentOptions} from "angular";
+
+const AppComponent: IComponentOptions = {
     template: `
-    <div>
         <navigation></navigation>
-        <div class="container" ui-view></div>
+        <div ui-view></div>
         <copyright></copyright>
-    </div>
   `
 };
+
+export default AppComponent;

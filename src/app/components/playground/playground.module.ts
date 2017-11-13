@@ -1,22 +1,22 @@
-import './home.scss';
+import './playground.scss';
 import * as angular from 'angular';
 import {IModule} from "angular";
 import uiRouter from '@uirouter/angularjs';
 import {IStateProvider, IUrlRouterProvider} from "angular-ui-router";
-import HomeComponent from './home.component';
+import PlaygroundComponent from './playground.component';
 
-const HomeModule: IModule = angular
-    .module('app.components.home', [
+const PlaygroundModule: IModule = angular
+    .module('app.components.playground', [
         uiRouter
     ])
-    .component('home', HomeComponent)
+    .component('playground', PlaygroundComponent)
     .config(($stateProvider: IStateProvider, $urlRouterProvider: IUrlRouterProvider) => {
         $stateProvider
-            .state('home', {
-                component: 'home',
-                url: '/'
+            .state('playground', {
+                component: 'playground',
+                url: '/playground'
             });
         $urlRouterProvider.otherwise('/');
     });
 
-export default HomeModule;
+export default PlaygroundModule;

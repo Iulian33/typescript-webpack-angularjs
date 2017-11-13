@@ -19,15 +19,25 @@ module.exports = () => {
                     test: /\.(html)$/,
                     use: {
                         loader: 'html-loader',
-                        loader: 'html-loader',
                         options: {
-                            minimize: true
+                            minimize: false
                         }
                     }
                 },
                 {
                     test: /\.css$/,
-                    use: ['style-loader', 'css-loader']
+                    use: [
+                        {
+                            loader: 'style-loader',
+                        },
+                        {
+                            loader: 'css-loader',
+
+                            options: {
+                                modules: true,
+                            }
+                        }
+                    ]
                 },
                 {
                     test: /\.scss$/,

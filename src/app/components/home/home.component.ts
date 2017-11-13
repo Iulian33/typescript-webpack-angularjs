@@ -1,10 +1,10 @@
-const template: string = require('./home.html');
+import {IComponentOptions} from "angular";
+import HomeController from "./home.controller";
 
-export const HomeComponent = {
+const template: string = require('./home.html');
+const HomeComponent: IComponentOptions = {
     template,
-    controller: class Component {
-        constructor() {
-            'ngInject'; // Not actually needed but best practice to keep here in case dependencies needed in the future
-        }
-    }
+    controller: HomeController
 };
+
+export default HomeComponent;
