@@ -1,5 +1,4 @@
 const template: string = require('./home.html');
-// import template from './home.template';
 
 export const HomeComponent = {
     template,
