@@ -1,1 +1,9 @@
-<h1>Some playground examples over here</h1>
+<div class="container playground">
+    <h1>TypeScript Topics:</h1>
+
+    <ul class="playground__topics">
+        <li class="topic__item" ng-repeat="topic in $ctrl.topics">
+            <a href="#">{{ topic.label }}</a>
+        </li>
+    </ul>
+</div>

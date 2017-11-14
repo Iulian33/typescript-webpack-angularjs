@@ -55062,7 +55062,7 @@ exports.default = AppComponent;
 Object.defineProperty(exports, "__esModule", { value: true });
 var angular = __webpack_require__(10);
 var home_module_1 = __webpack_require__(82);
-var playground_module_1 = __webpack_require__(88);
+var playground_module_1 = __webpack_require__(87);
 var ComponentsModule = angular
     .module('app.components', [
     home_module_1.default.name,
@@ -55137,27 +55137,21 @@ exports.default = HomeController;
 
 /***/ }),
 /* 86 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-module.exports = "<div class=\"container-fluid home\">\n    <div class=\"row\">\n        <div class=\"col-sm-12 text-center\">\n            <h1 class=\"home__title\">TypeScript</h1>\n        </div>\n    </div>\n\n    <img src=\"" + __webpack_require__(87) + "\" class=\"home__background\">\n    <div class=\"row\">\n        <div class=\"col-sm-12 text-center\">\n            <h1>Application Scale JavaScript Development</h1>\n        </div>\n    </div>\n</div>";
+module.exports = "<div class=\"container-fluid home\">\n    <h1 class=\"text-center home__title\">TypeScript</h1>\n    <img src=\"/img/home/background.png\" class=\"home__background\" alt=\"Home Background\">\n    <h2 class=\"text-center\">Application Scale JavaScript Development</h2>\n\n    <a ui-sref=\"playground\">\n        <img src=\"/img/home/play.png\" class=\"home__play\" alt=\"Let's Play\">\n    </a>\n</div>";
 
 /***/ }),
 /* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "996c20f049b77c2ca8bbd340352f9917.png";
-
-/***/ }),
-/* 88 */
-/***/ (function(module, exports, __webpack_require__) {
-
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(89);
+__webpack_require__(88);
 var angular = __webpack_require__(10);
 var angularjs_1 = __webpack_require__(20);
-var playground_component_1 = __webpack_require__(90);
+var playground_component_1 = __webpack_require__(89);
 var PlaygroundModule = angular
     .module('app.components.playground', [
     angularjs_1.default
@@ -55175,20 +55169,20 @@ exports.default = PlaygroundModule;
 
 
 /***/ }),
-/* 89 */
+/* 88 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 90 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var playground_controller_1 = __webpack_require__(91);
-var template = __webpack_require__(92);
+var playground_controller_1 = __webpack_require__(90);
+var template = __webpack_require__(91);
 var PlaygroundComponent = {
     template: template,
     controller: playground_controller_1.default
@@ -55197,7 +55191,7 @@ exports.default = PlaygroundComponent;
 
 
 /***/ }),
-/* 91 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55205,6 +55199,29 @@ exports.default = PlaygroundComponent;
 Object.defineProperty(exports, "__esModule", { value: true });
 var PlaygroundController = (function () {
     function PlaygroundController() {
+        this.topics = [
+            { label: 'Basic Types', state: 'Hello' },
+            { label: 'Variable Declarations', state: 'Hello' },
+            { label: 'Interfaces', state: 'Hello' },
+            { label: 'Classes', state: 'Hello' },
+            { label: 'Functions', state: 'Hello' },
+            { label: 'Generics', state: 'Hello' },
+            { label: 'Enums', state: 'Hello' },
+            { label: 'Type Inference', state: 'Hello' },
+            { label: 'Type Compatibility', state: 'Hello' },
+            { label: 'Advanced Types', state: 'Hello' },
+            { label: 'Symbols', state: 'Hello' },
+            { label: 'Iterators and Generators', state: 'Hello' },
+            { label: 'Modules', state: 'Hello' },
+            { label: 'Namespaces', state: 'Hello' },
+            { label: 'Namespaces and Modules', state: 'Hello' },
+            { label: 'Module Resolution', state: 'Hello' },
+            { label: 'Declaration Merging', state: 'Hello' },
+            { label: 'Decorators', state: 'Hello' },
+            { label: 'Mixins', state: 'Hello' },
+            { label: 'Triple Slash Directives', state: 'Hello' },
+            { label: 'Declaration Files', state: 'Hello' }
+        ];
     }
     return PlaygroundController;
 }());
@@ -55212,10 +55229,10 @@ exports.default = PlaygroundController;
 
 
 /***/ }),
-/* 92 */
+/* 91 */
 /***/ (function(module, exports) {
 
-module.exports = "<h1>Some playground examples over here</h1>";
+module.exports = "<div class=\"container playground\">\n    <h1>TypeScript Topics:</h1>\n\n    <ul class=\"playground__topics\">\n        <li class=\"topic__item\" ng-repeat=\"topic in $ctrl.topics\">\n            <a href=\"#\">{{ topic.label }}</a>\n        </li>\n    </ul>\n</div>";
 
 /***/ })
 /******/ ]);

@@ -1,0 +1,10 @@
+.image-responsive {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@mixin image-responsive--centered($top: 0) {
+  @extend .image-responsive;
+  margin: $top auto;
+}

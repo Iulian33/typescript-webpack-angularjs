@@ -1,0 +1,13 @@
+.playground {
+  margin: 30px 30px;
+
+  .playground__topics {
+    margin-top: 30px;
+    list-style-type: none;
+
+    .topic__item {
+      margin-top: 5px;
+      font-size: 1.2rem;
+    }
+  }
+}

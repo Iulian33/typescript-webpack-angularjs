@@ -1,16 +1,29 @@
-.home {
-  height: 100%;
+@import "../../assets/images";
+@import "../../assets/borders";
 
+.home {
   .home__title {
-    font-size: 4rem;
+    font-size: 3.5rem;
     margin-top: 100px;
   }
 
   .home__background {
-    display: block;
-    width: 100%;
+    @extend .image-responsive;
+
     max-width: 800px;
-    height: auto;
-    margin: 50px auto 0;
+    margin: 30px auto 0;
+  }
+
+  .home__play {
+    @include image-responsive--centered(50px);
+    @include border-radius(50%);
+
+    max-width: 100px;
+    cursor: pointer;
+    transition: .1s linear all;
+
+    &:hover {
+      box-shadow: 0 0 30px 0 #000000;
+    }
   }
 }

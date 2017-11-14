@@ -8,16 +8,36 @@
   position: absolute;
   width: 100%;
   height: 100%; }
-.home {
-  height: 100%; }
-  .home .home__title {
-    font-size: 4rem;
-    margin-top: 100px; }
-  .home .home__background {
-    display: block;
-    width: 100%;
-    max-width: 800px;
-    height: auto;
-    margin: 50px auto 0; }
+.image-responsive, .home .home__background, .home .home__play {
+  display: block;
+  width: 100%;
+  height: auto; }
+
+.home .home__title {
+  font-size: 3.5rem;
+  margin-top: 100px; }
+
+.home .home__background {
+  max-width: 800px;
+  margin: 30px auto 0; }
+
+.home .home__play {
+  margin: 50px auto;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  border-radius: 50%;
+  max-width: 100px;
+  cursor: pointer;
+  transition: .1s linear all; }
+  .home .home__play:hover {
+    box-shadow: 0 0 30px 0 #000000; }
+.playground {
+  margin: 30px 30px; }
+  .playground .playground__topics {
+    margin-top: 30px;
+    list-style-type: none; }
+    .playground .playground__topics .topic__item {
+      margin-top: 5px;
+      font-size: 1.2rem; }
 
 /*# sourceMappingURL=app.css.map*/
