@@ -55048,7 +55048,7 @@ exports.UIRouterPluginBase = UIRouterPluginBase;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var AppComponent = {
-    template: "\n        <navigation></navigation>\n        <div ui-view></div>\n        <copyright></copyright>\n  "
+    template: "\n        <navigation></navigation>\n        <div class=\"app\" ui-view></div>\n        <copyright></copyright>\n    "
 };
 exports.default = AppComponent;
 
@@ -55062,7 +55062,7 @@ exports.default = AppComponent;
 Object.defineProperty(exports, "__esModule", { value: true });
 var angular = __webpack_require__(10);
 var home_module_1 = __webpack_require__(82);
-var playground_module_1 = __webpack_require__(87);
+var playground_module_1 = __webpack_require__(88);
 var ComponentsModule = angular
     .module('app.components', [
     home_module_1.default.name,
@@ -55137,21 +55137,27 @@ exports.default = HomeController;
 
 /***/ }),
 /* 86 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "<div class=\"container home-container\">\n    <div class=\"row\">\n        <div class=\"col-sm-12 text-center\">\n            <h1>TypeScript Here</h1>\n        </div>\n    </div>\n</div>";
+module.exports = "<div class=\"container-fluid home\">\n    <div class=\"row\">\n        <div class=\"col-sm-12 text-center\">\n            <h1 class=\"home__title\">TypeScript</h1>\n        </div>\n    </div>\n\n    <img src=\"" + __webpack_require__(87) + "\" class=\"home__background\">\n    <div class=\"row\">\n        <div class=\"col-sm-12 text-center\">\n            <h1>Application Scale JavaScript Development</h1>\n        </div>\n    </div>\n</div>";
 
 /***/ }),
 /* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
+module.exports = __webpack_require__.p + "996c20f049b77c2ca8bbd340352f9917.png";
+
+/***/ }),
+/* 88 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(88);
+__webpack_require__(89);
 var angular = __webpack_require__(10);
 var angularjs_1 = __webpack_require__(20);
-var playground_component_1 = __webpack_require__(89);
+var playground_component_1 = __webpack_require__(90);
 var PlaygroundModule = angular
     .module('app.components.playground', [
     angularjs_1.default
@@ -55169,20 +55175,20 @@ exports.default = PlaygroundModule;
 
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var playground_controller_1 = __webpack_require__(90);
-var template = __webpack_require__(91);
+var playground_controller_1 = __webpack_require__(91);
+var template = __webpack_require__(92);
 var PlaygroundComponent = {
     template: template,
     controller: playground_controller_1.default
@@ -55191,7 +55197,7 @@ exports.default = PlaygroundComponent;
 
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55206,7 +55212,7 @@ exports.default = PlaygroundController;
 
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Some playground examples over here</h1>";

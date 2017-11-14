@@ -26,29 +26,18 @@ module.exports = () => {
                 },
                 {
                     test: /\.css$/,
-                    use: [
-                        {
-                            loader: 'style-loader',
-                        },
-                        {
-                            loader: 'css-loader',
-
-                            options: {
-                                modules: true,
-                            }
-                        }
-                    ]
+                    use: 'style-loader!sass-loader'
                 },
                 {
                     test: /\.scss$/,
                     use: ExtractTextWebpackPlugin.extract({
                         fallback: 'style-loader',
-                        use: 'css-loader!sass-loader'
+                        use: 'css-loader?sourceMap=true!sass-loader'
                     })
                 },
                 {
                     test: /\.(png|woff|woff2|eot|ttf|svg)(\?.*$|$)/,
-                    use: 'url-loader?limit=100000000'
+                    use: 'url-loader?limit=100000'
                 },
                 {
                     test: /\.js$/,
