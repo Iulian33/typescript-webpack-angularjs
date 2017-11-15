@@ -48,22 +48,13 @@ module.exports = () => {
                 {
                     test: /\.js$/,
                     loader: 'babel-loader',
-                    exclude: /node_modules/,
-                    options: {
-                        "presets": [
-                            [
-                                "es2015",
-                                {
-                                    "modules": false
-                                }
-                            ]
-                        ]
-                    }
+                    exclude: /node_modules/
                 },
                 {
                     test: /\.tsx?$/,
-                    loader: 'awesome-typescript-loader'
-                }
+                    loaders: ['babel-loader', 'awesome-typescript-loader'],
+                    exclude: /node_modules/
+                },
             ]
         },
         resolve: {
