@@ -14,3 +14,6 @@ If you are using npm package manager:
 2. `$ npm run webpack` - Run project build
 3. `$ npm run webpack-dev-server` - Run project build (dev server)
 4. `$ npm run ntsc` - Run typescript compiler
+
+##### Up and running:
+open  `http://localhost:3000` to run the app in the browser

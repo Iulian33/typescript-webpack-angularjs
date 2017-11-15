@@ -1,24 +1,29 @@
+@import "~highlight.js/styles/atom-one-dark.css";
 @import "../../assets/images";
 @import "../../assets/borders";
 
 .home {
   .home__title {
-    font-size: 3.5rem;
+    font-size: 3rem;
     margin-top: 100px;
   }
 
   .home__background {
     @extend .image-responsive;
 
-    max-width: 800px;
+    max-width: 650px;
     margin: 30px auto 0;
   }
 
   .home__play {
-    @include image-responsive--centered(50px);
+    $maxWidth: 70px;
     @include border-radius(50%);
 
-    max-width: 100px;
+    position: absolute;
+    left: 50%;
+    margin-top: 80px;
+    margin-left: -($maxWidth / 2);
+    max-width: $maxWidth;
     cursor: pointer;
     transition: .1s linear all;
 
