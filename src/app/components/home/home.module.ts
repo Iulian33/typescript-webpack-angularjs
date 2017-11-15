@@ -1,8 +1,8 @@
 import './home.scss';
 import * as angular from 'angular';
-import {IModule} from "angular";
+import {IModule} from 'angular';
 import uiRouter from '@uirouter/angularjs';
-import {IStateProvider, IUrlRouterProvider} from "angular-ui-router";
+import {IStateProvider, IUrlRouterProvider} from 'angular-ui-router';
 import HomeComponent from './home.component';
 
 const HomeModule: IModule = angular

@@ -1,5 +1,5 @@
-import {IComponentOptions} from "angular";
-import HomeController from "./home.controller";
+import {IComponentOptions} from 'angular';
+import HomeController from './home.controller';
 
 const template: string = require('./home.html');
 const HomeComponent: IComponentOptions = {

@@ -1,4 +1,4 @@
-import {IComponentOptions} from "angular";
+import {IComponentOptions} from 'angular';
 
 const AppComponent: IComponentOptions = {
     template: `

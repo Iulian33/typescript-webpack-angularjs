@@ -25,12 +25,14 @@
         "trace"
       ]
     },
-    "quotemark": false,
+    "quotemark": [true, "single"],
     "ordered-imports": false,
     "eofline": false,
     "trailing-comma": false,
     "object-literal-sort-keys": false,
-    "no-var-requires": false
+    "no-var-requires": false,
+    "member-ordering": [true, {"order": "fields-first"}],
+    "no-trailing-whitespace": [true, "ignore-blank-lines"]
   },
   "jsRules": {
     "max-line-length": {

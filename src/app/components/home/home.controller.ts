@@ -1,4 +1,4 @@
-import {IComponentController} from "angular";
+import {IComponentController} from 'angular';
 
 class HomeController implements IComponentController {
 }
