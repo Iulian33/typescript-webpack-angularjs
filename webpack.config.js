@@ -32,7 +32,7 @@ module.exports = () => {
                     test: /\.scss$/,
                     use: ExtractTextWebpackPlugin.extract({
                         fallback: 'style-loader',
-                        use: 'css-loader?sourceMap=true!sass-loader'
+                        use: 'css-loader?sourceMap!sass-loader?sourceMap'
                     })
                 },
                 {
