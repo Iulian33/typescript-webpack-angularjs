@@ -114,12 +114,12 @@ open  `http://localhost:3000` to run the app in the browser
 │  │    │           │   ├── interfaces.controller.ts
 │  │    │           │   ├── interfaces.html
 │  │    │           │   └── interfaces.scss
-│  │    │           ├── iterators/
-│  │    │           │   ├── iterators.module.ts
-│  │    │           │   ├── iterators.component.ts
-│  │    │           │   ├── iterators.controller.ts
-│  │    │           │   ├── iterators.html
-│  │    │           │   └── iterators.scss
+│  │    │           ├── iterators-and-generators/
+│  │    │           │   ├── iterators-and-generators.module.ts
+│  │    │           │   ├── iterators-and-generators.component.ts
+│  │    │           │   ├── iterators-and-generators.controller.ts
+│  │    │           │   ├── iterators-and-generators.html
+│  │    │           │   └── iterators-and-generators.scss
 │  │    │           ├── mixins/
 │  │    │           │   ├── mixins.module.ts
 │  │    │           │   ├── mixins.component.ts

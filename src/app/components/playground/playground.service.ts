@@ -3,27 +3,27 @@ import IWorkshop from '../IWorkshop';
 
 class PlaygroundService implements IWorkshop {
     public topics: ITopic[] = [
-        {label: 'Basic Types', state: 'Hello'},
-        {label: 'Variable Declarations', state: 'Hello'},
-        {label: 'Interfaces', state: 'Hello'},
-        {label: 'Classes', state: 'Hello'},
-        {label: 'Functions', state: 'Hello'},
-        {label: 'Generics', state: 'Hello'},
-        {label: 'Enums', state: 'Hello'},
-        {label: 'Type Inference', state: 'Hello'},
-        {label: 'Type Compatibility', state: 'Hello'},
-        {label: 'Advanced Types', state: 'Hello'},
-        {label: 'Symbols', state: 'Hello'},
-        {label: 'Iterators and Generators', state: 'Hello'},
-        {label: 'Modules', state: 'Hello'},
-        {label: 'Namespaces', state: 'Hello'},
-        {label: 'Namespaces and Modules', state: 'Hello'},
-        {label: 'Module Resolution', state: 'Hello'},
-        {label: 'Declaration Merging', state: 'Hello'},
-        {label: 'Decorators', state: 'Hello'},
-        {label: 'Mixins', state: 'Hello'},
-        {label: 'Triple Slash Directives', state: 'Hello'},
-        {label: 'Declaration Files', state: 'Hello'}
+        {label: 'Basic Types', state: 'basic-types'},
+        {label: 'Variable Declarations', state: 'variable-declarations'},
+        {label: 'Interfaces', state: 'interfaces'},
+        {label: 'Classes', state: 'classes'},
+        {label: 'Functions', state: 'functions'},
+        {label: 'Generics', state: 'generics'},
+        {label: 'Enums', state: 'enums'},
+        {label: 'Type Inference', state: 'type-inference'},
+        {label: 'Type Compatibility', state: 'type-compatibility'},
+        {label: 'Advanced Types', state: 'advanced-types'},
+        {label: 'Symbols', state: 'symbols'},
+        {label: 'Iterators and Generators', state: 'iterators-and-generators'},
+        {label: 'Modules', state: 'modules'},
+        {label: 'Namespaces', state: 'namespaces'},
+        {label: 'Namespaces and Modules', state: 'namespaces-and-modules'},
+        {label: 'Module Resolution', state: 'module-resolution'},
+        {label: 'Declaration Merging', state: 'declaration-merging'},
+        {label: 'Decorators', state: 'decorators'},
+        {label: 'Mixins', state: 'mixins'},
+        {label: 'Triple Slash Directives', state: 'triple-slash-directives'},
+        {label: 'Declaration Files', state: 'declaration-files'}
     ];
 
     public getTopics(): ITopic[] {

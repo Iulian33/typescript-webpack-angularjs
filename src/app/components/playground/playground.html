@@ -3,7 +3,7 @@
 
     <ul class="workshop__topics">
         <li class="topic__item" ng-repeat="topic in $ctrl.topics">
-            <a href="#">{{ topic.label }}</a>
+            <a ui-sref="{{ topic.state }}">{{ topic.label }}</a>
         </li>
     </ul>
 </div>

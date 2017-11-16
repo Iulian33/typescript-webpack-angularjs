@@ -10,6 +10,7 @@ import EnumsModule from './enums/enums.module';
 import FunctionsModule from './functions/functions.module';
 import GenericsModule from './generics/generics.module';
 import InterfacesModule from './interfaces/interfaces.module';
+import IteratorsAndGeneratorsModule from './iterators-and-generators/iterators-and-generators.module';
 import MixinsModule from './mixins/mixins.module';
 import ModuleResolutionModule from './module-resolution/module-resolution.module';
 import ModulesModule from './modules/modules.module';
@@ -33,6 +34,7 @@ const TopicsModule: IModule = angular
         FunctionsModule.name,
         GenericsModule.name,
         InterfacesModule.name,
+        IteratorsAndGeneratorsModule.name,
         MixinsModule.name,
         ModuleResolutionModule.name,
         ModulesModule.name,
