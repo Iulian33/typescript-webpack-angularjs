@@ -1,6 +1,7 @@
-# TypeScript - Language Presentation
+# TypeScript - Language Presentation + Webpack + AngularJS
+![alt text](https://github.com/steevehook/typescript-webpack-angularjs/blob/master/img/home/background.png)
 
-#### To get started:
+#### Get Started:
 Make sure you have node installed
 
 If you are using yarn package manager:
@@ -15,5 +16,5 @@ If you are using npm package manager:
 3. `$ npm run webpack-dev-server` - Run project build (dev server)
 4. `$ npm run ntsc` - Run typescript compiler
 
-##### Up and running:
+##### Up and Running:
 open  `http://localhost:3000` to run the app in the browser
