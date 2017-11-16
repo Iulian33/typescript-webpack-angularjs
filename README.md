@@ -44,16 +44,14 @@ open  `http://localhost:3000` to run the app in the browser
 │  │    │     ├── home.module.ts
 │  │    │     ├── home.component.ts
 │  │    │     ├── home.controller.ts
-│  │    │     ├── calendar.html
-│  │    │     └── calendar.scss
+│  │    │     ├── home.html
+│  │    │     └── home.scss
 │  │    ├── playground/
 │  │    │     ├── playground.module.ts
 │  │    │     ├── playground.component.ts
 │  │    │     ├── playground.service.ts
 │  │    │     ├── playground.html
 │  │    │     ├── playground.scss
-│  │    │     └── contracts/
-│  │    │         └── ITopic.ts
 │  │    │     └── topics/
 │  │    │       ├── topics.module.ts
 │  │    │       └── topics/
@@ -183,7 +181,17 @@ open  `http://localhost:3000` to run the app in the browser
 │  │    │           │   ├── variable-declarations.controller.ts
 │  │    │           │   ├── variable-declarations.html
 │  │    │           └── └── variable-declarations.scss
-│  │    └── components.module.ts
+│  │    ├── real-world/
+│  │    │     ├── real-world.module.ts
+│  │    │     ├── real-world.component.ts
+│  │    │     ├── real-world.controller.ts
+│  │    │     ├── real-world.service.ts
+│  │    │     ├── real-world.html
+│  │    │     └── real-world.scss
+│  │    ├── components.module.ts
+│  │    ├── components.scss
+│  │    ├── ITopic.ts
+│  │    └── IWorkshop.ts
 │  ├── common/
 │  │    ├── nav/
 │  │    │     ├── nav.module.ts

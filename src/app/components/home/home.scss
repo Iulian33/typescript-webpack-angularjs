@@ -15,20 +15,46 @@
     margin: 30px auto 0;
   }
 
-  .home__play {
-    $maxWidth: 70px;
-    @include border-radius(50%);
-
+  .home__trigger {
     position: absolute;
-    left: 50%;
-    margin-top: 80px;
-    margin-left: -($maxWidth / 2);
-    max-width: $maxWidth;
+    margin-top: 50px;
     cursor: pointer;
     transition: .1s linear all;
+  }
+
+  .home__play {
+    @extend .home__trigger;
+
+    $max-width: 70px;
+    $hover-max-width: $max-width + 20;
+    $margin-left: -($max-width / 2);
+    $hover-margin-left: -($hover-max-width / 2);
+
+    left: 45%;
+    margin-left: $margin-left;
+    max-width: $max-width;
 
     &:hover {
-      box-shadow: 0 0 40px 0 #000000;
+      max-width: $hover-max-width;
+      margin-left: $hover-margin-left;
+    }
+  }
+
+  .home__real {
+    @extend .home__trigger;
+
+    $max-width: 70px;
+    $hover-max-width: $max-width + 20;
+    $margin-right: -($max-width / 2);
+    $hover-margin-right: -($hover-max-width / 2);
+
+    right: 45%;
+    margin-right: $margin-right;
+    max-width: $max-width;
+
+    &:hover {
+      max-width: $hover-max-width;
+      margin-right: $hover-margin-right;
     }
   }
 }

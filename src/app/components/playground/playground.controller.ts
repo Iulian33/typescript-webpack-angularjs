@@ -1,6 +1,6 @@
 import {IComponentController} from 'angular';
 import PlaygroundService from './playground.service';
-import ITopic from './contracts/ITopic';
+import ITopic from '../ITopic';
 
 class PlaygroundController implements IComponentController {
     public static $inject: string[] = ['PlaygroundService'];

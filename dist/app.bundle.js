@@ -972,7 +972,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** @module common */ /** for typedoc */
 __export(__webpack_require__(0));
 __export(__webpack_require__(4));
-__export(__webpack_require__(14));
+__export(__webpack_require__(15));
 __export(__webpack_require__(3));
 __export(__webpack_require__(2));
 __export(__webpack_require__(22));
@@ -998,7 +998,7 @@ var predicates_1 = __webpack_require__(2);
 var rejectFactory_1 = __webpack_require__(11);
 var common_1 = __webpack_require__(0);
 var hof_1 = __webpack_require__(3);
-var transition_1 = __webpack_require__(15);
+var transition_1 = __webpack_require__(16);
 var resolvable_1 = __webpack_require__(13);
 /**
  * Returns a string shortened to a maximum length
@@ -2238,1687 +2238,6 @@ exports.Resolvable = Resolvable;
 
 /***/ }),
 /* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * @coreapi
- * @module core
- */
-/**
- * Matches state names using glob-like pattern strings.
- *
- * Globs can be used in specific APIs including:
- *
- * - [[StateService.is]]
- * - [[StateService.includes]]
- * - The first argument to Hook Registration functions like [[TransitionService.onStart]]
- *    - [[HookMatchCriteria]] and [[HookMatchCriterion]]
- *
- * A `Glob` string is a pattern which matches state names.
- * Nested state names are split into segments (separated by a dot) when processing.
- * The state named `foo.bar.baz` is split into three segments ['foo', 'bar', 'baz']
- *
- * Globs work according to the following rules:
- *
- * ### Exact match:
- *
- * The glob `'A.B'` matches the state named exactly `'A.B'`.
- *
- * | Glob        |Matches states named|Does not match state named|
- * |:------------|:--------------------|:---------------------|
- * | `'A'`       | `'A'`               | `'B'` , `'A.C'`      |
- * | `'A.B'`     | `'A.B'`             | `'A'` , `'A.B.C'`    |
- * | `'foo'`     | `'foo'`             | `'FOO'` , `'foo.bar'`|
- *
- * ### Single star (`*`)
- *
- * A single star (`*`) is a wildcard that matches exactly one segment.
- *
- * | Glob        |Matches states named  |Does not match state named |
- * |:------------|:---------------------|:--------------------------|
- * | `'*'`       | `'A'` , `'Z'`        | `'A.B'` , `'Z.Y.X'`       |
- * | `'A.*'`     | `'A.B'` , `'A.C'`    | `'A'` , `'A.B.C'`         |
- * | `'A.*.*'`   | `'A.B.C'` , `'A.X.Y'`| `'A'`, `'A.B'` , `'Z.Y.X'`|
- *
- * ### Double star (`**`)
- *
- * A double star (`'**'`) is a wildcard that matches *zero or more segments*
- *
- * | Glob        |Matches states named                           |Does not match state named         |
- * |:------------|:----------------------------------------------|:----------------------------------|
- * | `'**'`      | `'A'` , `'A.B'`, `'Z.Y.X'`                    | (matches all states)              |
- * | `'A.**'`    | `'A'` , `'A.B'` , `'A.C.X'`                   | `'Z.Y.X'`                         |
- * | `'**.X'`    | `'X'` , `'A.X'` , `'Z.Y.X'`                   | `'A'` , `'A.login.Z'`             |
- * | `'A.**.X'`  | `'A.X'` , `'A.B.X'` , `'A.B.C.X'`             | `'A'` , `'A.B.C'`                 |
- *
- */
-var Glob = /** @class */ (function () {
-    function Glob(text) {
-        this.text = text;
-        this.glob = text.split('.');
-        var regexpString = this.text.split('.')
-            .map(function (seg) {
-            if (seg === '**')
-                return '(?:|(?:\\.[^.]*)*)';
-            if (seg === '*')
-                return '\\.[^.]*';
-            return '\\.' + seg;
-        }).join('');
-        this.regexp = new RegExp("^" + regexpString + "$");
-    }
-    Glob.prototype.matches = function (name) {
-        return this.regexp.test('.' + name);
-    };
-    /** Returns true if the string has glob-like characters in it */
-    Glob.is = function (text) {
-        return !!/[!,*]+/.exec(text);
-    };
-    /** Returns a glob from the string, or null if the string isn't Glob-like */
-    Glob.fromString = function (text) {
-        return Glob.is(text) ? new Glob(text) : null;
-    };
-    return Glob;
-}());
-exports.Glob = Glob;
-//# sourceMappingURL=glob.js.map
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * @coreapi
- * @module transition
- */
-/** for typedoc */
-var trace_1 = __webpack_require__(7);
-var coreservices_1 = __webpack_require__(4);
-var strings_1 = __webpack_require__(6);
-var common_1 = __webpack_require__(0);
-var predicates_1 = __webpack_require__(2);
-var hof_1 = __webpack_require__(3);
-var interface_1 = __webpack_require__(8); // has or is using
-var transitionHook_1 = __webpack_require__(12);
-var hookRegistry_1 = __webpack_require__(23);
-var hookBuilder_1 = __webpack_require__(28);
-var pathFactory_1 = __webpack_require__(16);
-var param_1 = __webpack_require__(10);
-var resolvable_1 = __webpack_require__(13);
-var resolveContext_1 = __webpack_require__(17);
-/** @hidden */
-var stateSelf = hof_1.prop("self");
-/**
- * Represents a transition between two states.
- *
- * When navigating to a state, we are transitioning **from** the current state **to** the new state.
- *
- * This object contains all contextual information about the to/from states, parameters, resolves.
- * It has information about all states being entered and exited as a result of the transition.
- */
-var Transition = /** @class */ (function () {
-    /**
-     * Creates a new Transition object.
-     *
-     * If the target state is not valid, an error is thrown.
-     *
-     * @internalapi
-     *
-     * @param fromPath The path of [[PathNode]]s from which the transition is leaving.  The last node in the `fromPath`
-     *        encapsulates the "from state".
-     * @param targetState The target state and parameters being transitioned to (also, the transition options)
-     * @param router The [[UIRouter]] instance
-     */
-    function Transition(fromPath, targetState, router) {
-        var _this = this;
-        /** @hidden */
-        this._deferred = coreservices_1.services.$q.defer();
-        /**
-         * This promise is resolved or rejected based on the outcome of the Transition.
-         *
-         * When the transition is successful, the promise is resolved
-         * When the transition is unsuccessful, the promise is rejected with the [[Rejection]] or javascript error
-         */
-        this.promise = this._deferred.promise;
-        /** @hidden Holds the hook registration functions such as those passed to Transition.onStart() */
-        this._registeredHooks = {};
-        /** @hidden */
-        this._hookBuilder = new hookBuilder_1.HookBuilder(this);
-        /** Checks if this transition is currently active/running. */
-        this.isActive = function () {
-            return _this.router.globals.transition === _this;
-        };
-        this.router = router;
-        this._targetState = targetState;
-        if (!targetState.valid()) {
-            throw new Error(targetState.error());
-        }
-        // current() is assumed to come from targetState.options, but provide a naive implementation otherwise.
-        this._options = common_1.extend({ current: hof_1.val(this) }, targetState.options());
-        this.$id = router.transitionService._transitionCount++;
-        var toPath = pathFactory_1.PathUtils.buildToPath(fromPath, targetState);
-        this._treeChanges = pathFactory_1.PathUtils.treeChanges(fromPath, toPath, this._options.reloadState);
-        this.createTransitionHookRegFns();
-        var onCreateHooks = this._hookBuilder.buildHooksForPhase(interface_1.TransitionHookPhase.CREATE);
-        transitionHook_1.TransitionHook.invokeHooks(onCreateHooks, function () { return null; });
-        this.applyViewConfigs(router);
-    }
-    /** @hidden */
-    Transition.prototype.onBefore = function (criteria, callback, options) { return; };
-    /** @inheritdoc */
-    Transition.prototype.onStart = function (criteria, callback, options) { return; };
-    /** @inheritdoc */
-    Transition.prototype.onExit = function (criteria, callback, options) { return; };
-    /** @inheritdoc */
-    Transition.prototype.onRetain = function (criteria, callback, options) { return; };
-    /** @inheritdoc */
-    Transition.prototype.onEnter = function (criteria, callback, options) { return; };
-    /** @inheritdoc */
-    Transition.prototype.onFinish = function (criteria, callback, options) { return; };
-    /** @inheritdoc */
-    Transition.prototype.onSuccess = function (criteria, callback, options) { return; };
-    /** @inheritdoc */
-    Transition.prototype.onError = function (criteria, callback, options) { return; };
-    /** @hidden
-     * Creates the transition-level hook registration functions
-     * (which can then be used to register hooks)
-     */
-    Transition.prototype.createTransitionHookRegFns = function () {
-        var _this = this;
-        this.router.transitionService._pluginapi._getEvents()
-            .filter(function (type) { return type.hookPhase !== interface_1.TransitionHookPhase.CREATE; })
-            .forEach(function (type) { return hookRegistry_1.makeEvent(_this, _this.router.transitionService, type); });
-    };
-    /** @internalapi */
-    Transition.prototype.getHooks = function (hookName) {
-        return this._registeredHooks[hookName];
-    };
-    Transition.prototype.applyViewConfigs = function (router) {
-        var enteringStates = this._treeChanges.entering.map(function (node) { return node.state; });
-        pathFactory_1.PathUtils.applyViewConfigs(router.transitionService.$view, this._treeChanges.to, enteringStates);
-    };
-    /**
-     * @internalapi
-     *
-     * @returns the internal from [State] object
-     */
-    Transition.prototype.$from = function () {
-        return common_1.tail(this._treeChanges.from).state;
-    };
-    /**
-     * @internalapi
-     *
-     * @returns the internal to [State] object
-     */
-    Transition.prototype.$to = function () {
-        return common_1.tail(this._treeChanges.to).state;
-    };
-    /**
-     * Returns the "from state"
-     *
-     * Returns the state that the transition is coming *from*.
-     *
-     * @returns The state declaration object for the Transition's ("from state").
-     */
-    Transition.prototype.from = function () {
-        return this.$from().self;
-    };
-    /**
-     * Returns the "to state"
-     *
-     * Returns the state that the transition is going *to*.
-     *
-     * @returns The state declaration object for the Transition's target state ("to state").
-     */
-    Transition.prototype.to = function () {
-        return this.$to().self;
-    };
-    /**
-     * Gets the Target State
-     *
-     * A transition's [[TargetState]] encapsulates the [[to]] state, the [[params]], and the [[options]] as a single object.
-     *
-     * @returns the [[TargetState]] of this Transition
-     */
-    Transition.prototype.targetState = function () {
-        return this._targetState;
-    };
-    /**
-     * Determines whether two transitions are equivalent.
-     * @deprecated
-     */
-    Transition.prototype.is = function (compare) {
-        if (compare instanceof Transition) {
-            // TODO: Also compare parameters
-            return this.is({ to: compare.$to().name, from: compare.$from().name });
-        }
-        return !((compare.to && !hookRegistry_1.matchState(this.$to(), compare.to)) ||
-            (compare.from && !hookRegistry_1.matchState(this.$from(), compare.from)));
-    };
-    Transition.prototype.params = function (pathname) {
-        if (pathname === void 0) { pathname = "to"; }
-        return Object.freeze(this._treeChanges[pathname].map(hof_1.prop("paramValues")).reduce(common_1.mergeR, {}));
-    };
-    /**
-     * Creates a [[UIInjector]] Dependency Injector
-     *
-     * Returns a Dependency Injector for the Transition's target state (to state).
-     * The injector provides resolve values which the target state has access to.
-     *
-     * The `UIInjector` can also provide values from the native root/global injector (ng1/ng2).
-     *
-     * #### Example:
-     * ```js
-     * .onEnter({ entering: 'myState' }, trans => {
-     *   var myResolveValue = trans.injector().get('myResolve');
-     *   // Inject a global service from the global/native injector (if it exists)
-     *   var MyService = trans.injector().get('MyService');
-     * })
-     * ```
-     *
-     * In some cases (such as `onBefore`), you may need access to some resolve data but it has not yet been fetched.
-     * You can use [[UIInjector.getAsync]] to get a promise for the data.
-     * #### Example:
-     * ```js
-     * .onBefore({}, trans => {
-     *   return trans.injector().getAsync('myResolve').then(myResolveValue =>
-     *     return myResolveValue !== 'ABORT';
-     *   });
-     * });
-     * ```
-     *
-     * If a `state` is provided, the injector that is returned will be limited to resolve values that the provided state has access to.
-     * This can be useful if both a parent state `foo` and a child state `foo.bar` have both defined a resolve such as `data`.
-     * #### Example:
-     * ```js
-     * .onEnter({ to: 'foo.bar' }, trans => {
-     *   // returns result of `foo` state's `data` resolve
-     *   // even though `foo.bar` also has a `data` resolve
-     *   var fooData = trans.injector('foo').get('data');
-     * });
-     * ```
-     *
-     * If you need resolve data from the exiting states, pass `'from'` as `pathName`.
-     * The resolve data from the `from` path will be returned.
-     * #### Example:
-     * ```js
-     * .onExit({ exiting: 'foo.bar' }, trans => {
-     *   // Gets the resolve value of `data` from the exiting state.
-     *   var fooData = trans.injector(null, 'foo.bar').get('data');
-     * });
-     * ```
-     *
-     *
-     * @param state Limits the resolves provided to only the resolves the provided state has access to.
-     * @param pathName Default: `'to'`: Chooses the path for which to create the injector. Use this to access resolves for `exiting` states.
-     *
-     * @returns a [[UIInjector]]
-     */
-    Transition.prototype.injector = function (state, pathName) {
-        if (pathName === void 0) { pathName = "to"; }
-        var path = this._treeChanges[pathName];
-        if (state)
-            path = pathFactory_1.PathUtils.subPath(path, function (node) { return node.state === state || node.state.name === state; });
-        return new resolveContext_1.ResolveContext(path).injector();
-    };
-    /**
-     * Gets all available resolve tokens (keys)
-     *
-     * This method can be used in conjunction with [[injector]] to inspect the resolve values
-     * available to the Transition.
-     *
-     * This returns all the tokens defined on [[StateDeclaration.resolve]] blocks, for the states
-     * in the Transition's [[TreeChanges.to]] path.
-     *
-     * #### Example:
-     * This example logs all resolve values
-     * ```js
-     * let tokens = trans.getResolveTokens();
-     * tokens.forEach(token => console.log(token + " = " + trans.injector().get(token)));
-     * ```
-     *
-     * #### Example:
-     * This example creates promises for each resolve value.
-     * This triggers fetches of resolves (if any have not yet been fetched).
-     * When all promises have all settled, it logs the resolve values.
-     * ```js
-     * let tokens = trans.getResolveTokens();
-     * let promise = tokens.map(token => trans.injector().getAsync(token));
-     * Promise.all(promises).then(values => console.log("Resolved values: " + values));
-     * ```
-     *
-     * Note: Angular 1 users whould use `$q.all()`
-     *
-     * @param pathname resolve context's path name (e.g., `to` or `from`)
-     *
-     * @returns an array of resolve tokens (keys)
-     */
-    Transition.prototype.getResolveTokens = function (pathname) {
-        if (pathname === void 0) { pathname = "to"; }
-        return new resolveContext_1.ResolveContext(this._treeChanges[pathname]).getTokens();
-    };
-    /**
-     * Dynamically adds a new [[Resolvable]] (i.e., [[StateDeclaration.resolve]]) to this transition.
-     *
-     * #### Example:
-     * ```js
-     * transitionService.onBefore({}, transition => {
-     *   transition.addResolvable({
-     *     token: 'myResolve',
-     *     deps: ['MyService'],
-     *     resolveFn: myService => myService.getData()
-     *   });
-     * });
-     * ```
-     *
-     * @param resolvable a [[ResolvableLiteral]] object (or a [[Resolvable]])
-     * @param state the state in the "to path" which should receive the new resolve (otherwise, the root state)
-     */
-    Transition.prototype.addResolvable = function (resolvable, state) {
-        if (state === void 0) { state = ""; }
-        resolvable = hof_1.is(resolvable_1.Resolvable)(resolvable) ? resolvable : new resolvable_1.Resolvable(resolvable);
-        var stateName = (typeof state === "string") ? state : state.name;
-        var topath = this._treeChanges.to;
-        var targetNode = common_1.find(topath, function (node) { return node.state.name === stateName; });
-        var resolveContext = new resolveContext_1.ResolveContext(topath);
-        resolveContext.addResolvables([resolvable], targetNode.state);
-    };
-    /**
-     * Gets the transition from which this transition was redirected.
-     *
-     * If the current transition is a redirect, this method returns the transition that was redirected.
-     *
-     * #### Example:
-     * ```js
-     * let transitionA = $state.go('A').transition
-     * transitionA.onStart({}, () => $state.target('B'));
-     * $transitions.onSuccess({ to: 'B' }, (trans) => {
-     *   trans.to().name === 'B'; // true
-     *   trans.redirectedFrom() === transitionA; // true
-     * });
-     * ```
-     *
-     * @returns The previous Transition, or null if this Transition is not the result of a redirection
-     */
-    Transition.prototype.redirectedFrom = function () {
-        return this._options.redirectedFrom || null;
-    };
-    /**
-     * Gets the original transition in a redirect chain
-     *
-     * A transition might belong to a long chain of multiple redirects.
-     * This method walks the [[redirectedFrom]] chain back to the original (first) transition in the chain.
-     *
-     * #### Example:
-     * ```js
-     * // states
-     * registry.register({ name: 'A', redirectTo: 'B' });
-     * registry.register({ name: 'B', redirectTo: 'C' });
-     * registry.register({ name: 'C', redirectTo: 'D' });
-     * registry.register({ name: 'D' });
-     *
-     * let transitionA = $state.go('A').transition
-     *
-     * $transitions.onSuccess({ to: 'D' }, (trans) => {
-     *   trans.to().name === 'D'; // true
-     *   trans.redirectedFrom().to().name === 'C'; // true
-     *   trans.originalTransition() === transitionA; // true
-     *   trans.originalTransition().to().name === 'A'; // true
-     * });
-     * ```
-     *
-     * @returns The original Transition that started a redirect chain
-     */
-    Transition.prototype.originalTransition = function () {
-        var rf = this.redirectedFrom();
-        return (rf && rf.originalTransition()) || this;
-    };
-    /**
-     * Get the transition options
-     *
-     * @returns the options for this Transition.
-     */
-    Transition.prototype.options = function () {
-        return this._options;
-    };
-    /**
-     * Gets the states being entered.
-     *
-     * @returns an array of states that will be entered during this transition.
-     */
-    Transition.prototype.entering = function () {
-        return common_1.map(this._treeChanges.entering, hof_1.prop('state')).map(stateSelf);
-    };
-    /**
-     * Gets the states being exited.
-     *
-     * @returns an array of states that will be exited during this transition.
-     */
-    Transition.prototype.exiting = function () {
-        return common_1.map(this._treeChanges.exiting, hof_1.prop('state')).map(stateSelf).reverse();
-    };
-    /**
-     * Gets the states being retained.
-     *
-     * @returns an array of states that are already entered from a previous Transition, that will not be
-     *    exited during this Transition
-     */
-    Transition.prototype.retained = function () {
-        return common_1.map(this._treeChanges.retained, hof_1.prop('state')).map(stateSelf);
-    };
-    /**
-     * Get the [[ViewConfig]]s associated with this Transition
-     *
-     * Each state can define one or more views (template/controller), which are encapsulated as `ViewConfig` objects.
-     * This method fetches the `ViewConfigs` for a given path in the Transition (e.g., "to" or "entering").
-     *
-     * @param pathname the name of the path to fetch views for:
-     *   (`'to'`, `'from'`, `'entering'`, `'exiting'`, `'retained'`)
-     * @param state If provided, only returns the `ViewConfig`s for a single state in the path
-     *
-     * @returns a list of ViewConfig objects for the given path.
-     */
-    Transition.prototype.views = function (pathname, state) {
-        if (pathname === void 0) { pathname = "entering"; }
-        var path = this._treeChanges[pathname];
-        path = !state ? path : path.filter(hof_1.propEq('state', state));
-        return path.map(hof_1.prop("views")).filter(common_1.identity).reduce(common_1.unnestR, []);
-    };
-    Transition.prototype.treeChanges = function (pathname) {
-        return pathname ? this._treeChanges[pathname] : this._treeChanges;
-    };
-    /**
-     * Creates a new transition that is a redirection of the current one.
-     *
-     * This transition can be returned from a [[TransitionService]] hook to
-     * redirect a transition to a new state and/or set of parameters.
-     *
-     * @internalapi
-     *
-     * @returns Returns a new [[Transition]] instance.
-     */
-    Transition.prototype.redirect = function (targetState) {
-        var redirects = 1, trans = this;
-        while ((trans = trans.redirectedFrom()) != null) {
-            if (++redirects > 20)
-                throw new Error("Too many consecutive Transition redirects (20+)");
-        }
-        var redirectOpts = { redirectedFrom: this, source: "redirect" };
-        // If the original transition was caused by URL sync, then use { location: 'replace' }
-        // on the new transition (unless the target state explicitly specifies location: false).
-        // This causes the original url to be replaced with the url for the redirect target
-        // so the original url disappears from the browser history.
-        if (this.options().source === 'url' && targetState.options().location !== false) {
-            redirectOpts.location = 'replace';
-        }
-        var newOptions = common_1.extend({}, this.options(), targetState.options(), redirectOpts);
-        targetState = targetState.withOptions(newOptions, true);
-        var newTransition = this.router.transitionService.create(this._treeChanges.from, targetState);
-        var originalEnteringNodes = this._treeChanges.entering;
-        var redirectEnteringNodes = newTransition._treeChanges.entering;
-        // --- Re-use resolve data from original transition ---
-        // When redirecting from a parent state to a child state where the parent parameter values haven't changed
-        // (because of the redirect), the resolves fetched by the original transition are still valid in the
-        // redirected transition.
-        //
-        // This allows you to define a redirect on a parent state which depends on an async resolve value.
-        // You can wait for the resolve, then redirect to a child state based on the result.
-        // The redirected transition does not have to re-fetch the resolve.
-        // ---------------------------------------------------------
-        var nodeIsReloading = function (reloadState) { return function (node) {
-            return reloadState && node.state.includes[reloadState.name];
-        }; };
-        // Find any "entering" nodes in the redirect path that match the original path and aren't being reloaded
-        var matchingEnteringNodes = pathFactory_1.PathUtils.matching(redirectEnteringNodes, originalEnteringNodes, pathFactory_1.PathUtils.nonDynamicParams)
-            .filter(hof_1.not(nodeIsReloading(targetState.options().reloadState)));
-        // Use the existing (possibly pre-resolved) resolvables for the matching entering nodes.
-        matchingEnteringNodes.forEach(function (node, idx) {
-            node.resolvables = originalEnteringNodes[idx].resolvables;
-        });
-        return newTransition;
-    };
-    /** @hidden If a transition doesn't exit/enter any states, returns any [[Param]] whose value changed */
-    Transition.prototype._changedParams = function () {
-        var tc = this._treeChanges;
-        /** Return undefined if it's not a "dynamic" transition, for the following reasons */
-        // If user explicitly wants a reload
-        if (this._options.reload)
-            return undefined;
-        // If any states are exiting or entering
-        if (tc.exiting.length || tc.entering.length)
-            return undefined;
-        // If to/from path lengths differ
-        if (tc.to.length !== tc.from.length)
-            return undefined;
-        // If the to/from paths are different
-        var pathsDiffer = common_1.arrayTuples(tc.to, tc.from)
-            .map(function (tuple) { return tuple[0].state !== tuple[1].state; })
-            .reduce(common_1.anyTrueR, false);
-        if (pathsDiffer)
-            return undefined;
-        // Find any parameter values that differ
-        var nodeSchemas = tc.to.map(function (node) { return node.paramSchema; });
-        var _a = [tc.to, tc.from].map(function (path) { return path.map(function (x) { return x.paramValues; }); }), toValues = _a[0], fromValues = _a[1];
-        var tuples = common_1.arrayTuples(nodeSchemas, toValues, fromValues);
-        return tuples.map(function (_a) {
-            var schema = _a[0], toVals = _a[1], fromVals = _a[2];
-            return param_1.Param.changed(schema, toVals, fromVals);
-        }).reduce(common_1.unnestR, []);
-    };
-    /**
-     * Returns true if the transition is dynamic.
-     *
-     * A transition is dynamic if no states are entered nor exited, but at least one dynamic parameter has changed.
-     *
-     * @returns true if the Transition is dynamic
-     */
-    Transition.prototype.dynamic = function () {
-        var changes = this._changedParams();
-        return !changes ? false : changes.map(function (x) { return x.dynamic; }).reduce(common_1.anyTrueR, false);
-    };
-    /**
-     * Returns true if the transition is ignored.
-     *
-     * A transition is ignored if no states are entered nor exited, and no parameter values have changed.
-     *
-     * @returns true if the Transition is ignored.
-     */
-    Transition.prototype.ignored = function () {
-        return !!this._ignoredReason();
-    };
-    /** @hidden */
-    Transition.prototype._ignoredReason = function () {
-        var pending = this.router.globals.transition;
-        var reloadState = this._options.reloadState;
-        var same = function (pathA, pathB) {
-            if (pathA.length !== pathB.length)
-                return false;
-            var matching = pathFactory_1.PathUtils.matching(pathA, pathB);
-            return pathA.length === matching.filter(function (node) { return !reloadState || !node.state.includes[reloadState.name]; }).length;
-        };
-        var newTC = this.treeChanges();
-        var pendTC = pending && pending.treeChanges();
-        if (pendTC && same(pendTC.to, newTC.to) && same(pendTC.exiting, newTC.exiting))
-            return "SameAsPending";
-        if (newTC.exiting.length === 0 && newTC.entering.length === 0 && same(newTC.from, newTC.to))
-            return "SameAsCurrent";
-    };
-    /**
-     * Runs the transition
-     *
-     * This method is generally called from the [[StateService.transitionTo]]
-     *
-     * @internalapi
-     *
-     * @returns a promise for a successful transition.
-     */
-    Transition.prototype.run = function () {
-        var _this = this;
-        var runAllHooks = transitionHook_1.TransitionHook.runAllHooks;
-        // Gets transition hooks array for the given phase
-        var getHooksFor = function (phase) {
-            return _this._hookBuilder.buildHooksForPhase(phase);
-        };
-        // When the chain is complete, then resolve or reject the deferred
-        var transitionSuccess = function () {
-            trace_1.trace.traceSuccess(_this.$to(), _this);
-            _this.success = true;
-            _this._deferred.resolve(_this.to());
-            runAllHooks(getHooksFor(interface_1.TransitionHookPhase.SUCCESS));
-        };
-        var transitionError = function (reason) {
-            trace_1.trace.traceError(reason, _this);
-            _this.success = false;
-            _this._deferred.reject(reason);
-            _this._error = reason;
-            runAllHooks(getHooksFor(interface_1.TransitionHookPhase.ERROR));
-        };
-        var runTransition = function () {
-            // Wait to build the RUN hook chain until the BEFORE hooks are done
-            // This allows a BEFORE hook to dynamically add additional RUN hooks via the Transition object.
-            var allRunHooks = getHooksFor(interface_1.TransitionHookPhase.RUN);
-            var done = function () { return coreservices_1.services.$q.when(undefined); };
-            return transitionHook_1.TransitionHook.invokeHooks(allRunHooks, done);
-        };
-        var startTransition = function () {
-            var globals = _this.router.globals;
-            globals.lastStartedTransitionId = _this.$id;
-            globals.transition = _this;
-            globals.transitionHistory.enqueue(_this);
-            trace_1.trace.traceTransitionStart(_this);
-            return coreservices_1.services.$q.when(undefined);
-        };
-        var allBeforeHooks = getHooksFor(interface_1.TransitionHookPhase.BEFORE);
-        transitionHook_1.TransitionHook.invokeHooks(allBeforeHooks, startTransition)
-            .then(runTransition)
-            .then(transitionSuccess, transitionError);
-        return this.promise;
-    };
-    /**
-     * Checks if the Transition is valid
-     *
-     * @returns true if the Transition is valid
-     */
-    Transition.prototype.valid = function () {
-        return !this.error() || this.success !== undefined;
-    };
-    /**
-     * Aborts this transition
-     *
-     * Imperative API to abort a Transition.
-     * This only applies to Transitions that are not yet complete.
-     */
-    Transition.prototype.abort = function () {
-        // Do not set flag if the transition is already complete
-        if (predicates_1.isUndefined(this.success)) {
-            this._aborted = true;
-        }
-    };
-    /**
-     * The Transition error reason.
-     *
-     * If the transition is invalid (and could not be run), returns the reason the transition is invalid.
-     * If the transition was valid and ran, but was not successful, returns the reason the transition failed.
-     *
-     * @returns an error message explaining why the transition is invalid, or the reason the transition failed.
-     */
-    Transition.prototype.error = function () {
-        var state = this.$to();
-        if (state.self.abstract)
-            return "Cannot transition to abstract state '" + state.name + "'";
-        var paramDefs = state.parameters(), values = this.params();
-        var invalidParams = paramDefs.filter(function (param) { return !param.validates(values[param.id]); });
-        if (invalidParams.length) {
-            return "Param values not valid for state '" + state.name + "'. Invalid params: [ " + invalidParams.map(function (param) { return param.id; }).join(', ') + " ]";
-        }
-        if (this.success === false)
-            return this._error;
-    };
-    /**
-     * A string representation of the Transition
-     *
-     * @returns A string representation of the Transition
-     */
-    Transition.prototype.toString = function () {
-        var fromStateOrName = this.from();
-        var toStateOrName = this.to();
-        var avoidEmptyHash = function (params) {
-            return (params["#"] !== null && params["#"] !== undefined) ? params : common_1.omit(params, ["#"]);
-        };
-        // (X) means the to state is invalid.
-        var id = this.$id, from = predicates_1.isObject(fromStateOrName) ? fromStateOrName.name : fromStateOrName, fromParams = strings_1.stringify(avoidEmptyHash(this._treeChanges.from.map(hof_1.prop('paramValues')).reduce(common_1.mergeR, {}))), toValid = this.valid() ? "" : "(X) ", to = predicates_1.isObject(toStateOrName) ? toStateOrName.name : toStateOrName, toParams = strings_1.stringify(avoidEmptyHash(this.params()));
-        return "Transition#" + id + "( '" + from + "'" + fromParams + " -> " + toValid + "'" + to + "'" + toParams + " )";
-    };
-    /** @hidden */
-    Transition.diToken = Transition;
-    return Transition;
-}());
-exports.Transition = Transition;
-//# sourceMappingURL=transition.js.map
-
-/***/ }),
-/* 16 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-/** @module path */ /** for typedoc */
-Object.defineProperty(exports, "__esModule", { value: true });
-var common_1 = __webpack_require__(0);
-var hof_1 = __webpack_require__(3);
-var targetState_1 = __webpack_require__(9);
-var pathNode_1 = __webpack_require__(24);
-/**
- * This class contains functions which convert TargetStates, Nodes and paths from one type to another.
- */
-var PathUtils = /** @class */ (function () {
-    function PathUtils() {
-    }
-    /** Given a PathNode[], create an TargetState */
-    PathUtils.makeTargetState = function (registry, path) {
-        var state = common_1.tail(path).state;
-        return new targetState_1.TargetState(registry, state, path.map(hof_1.prop("paramValues")).reduce(common_1.mergeR, {}), {});
-    };
-    PathUtils.buildPath = function (targetState) {
-        var toParams = targetState.params();
-        return targetState.$state().path.map(function (state) { return new pathNode_1.PathNode(state).applyRawParams(toParams); });
-    };
-    /** Given a fromPath: PathNode[] and a TargetState, builds a toPath: PathNode[] */
-    PathUtils.buildToPath = function (fromPath, targetState) {
-        var toPath = PathUtils.buildPath(targetState);
-        if (targetState.options().inherit) {
-            return PathUtils.inheritParams(fromPath, toPath, Object.keys(targetState.params()));
-        }
-        return toPath;
-    };
-    /**
-     * Creates ViewConfig objects and adds to nodes.
-     *
-     * On each [[PathNode]], creates ViewConfig objects from the views: property of the node's state
-     */
-    PathUtils.applyViewConfigs = function ($view, path, states) {
-        // Only apply the viewConfigs to the nodes for the given states
-        path.filter(function (node) { return common_1.inArray(states, node.state); }).forEach(function (node) {
-            var viewDecls = common_1.values(node.state.views || {});
-            var subPath = PathUtils.subPath(path, function (n) { return n === node; });
-            var viewConfigs = viewDecls.map(function (view) { return $view.createViewConfig(subPath, view); });
-            node.views = viewConfigs.reduce(common_1.unnestR, []);
-        });
-    };
-    /**
-     * Given a fromPath and a toPath, returns a new to path which inherits parameters from the fromPath
-     *
-     * For a parameter in a node to be inherited from the from path:
-     * - The toPath's node must have a matching node in the fromPath (by state).
-     * - The parameter name must not be found in the toKeys parameter array.
-     *
-     * Note: the keys provided in toKeys are intended to be those param keys explicitly specified by some
-     * caller, for instance, $state.transitionTo(..., toParams).  If a key was found in toParams,
-     * it is not inherited from the fromPath.
-     */
-    PathUtils.inheritParams = function (fromPath, toPath, toKeys) {
-        if (toKeys === void 0) { toKeys = []; }
-        function nodeParamVals(path, state) {
-            var node = common_1.find(path, hof_1.propEq('state', state));
-            return common_1.extend({}, node && node.paramValues);
-        }
-        var noInherit = fromPath.map(function (node) { return node.paramSchema; })
-            .reduce(common_1.unnestR, [])
-            .filter(function (param) { return !param.inherit; })
-            .map(hof_1.prop('id'));
-        /**
-         * Given an [[PathNode]] "toNode", return a new [[PathNode]] with param values inherited from the
-         * matching node in fromPath.  Only inherit keys that aren't found in "toKeys" from the node in "fromPath""
-         */
-        function makeInheritedParamsNode(toNode) {
-            // All param values for the node (may include default key/vals, when key was not found in toParams)
-            var toParamVals = common_1.extend({}, toNode && toNode.paramValues);
-            // limited to only those keys found in toParams
-            var incomingParamVals = common_1.pick(toParamVals, toKeys);
-            toParamVals = common_1.omit(toParamVals, toKeys);
-            var fromParamVals = common_1.omit(nodeParamVals(fromPath, toNode.state) || {}, noInherit);
-            // extend toParamVals with any fromParamVals, then override any of those those with incomingParamVals
-            var ownParamVals = common_1.extend(toParamVals, fromParamVals, incomingParamVals);
-            return new pathNode_1.PathNode(toNode.state).applyRawParams(ownParamVals);
-        }
-        // The param keys specified by the incoming toParams
-        return toPath.map(makeInheritedParamsNode);
-    };
-    /**
-     * Computes the tree changes (entering, exiting) between a fromPath and toPath.
-     */
-    PathUtils.treeChanges = function (fromPath, toPath, reloadState) {
-        var keep = 0, max = Math.min(fromPath.length, toPath.length);
-        var nodesMatch = function (node1, node2) {
-            return node1.equals(node2, PathUtils.nonDynamicParams);
-        };
-        while (keep < max && fromPath[keep].state !== reloadState && nodesMatch(fromPath[keep], toPath[keep])) {
-            keep++;
-        }
-        /** Given a retained node, return a new node which uses the to node's param values */
-        function applyToParams(retainedNode, idx) {
-            var cloned = pathNode_1.PathNode.clone(retainedNode);
-            cloned.paramValues = toPath[idx].paramValues;
-            return cloned;
-        }
-        var from, retained, exiting, entering, to;
-        from = fromPath;
-        retained = from.slice(0, keep);
-        exiting = from.slice(keep);
-        // Create a new retained path (with shallow copies of nodes) which have the params of the toPath mapped
-        var retainedWithToParams = retained.map(applyToParams);
-        entering = toPath.slice(keep);
-        to = (retainedWithToParams).concat(entering);
-        return { from: from, to: to, retained: retained, exiting: exiting, entering: entering };
-    };
-    /**
-     * Returns a new path which is: the subpath of the first path which matches the second path.
-     *
-     * The new path starts from root and contains any nodes that match the nodes in the second path.
-     * It stops before the first non-matching node.
-     *
-     * Nodes are compared using their state property and their parameter values.
-     * If a `paramsFn` is provided, only the [[Param]] returned by the function will be considered when comparing nodes.
-     *
-     * @param pathA the first path
-     * @param pathB the second path
-     * @param paramsFn a function which returns the parameters to consider when comparing
-     *
-     * @returns an array of PathNodes from the first path which match the nodes in the second path
-     */
-    PathUtils.matching = function (pathA, pathB, paramsFn) {
-        var done = false;
-        var tuples = common_1.arrayTuples(pathA, pathB);
-        return tuples.reduce(function (matching, _a) {
-            var nodeA = _a[0], nodeB = _a[1];
-            done = done || !nodeA.equals(nodeB, paramsFn);
-            return done ? matching : matching.concat(nodeA);
-        }, []);
-    };
-    /**
-     * Returns true if two paths are identical.
-     *
-     * @param pathA
-     * @param pathB
-     * @param paramsFn a function which returns the parameters to consider when comparing
-     * @returns true if the the states and parameter values for both paths are identical
-     */
-    PathUtils.equals = function (pathA, pathB, paramsFn) {
-        return pathA.length === pathB.length &&
-            PathUtils.matching(pathA, pathB, paramsFn).length === pathA.length;
-    };
-    /**
-     * Return a subpath of a path, which stops at the first matching node
-     *
-     * Given an array of nodes, returns a subset of the array starting from the first node,
-     * stopping when the first node matches the predicate.
-     *
-     * @param path a path of [[PathNode]]s
-     * @param predicate a [[Predicate]] fn that matches [[PathNode]]s
-     * @returns a subpath up to the matching node, or undefined if no match is found
-     */
-    PathUtils.subPath = function (path, predicate) {
-        var node = common_1.find(path, predicate);
-        var elementIdx = path.indexOf(node);
-        return elementIdx === -1 ? undefined : path.slice(0, elementIdx + 1);
-    };
-    PathUtils.nonDynamicParams = function (node) {
-        return node.state.parameters({ inherit: false })
-            .filter(function (param) { return !param.dynamic; });
-    };
-    /** Gets the raw parameter values from a path */
-    PathUtils.paramValues = function (path) {
-        return path.reduce(function (acc, node) { return common_1.extend(acc, node.paramValues); }, {});
-    };
-    return PathUtils;
-}());
-exports.PathUtils = PathUtils;
-//# sourceMappingURL=pathFactory.js.map
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/** @module resolve */
-/** for typedoc */
-var common_1 = __webpack_require__(0);
-var hof_1 = __webpack_require__(3);
-var trace_1 = __webpack_require__(7);
-var coreservices_1 = __webpack_require__(4);
-var interface_1 = __webpack_require__(29);
-var resolvable_1 = __webpack_require__(13);
-var pathFactory_1 = __webpack_require__(16);
-var strings_1 = __webpack_require__(6);
-var common_2 = __webpack_require__(5);
-var whens = interface_1.resolvePolicies.when;
-var ALL_WHENS = [whens.EAGER, whens.LAZY];
-var EAGER_WHENS = [whens.EAGER];
-exports.NATIVE_INJECTOR_TOKEN = "Native Injector";
-/**
- * Encapsulates Dependency Injection for a path of nodes
- *
- * UI-Router states are organized as a tree.
- * A nested state has a path of ancestors to the root of the tree.
- * When a state is being activated, each element in the path is wrapped as a [[PathNode]].
- * A `PathNode` is a stateful object that holds things like parameters and resolvables for the state being activated.
- *
- * The ResolveContext closes over the [[PathNode]]s, and provides DI for the last node in the path.
- */
-var ResolveContext = /** @class */ (function () {
-    function ResolveContext(_path) {
-        this._path = _path;
-    }
-    /** Gets all the tokens found in the resolve context, de-duplicated */
-    ResolveContext.prototype.getTokens = function () {
-        return this._path.reduce(function (acc, node) { return acc.concat(node.resolvables.map(function (r) { return r.token; })); }, []).reduce(common_1.uniqR, []);
-    };
-    /**
-     * Gets the Resolvable that matches the token
-     *
-     * Gets the last Resolvable that matches the token in this context, or undefined.
-     * Throws an error if it doesn't exist in the ResolveContext
-     */
-    ResolveContext.prototype.getResolvable = function (token) {
-        var matching = this._path.map(function (node) { return node.resolvables; })
-            .reduce(common_1.unnestR, [])
-            .filter(function (r) { return r.token === token; });
-        return common_1.tail(matching);
-    };
-    /** Returns the [[ResolvePolicy]] for the given [[Resolvable]] */
-    ResolveContext.prototype.getPolicy = function (resolvable) {
-        var node = this.findNode(resolvable);
-        return resolvable.getPolicy(node.state);
-    };
-    /**
-     * Returns a ResolveContext that includes a portion of this one
-     *
-     * Given a state, this method creates a new ResolveContext from this one.
-     * The new context starts at the first node (root) and stops at the node for the `state` parameter.
-     *
-     * #### Why
-     *
-     * When a transition is created, the nodes in the "To Path" are injected from a ResolveContext.
-     * A ResolveContext closes over a path of [[PathNode]]s and processes the resolvables.
-     * The "To State" can inject values from its own resolvables, as well as those from all its ancestor state's (node's).
-     * This method is used to create a narrower context when injecting ancestor nodes.
-     *
-     * @example
-     * `let ABCD = new ResolveContext([A, B, C, D]);`
-     *
-     * Given a path `[A, B, C, D]`, where `A`, `B`, `C` and `D` are nodes for states `a`, `b`, `c`, `d`:
-     * When injecting `D`, `D` should have access to all resolvables from `A`, `B`, `C`, `D`.
-     * However, `B` should only be able to access resolvables from `A`, `B`.
-     *
-     * When resolving for the `B` node, first take the full "To Path" Context `[A,B,C,D]` and limit to the subpath `[A,B]`.
-     * `let AB = ABCD.subcontext(a)`
-     */
-    ResolveContext.prototype.subContext = function (state) {
-        return new ResolveContext(pathFactory_1.PathUtils.subPath(this._path, function (node) { return node.state === state; }));
-    };
-    /**
-     * Adds Resolvables to the node that matches the state
-     *
-     * This adds a [[Resolvable]] (generally one created on the fly; not declared on a [[StateDeclaration.resolve]] block).
-     * The resolvable is added to the node matching the `state` parameter.
-     *
-     * These new resolvables are not automatically fetched.
-     * The calling code should either fetch them, fetch something that depends on them,
-     * or rely on [[resolvePath]] being called when some state is being entered.
-     *
-     * Note: each resolvable's [[ResolvePolicy]] is merged with the state's policy, and the global default.
-     *
-     * @param newResolvables the new Resolvables
-     * @param state Used to find the node to put the resolvable on
-     */
-    ResolveContext.prototype.addResolvables = function (newResolvables, state) {
-        var node = common_1.find(this._path, hof_1.propEq('state', state));
-        var keys = newResolvables.map(function (r) { return r.token; });
-        node.resolvables = node.resolvables.filter(function (r) { return keys.indexOf(r.token) === -1; }).concat(newResolvables);
-    };
-    /**
-     * Returns a promise for an array of resolved path Element promises
-     *
-     * @param when
-     * @param trans
-     * @returns {Promise<any>|any}
-     */
-    ResolveContext.prototype.resolvePath = function (when, trans) {
-        var _this = this;
-        if (when === void 0) { when = "LAZY"; }
-        // This option determines which 'when' policy Resolvables we are about to fetch.
-        var whenOption = common_1.inArray(ALL_WHENS, when) ? when : "LAZY";
-        // If the caller specified EAGER, only the EAGER Resolvables are fetched.
-        // if the caller specified LAZY, both EAGER and LAZY Resolvables are fetched.`
-        var matchedWhens = whenOption === interface_1.resolvePolicies.when.EAGER ? EAGER_WHENS : ALL_WHENS;
-        // get the subpath to the state argument, if provided
-        trace_1.trace.traceResolvePath(this._path, when, trans);
-        var matchesPolicy = function (acceptedVals, whenOrAsync) {
-            return function (resolvable) {
-                return common_1.inArray(acceptedVals, _this.getPolicy(resolvable)[whenOrAsync]);
-            };
-        };
-        // Trigger all the (matching) Resolvables in the path
-        // Reduce all the "WAIT" Resolvables into an array
-        var promises = this._path.reduce(function (acc, node) {
-            var nodeResolvables = node.resolvables.filter(matchesPolicy(matchedWhens, 'when'));
-            var nowait = nodeResolvables.filter(matchesPolicy(['NOWAIT'], 'async'));
-            var wait = nodeResolvables.filter(hof_1.not(matchesPolicy(['NOWAIT'], 'async')));
-            // For the matching Resolvables, start their async fetch process.
-            var subContext = _this.subContext(node.state);
-            var getResult = function (r) { return r.get(subContext, trans)
-                .then(function (value) { return ({ token: r.token, value: value }); }); };
-            nowait.forEach(getResult);
-            return acc.concat(wait.map(getResult));
-        }, []);
-        // Wait for all the "WAIT" resolvables
-        return coreservices_1.services.$q.all(promises);
-    };
-    ResolveContext.prototype.injector = function () {
-        return this._injector || (this._injector = new UIInjectorImpl(this));
-    };
-    ResolveContext.prototype.findNode = function (resolvable) {
-        return common_1.find(this._path, function (node) { return common_1.inArray(node.resolvables, resolvable); });
-    };
-    /**
-     * Gets the async dependencies of a Resolvable
-     *
-     * Given a Resolvable, returns its dependencies as a Resolvable[]
-     */
-    ResolveContext.prototype.getDependencies = function (resolvable) {
-        var _this = this;
-        var node = this.findNode(resolvable);
-        // Find which other resolvables are "visible" to the `resolvable` argument
-        // subpath stopping at resolvable's node, or the whole path (if the resolvable isn't in the path)
-        var subPath = pathFactory_1.PathUtils.subPath(this._path, function (x) { return x === node; }) || this._path;
-        var availableResolvables = subPath
-            .reduce(function (acc, _node) { return acc.concat(_node.resolvables); }, []) //all of subpath's resolvables
-            .filter(function (res) { return res !== resolvable; }); // filter out the `resolvable` argument
-        var getDependency = function (token) {
-            var matching = availableResolvables.filter(function (r) { return r.token === token; });
-            if (matching.length)
-                return common_1.tail(matching);
-            var fromInjector = _this.injector().getNative(token);
-            if (common_2.isUndefined(fromInjector)) {
-                throw new Error("Could not find Dependency Injection token: " + strings_1.stringify(token));
-            }
-            return new resolvable_1.Resolvable(token, function () { return fromInjector; }, [], fromInjector);
-        };
-        return resolvable.deps.map(getDependency);
-    };
-    return ResolveContext;
-}());
-exports.ResolveContext = ResolveContext;
-var UIInjectorImpl = /** @class */ (function () {
-    function UIInjectorImpl(context) {
-        this.context = context;
-        this.native = this.get(exports.NATIVE_INJECTOR_TOKEN) || coreservices_1.services.$injector;
-    }
-    UIInjectorImpl.prototype.get = function (token) {
-        var resolvable = this.context.getResolvable(token);
-        if (resolvable) {
-            if (this.context.getPolicy(resolvable).async === 'NOWAIT') {
-                return resolvable.get(this.context);
-            }
-            if (!resolvable.resolved) {
-                throw new Error("Resolvable async .get() not complete:" + strings_1.stringify(resolvable.token));
-            }
-            return resolvable.data;
-        }
-        return this.getNative(token);
-    };
-    UIInjectorImpl.prototype.getAsync = function (token) {
-        var resolvable = this.context.getResolvable(token);
-        if (resolvable)
-            return resolvable.get(this.context);
-        return coreservices_1.services.$q.when(this.native.get(token));
-    };
-    UIInjectorImpl.prototype.getNative = function (token) {
-        return this.native && this.native.get(token);
-    };
-    return UIInjectorImpl;
-}());
-//# sourceMappingURL=resolveContext.js.map
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * @coreapi
- * @module url
- */
-/** for typedoc */
-var common_1 = __webpack_require__(0);
-var hof_1 = __webpack_require__(3);
-var predicates_1 = __webpack_require__(2);
-var param_1 = __webpack_require__(10);
-var strings_1 = __webpack_require__(6);
-/** @hidden */
-function quoteRegExp(string, param) {
-    var surroundPattern = ['', ''], result = string.replace(/[\\\[\]\^$*+?.()|{}]/g, "\\$&");
-    if (!param)
-        return result;
-    switch (param.squash) {
-        case false:
-            surroundPattern = ['(', ')' + (param.isOptional ? '?' : '')];
-            break;
-        case true:
-            result = result.replace(/\/$/, '');
-            surroundPattern = ['(?:\/(', ')|\/)?'];
-            break;
-        default:
-            surroundPattern = ["(" + param.squash + "|", ')?'];
-            break;
-    }
-    return result + surroundPattern[0] + param.type.pattern.source + surroundPattern[1];
-}
-/** @hidden */
-var memoizeTo = function (obj, prop, fn) {
-    return obj[prop] = obj[prop] || fn();
-};
-/** @hidden */
-var splitOnSlash = strings_1.splitOnDelim('/');
-/**
- * Matches URLs against patterns.
- *
- * Matches URLs against patterns and extracts named parameters from the path or the search
- * part of the URL.
- *
- * A URL pattern consists of a path pattern, optionally followed by '?' and a list of search (query)
- * parameters. Multiple search parameter names are separated by '&'. Search parameters
- * do not influence whether or not a URL is matched, but their values are passed through into
- * the matched parameters returned by [[UrlMatcher.exec]].
- *
- * - *Path parameters* are defined using curly brace placeholders (`/somepath/{param}`)
- * or colon placeholders (`/somePath/:param`).
- *
- * - *A parameter RegExp* may be defined for a param after a colon
- * (`/somePath/{param:[a-zA-Z0-9]+}`) in a curly brace placeholder.
- * The regexp must match for the url to be matched.
- * Should the regexp itself contain curly braces, they must be in matched pairs or escaped with a backslash.
- *
- * Note: a RegExp parameter will encode its value using either [[ParamTypes.path]] or [[ParamTypes.query]].
- *
- * - *Custom parameter types* may also be specified after a colon (`/somePath/{param:int}`) in curly brace parameters.
- *   See [[UrlMatcherFactory.type]] for more information.
- *
- * - *Catch-all parameters* are defined using an asterisk placeholder (`/somepath/*catchallparam`).
- *   A catch-all * parameter value will contain the remainder of the URL.
- *
- * ---
- *
- * Parameter names may contain only word characters (latin letters, digits, and underscore) and
- * must be unique within the pattern (across both path and search parameters).
- * A path parameter matches any number of characters other than '/'. For catch-all
- * placeholders the path parameter matches any number of characters.
- *
- * Examples:
- *
- * * `'/hello/'` - Matches only if the path is exactly '/hello/'. There is no special treatment for
- *   trailing slashes, and patterns have to match the entire path, not just a prefix.
- * * `'/user/:id'` - Matches '/user/bob' or '/user/1234!!!' or even '/user/' but not '/user' or
- *   '/user/bob/details'. The second path segment will be captured as the parameter 'id'.
- * * `'/user/{id}'` - Same as the previous example, but using curly brace syntax.
- * * `'/user/{id:[^/]*}'` - Same as the previous example.
- * * `'/user/{id:[0-9a-fA-F]{1,8}}'` - Similar to the previous example, but only matches if the id
- *   parameter consists of 1 to 8 hex digits.
- * * `'/files/{path:.*}'` - Matches any URL starting with '/files/' and captures the rest of the
- *   path into the parameter 'path'.
- * * `'/files/*path'` - ditto.
- * * `'/calendar/{start:date}'` - Matches "/calendar/2014-11-12" (because the pattern defined
- *   in the built-in  `date` ParamType matches `2014-11-12`) and provides a Date object in $stateParams.start
- *
- */
-var UrlMatcher = /** @class */ (function () {
-    /**
-     * @param pattern The pattern to compile into a matcher.
-     * @param paramTypes The [[ParamTypes]] registry
-     * @param config  A configuration object
-     * - `caseInsensitive` - `true` if URL matching should be case insensitive, otherwise `false`, the default value (for backward compatibility) is `false`.
-     * - `strict` - `false` if matching against a URL with a trailing slash should be treated as equivalent to a URL without a trailing slash, the default value is `true`.
-     */
-    function UrlMatcher(pattern, paramTypes, paramFactory, config) {
-        var _this = this;
-        this.config = config;
-        /** @hidden */
-        this._cache = { path: [this] };
-        /** @hidden */
-        this._children = [];
-        /** @hidden */
-        this._params = [];
-        /** @hidden */
-        this._segments = [];
-        /** @hidden */
-        this._compiled = [];
-        this.pattern = pattern;
-        this.config = common_1.defaults(this.config, {
-            params: {},
-            strict: true,
-            caseInsensitive: false,
-            paramMap: common_1.identity
-        });
-        // Find all placeholders and create a compiled pattern, using either classic or curly syntax:
-        //   '*' name
-        //   ':' name
-        //   '{' name '}'
-        //   '{' name ':' regexp '}'
-        // The regular expression is somewhat complicated due to the need to allow curly braces
-        // inside the regular expression. The placeholder regexp breaks down as follows:
-        //    ([:*])([\w\[\]]+)              - classic placeholder ($1 / $2) (search version has - for snake-case)
-        //    \{([\w\[\]]+)(?:\:\s*( ... ))?\}  - curly brace placeholder ($3) with optional regexp/type ... ($4) (search version has - for snake-case
-        //    (?: ... | ... | ... )+         - the regexp consists of any number of atoms, an atom being either
-        //    [^{}\\]+                       - anything other than curly braces or backslash
-        //    \\.                            - a backslash escape
-        //    \{(?:[^{}\\]+|\\.)*\}          - a matched set of curly braces containing other atoms
-        var placeholder = /([:*])([\w\[\]]+)|\{([\w\[\]]+)(?:\:\s*((?:[^{}\\]+|\\.|\{(?:[^{}\\]+|\\.)*\})+))?\}/g, searchPlaceholder = /([:]?)([\w\[\].-]+)|\{([\w\[\].-]+)(?:\:\s*((?:[^{}\\]+|\\.|\{(?:[^{}\\]+|\\.)*\})+))?\}/g, last = 0, m, patterns = [];
-        var checkParamErrors = function (id) {
-            if (!UrlMatcher.nameValidator.test(id))
-                throw new Error("Invalid parameter name '" + id + "' in pattern '" + pattern + "'");
-            if (common_1.find(_this._params, hof_1.propEq('id', id)))
-                throw new Error("Duplicate parameter name '" + id + "' in pattern '" + pattern + "'");
-        };
-        // Split into static segments separated by path parameter placeholders.
-        // The number of segments is always 1 more than the number of parameters.
-        var matchDetails = function (m, isSearch) {
-            // IE[78] returns '' for unmatched groups instead of null
-            var id = m[2] || m[3];
-            var regexp = isSearch ? m[4] : m[4] || (m[1] === '*' ? '[\\s\\S]*' : null);
-            var makeRegexpType = function (regexp) { return common_1.inherit(paramTypes.type(isSearch ? "query" : "path"), {
-                pattern: new RegExp(regexp, _this.config.caseInsensitive ? 'i' : undefined)
-            }); };
-            return {
-                id: id,
-                regexp: regexp,
-                cfg: _this.config.params[id],
-                segment: pattern.substring(last, m.index),
-                type: !regexp ? null : paramTypes.type(regexp) || makeRegexpType(regexp)
-            };
-        };
-        var p, segment;
-        while ((m = placeholder.exec(pattern))) {
-            p = matchDetails(m, false);
-            if (p.segment.indexOf('?') >= 0)
-                break; // we're into the search part
-            checkParamErrors(p.id);
-            this._params.push(paramFactory.fromPath(p.id, p.type, this.config.paramMap(p.cfg, false)));
-            this._segments.push(p.segment);
-            patterns.push([p.segment, common_1.tail(this._params)]);
-            last = placeholder.lastIndex;
-        }
-        segment = pattern.substring(last);
-        // Find any search parameter names and remove them from the last segment
-        var i = segment.indexOf('?');
-        if (i >= 0) {
-            var search = segment.substring(i);
-            segment = segment.substring(0, i);
-            if (search.length > 0) {
-                last = 0;
-                while ((m = searchPlaceholder.exec(search))) {
-                    p = matchDetails(m, true);
-                    checkParamErrors(p.id);
-                    this._params.push(paramFactory.fromSearch(p.id, p.type, this.config.paramMap(p.cfg, true)));
-                    last = placeholder.lastIndex;
-                    // check if ?&
-                }
-            }
-        }
-        this._segments.push(segment);
-        this._compiled = patterns.map(function (pattern) { return quoteRegExp.apply(null, pattern); }).concat(quoteRegExp(segment));
-    }
-    /**
-     * Creates a new concatenated UrlMatcher
-     *
-     * Builds a new UrlMatcher by appending another UrlMatcher to this one.
-     *
-     * @param url A `UrlMatcher` instance to append as a child of the current `UrlMatcher`.
-     */
-    UrlMatcher.prototype.append = function (url) {
-        this._children.push(url);
-        url._cache = {
-            path: this._cache.path.concat(url),
-            parent: this,
-            pattern: null,
-        };
-        return url;
-    };
-    /** @hidden */
-    UrlMatcher.prototype.isRoot = function () {
-        return this._cache.path[0] === this;
-    };
-    /** Returns the input pattern string */
-    UrlMatcher.prototype.toString = function () {
-        return this.pattern;
-    };
-    /**
-     * Tests the specified url/path against this matcher.
-     *
-     * Tests if the given url matches this matcher's pattern, and returns an object containing the captured
-     * parameter values.  Returns null if the path does not match.
-     *
-     * The returned object contains the values
-     * of any search parameters that are mentioned in the pattern, but their value may be null if
-     * they are not present in `search`. This means that search parameters are always treated
-     * as optional.
-     *
-     * #### Example:
-     * ```js
-     * new UrlMatcher('/user/{id}?q&r').exec('/user/bob', {
-     *   x: '1', q: 'hello'
-     * });
-     * // returns { id: 'bob', q: 'hello', r: null }
-     * ```
-     *
-     * @param path    The URL path to match, e.g. `$location.path()`.
-     * @param search  URL search parameters, e.g. `$location.search()`.
-     * @param hash    URL hash e.g. `$location.hash()`.
-     * @param options
-     *
-     * @returns The captured parameter values.
-     */
-    UrlMatcher.prototype.exec = function (path, search, hash, options) {
-        var _this = this;
-        if (search === void 0) { search = {}; }
-        if (options === void 0) { options = {}; }
-        var match = memoizeTo(this._cache, 'pattern', function () {
-            return new RegExp([
-                '^',
-                common_1.unnest(_this._cache.path.map(hof_1.prop('_compiled'))).join(''),
-                _this.config.strict === false ? '\/?' : '',
-                '$'
-            ].join(''), _this.config.caseInsensitive ? 'i' : undefined);
-        }).exec(path);
-        if (!match)
-            return null;
-        //options = defaults(options, { isolate: false });
-        var allParams = this.parameters(), pathParams = allParams.filter(function (param) { return !param.isSearch(); }), searchParams = allParams.filter(function (param) { return param.isSearch(); }), nPathSegments = this._cache.path.map(function (urlm) { return urlm._segments.length - 1; }).reduce(function (a, x) { return a + x; }), values = {};
-        if (nPathSegments !== match.length - 1)
-            throw new Error("Unbalanced capture group in route '" + this.pattern + "'");
-        function decodePathArray(string) {
-            var reverseString = function (str) { return str.split("").reverse().join(""); };
-            var unquoteDashes = function (str) { return str.replace(/\\-/g, "-"); };
-            var split = reverseString(string).split(/-(?!\\)/);
-            var allReversed = common_1.map(split, reverseString);
-            return common_1.map(allReversed, unquoteDashes).reverse();
-        }
-        for (var i = 0; i < nPathSegments; i++) {
-            var param = pathParams[i];
-            var value = match[i + 1];
-            // if the param value matches a pre-replace pair, replace the value before decoding.
-            for (var j = 0; j < param.replace.length; j++) {
-                if (param.replace[j].from === value)
-                    value = param.replace[j].to;
-            }
-            if (value && param.array === true)
-                value = decodePathArray(value);
-            if (predicates_1.isDefined(value))
-                value = param.type.decode(value);
-            values[param.id] = param.value(value);
-        }
-        searchParams.forEach(function (param) {
-            var value = search[param.id];
-            for (var j = 0; j < param.replace.length; j++) {
-                if (param.replace[j].from === value)
-                    value = param.replace[j].to;
-            }
-            if (predicates_1.isDefined(value))
-                value = param.type.decode(value);
-            values[param.id] = param.value(value);
-        });
-        if (hash)
-            values["#"] = hash;
-        return values;
-    };
-    /**
-     * @hidden
-     * Returns all the [[Param]] objects of all path and search parameters of this pattern in order of appearance.
-     *
-     * @returns {Array.<Param>}  An array of [[Param]] objects. Must be treated as read-only. If the
-     *    pattern has no parameters, an empty array is returned.
-     */
-    UrlMatcher.prototype.parameters = function (opts) {
-        if (opts === void 0) { opts = {}; }
-        if (opts.inherit === false)
-            return this._params;
-        return common_1.unnest(this._cache.path.map(function (matcher) { return matcher._params; }));
-    };
-    /**
-     * @hidden
-     * Returns a single parameter from this UrlMatcher by id
-     *
-     * @param id
-     * @param opts
-     * @returns {T|Param|any|boolean|UrlMatcher|null}
-     */
-    UrlMatcher.prototype.parameter = function (id, opts) {
-        var _this = this;
-        if (opts === void 0) { opts = {}; }
-        var findParam = function () {
-            for (var _i = 0, _a = _this._params; _i < _a.length; _i++) {
-                var param = _a[_i];
-                if (param.id === id)
-                    return param;
-            }
-        };
-        var parent = this._cache.parent;
-        return findParam() || (opts.inherit !== false && parent && parent.parameter(id, opts)) || null;
-    };
-    /**
-     * Validates the input parameter values against this UrlMatcher
-     *
-     * Checks an object hash of parameters to validate their correctness according to the parameter
-     * types of this `UrlMatcher`.
-     *
-     * @param params The object hash of parameters to validate.
-     * @returns Returns `true` if `params` validates, otherwise `false`.
-     */
-    UrlMatcher.prototype.validates = function (params) {
-        var validParamVal = function (param, val) {
-            return !param || param.validates(val);
-        };
-        params = params || {};
-        // I'm not sure why this checks only the param keys passed in, and not all the params known to the matcher
-        var paramSchema = this.parameters().filter(function (paramDef) { return params.hasOwnProperty(paramDef.id); });
-        return paramSchema.map(function (paramDef) { return validParamVal(paramDef, params[paramDef.id]); }).reduce(common_1.allTrueR, true);
-    };
-    /**
-     * Given a set of parameter values, creates a URL from this UrlMatcher.
-     *
-     * Creates a URL that matches this pattern by substituting the specified values
-     * for the path and search parameters.
-     *
-     * #### Example:
-     * ```js
-     * new UrlMatcher('/user/{id}?q').format({ id:'bob', q:'yes' });
-     * // returns '/user/bob?q=yes'
-     * ```
-     *
-     * @param values  the values to substitute for the parameters in this pattern.
-     * @returns the formatted URL (path and optionally search part).
-     */
-    UrlMatcher.prototype.format = function (values) {
-        if (values === void 0) { values = {}; }
-        // Build the full path of UrlMatchers (including all parent UrlMatchers)
-        var urlMatchers = this._cache.path;
-        // Extract all the static segments and Params (processed as ParamDetails)
-        // into an ordered array
-        var pathSegmentsAndParams = urlMatchers.map(UrlMatcher.pathSegmentsAndParams)
-            .reduce(common_1.unnestR, [])
-            .map(function (x) { return predicates_1.isString(x) ? x : getDetails(x); });
-        // Extract the query params into a separate array
-        var queryParams = urlMatchers.map(UrlMatcher.queryParams)
-            .reduce(common_1.unnestR, [])
-            .map(getDetails);
-        var isInvalid = function (param) { return param.isValid === false; };
-        if (pathSegmentsAndParams.concat(queryParams).filter(isInvalid).length) {
-            return null;
-        }
-        /**
-         * Given a Param, applies the parameter value, then returns detailed information about it
-         */
-        function getDetails(param) {
-            // Normalize to typed value
-            var value = param.value(values[param.id]);
-            var isValid = param.validates(value);
-            var isDefaultValue = param.isDefaultValue(value);
-            // Check if we're in squash mode for the parameter
-            var squash = isDefaultValue ? param.squash : false;
-            // Allow the Parameter's Type to encode the value
-            var encoded = param.type.encode(value);
-            return { param: param, value: value, isValid: isValid, isDefaultValue: isDefaultValue, squash: squash, encoded: encoded };
-        }
-        // Build up the path-portion from the list of static segments and parameters
-        var pathString = pathSegmentsAndParams.reduce(function (acc, x) {
-            // The element is a static segment (a raw string); just append it
-            if (predicates_1.isString(x))
-                return acc + x;
-            // Otherwise, it's a ParamDetails.
-            var squash = x.squash, encoded = x.encoded, param = x.param;
-            // If squash is === true, try to remove a slash from the path
-            if (squash === true)
-                return (acc.match(/\/$/)) ? acc.slice(0, -1) : acc;
-            // If squash is a string, use the string for the param value
-            if (predicates_1.isString(squash))
-                return acc + squash;
-            if (squash !== false)
-                return acc; // ?
-            if (encoded == null)
-                return acc;
-            // If this parameter value is an array, encode the value using encodeDashes
-            if (predicates_1.isArray(encoded))
-                return acc + common_1.map(encoded, UrlMatcher.encodeDashes).join("-");
-            // If the parameter type is "raw", then do not encodeURIComponent
-            if (param.raw)
-                return acc + encoded;
-            // Encode the value
-            return acc + encodeURIComponent(encoded);
-        }, "");
-        // Build the query string by applying parameter values (array or regular)
-        // then mapping to key=value, then flattening and joining using "&"
-        var queryString = queryParams.map(function (paramDetails) {
-            var param = paramDetails.param, squash = paramDetails.squash, encoded = paramDetails.encoded, isDefaultValue = paramDetails.isDefaultValue;
-            if (encoded == null || (isDefaultValue && squash !== false))
-                return;
-            if (!predicates_1.isArray(encoded))
-                encoded = [encoded];
-            if (encoded.length === 0)
-                return;
-            if (!param.raw)
-                encoded = common_1.map(encoded, encodeURIComponent);
-            return encoded.map(function (val) { return param.id + "=" + val; });
-        }).filter(common_1.identity).reduce(common_1.unnestR, []).join("&");
-        // Concat the pathstring with the queryString (if exists) and the hashString (if exists)
-        return pathString + (queryString ? "?" + queryString : "") + (values["#"] ? "#" + values["#"] : "");
-    };
-    /** @hidden */
-    UrlMatcher.encodeDashes = function (str) {
-        return encodeURIComponent(str).replace(/-/g, function (c) { return "%5C%" + c.charCodeAt(0).toString(16).toUpperCase(); });
-    };
-    /** @hidden Given a matcher, return an array with the matcher's path segments and path params, in order */
-    UrlMatcher.pathSegmentsAndParams = function (matcher) {
-        var staticSegments = matcher._segments;
-        var pathParams = matcher._params.filter(function (p) { return p.location === param_1.DefType.PATH; });
-        return common_1.arrayTuples(staticSegments, pathParams.concat(undefined))
-            .reduce(common_1.unnestR, [])
-            .filter(function (x) { return x !== "" && predicates_1.isDefined(x); });
-    };
-    /** @hidden Given a matcher, return an array with the matcher's query params */
-    UrlMatcher.queryParams = function (matcher) {
-        return matcher._params.filter(function (p) { return p.location === param_1.DefType.SEARCH; });
-    };
-    /**
-     * Compare two UrlMatchers
-     *
-     * This comparison function converts a UrlMatcher into static and dynamic path segments.
-     * Each static path segment is a static string between a path separator (slash character).
-     * Each dynamic segment is a path parameter.
-     *
-     * The comparison function sorts static segments before dynamic ones.
-     */
-    UrlMatcher.compare = function (a, b) {
-        /**
-         * Turn a UrlMatcher and all its parent matchers into an array
-         * of slash literals '/', string literals, and Param objects
-         *
-         * This example matcher matches strings like "/foo/:param/tail":
-         * var matcher = $umf.compile("/foo").append($umf.compile("/:param")).append($umf.compile("/")).append($umf.compile("tail"));
-         * var result = segments(matcher); // [ '/', 'foo', '/', Param, '/', 'tail' ]
-         *
-         * Caches the result as `matcher._cache.segments`
-         */
-        var segments = function (matcher) {
-            return matcher._cache.segments = matcher._cache.segments ||
-                matcher._cache.path.map(UrlMatcher.pathSegmentsAndParams)
-                    .reduce(common_1.unnestR, [])
-                    .reduce(strings_1.joinNeighborsR, [])
-                    .map(function (x) { return predicates_1.isString(x) ? splitOnSlash(x) : x; })
-                    .reduce(common_1.unnestR, []);
-        };
-        /**
-         * Gets the sort weight for each segment of a UrlMatcher
-         *
-         * Caches the result as `matcher._cache.weights`
-         */
-        var weights = function (matcher) {
-            return matcher._cache.weights = matcher._cache.weights ||
-                segments(matcher).map(function (segment) {
-                    // Sort slashes first, then static strings, the Params
-                    if (segment === '/')
-                        return 1;
-                    if (predicates_1.isString(segment))
-                        return 2;
-                    if (segment instanceof param_1.Param)
-                        return 3;
-                });
-        };
-        /**
-         * Pads shorter array in-place (mutates)
-         */
-        var padArrays = function (l, r, padVal) {
-            var len = Math.max(l.length, r.length);
-            while (l.length < len)
-                l.push(padVal);
-            while (r.length < len)
-                r.push(padVal);
-        };
-        var weightsA = weights(a), weightsB = weights(b);
-        padArrays(weightsA, weightsB, 0);
-        var cmp, i, pairs = common_1.arrayTuples(weightsA, weightsB);
-        for (i = 0; i < pairs.length; i++) {
-            cmp = pairs[i][0] - pairs[i][1];
-            if (cmp !== 0)
-                return cmp;
-        }
-        return 0;
-    };
-    /** @hidden */
-    UrlMatcher.nameValidator = /^\w+([-.]+\w+)*(?:\[\])?$/;
-    return UrlMatcher;
-}());
-exports.UrlMatcher = UrlMatcher;
-//# sourceMappingURL=urlMatcher.js.map
-
-/***/ }),
-/* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-/**
- * @internalapi
- * @module vanilla
- */ /** */
-Object.defineProperty(exports, "__esModule", { value: true });
-var common_1 = __webpack_require__(5);
-var utils_1 = __webpack_require__(27);
-/** A base `LocationServices` */
-var BaseLocationServices = /** @class */ (function () {
-    function BaseLocationServices(router, fireAfterUpdate) {
-        var _this = this;
-        this.fireAfterUpdate = fireAfterUpdate;
-        this._listener = function (evt) { return _this._listeners.forEach(function (cb) { return cb(evt); }); };
-        this._listeners = [];
-        this.hash = function () { return utils_1.parseUrl(_this._get()).hash; };
-        this.path = function () { return utils_1.parseUrl(_this._get()).path; };
-        this.search = function () { return utils_1.getParams(utils_1.parseUrl(_this._get()).search); };
-        this._location = common_1.root.location;
-        this._history = common_1.root.history;
-    }
-    BaseLocationServices.prototype.url = function (url, replace) {
-        if (replace === void 0) { replace = true; }
-        if (common_1.isDefined(url) && url !== this._get()) {
-            this._set(null, null, url, replace);
-            if (this.fireAfterUpdate) {
-                this._listeners.forEach(function (cb) { return cb({ url: url }); });
-            }
-        }
-        return utils_1.buildUrl(this);
-    };
-    BaseLocationServices.prototype.onChange = function (cb) {
-        var _this = this;
-        this._listeners.push(cb);
-        return function () { return common_1.removeFrom(_this._listeners, cb); };
-    };
-    BaseLocationServices.prototype.dispose = function (router) {
-        common_1.deregAll(this._listeners);
-    };
-    return BaseLocationServices;
-}());
-exports.BaseLocationServices = BaseLocationServices;
-//# sourceMappingURL=baseLocationService.js.map
-
-/***/ }),
-/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -5938,6 +4257,1687 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 
 /***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @coreapi
+ * @module core
+ */
+/**
+ * Matches state names using glob-like pattern strings.
+ *
+ * Globs can be used in specific APIs including:
+ *
+ * - [[StateService.is]]
+ * - [[StateService.includes]]
+ * - The first argument to Hook Registration functions like [[TransitionService.onStart]]
+ *    - [[HookMatchCriteria]] and [[HookMatchCriterion]]
+ *
+ * A `Glob` string is a pattern which matches state names.
+ * Nested state names are split into segments (separated by a dot) when processing.
+ * The state named `foo.bar.baz` is split into three segments ['foo', 'bar', 'baz']
+ *
+ * Globs work according to the following rules:
+ *
+ * ### Exact match:
+ *
+ * The glob `'A.B'` matches the state named exactly `'A.B'`.
+ *
+ * | Glob        |Matches states named|Does not match state named|
+ * |:------------|:--------------------|:---------------------|
+ * | `'A'`       | `'A'`               | `'B'` , `'A.C'`      |
+ * | `'A.B'`     | `'A.B'`             | `'A'` , `'A.B.C'`    |
+ * | `'foo'`     | `'foo'`             | `'FOO'` , `'foo.bar'`|
+ *
+ * ### Single star (`*`)
+ *
+ * A single star (`*`) is a wildcard that matches exactly one segment.
+ *
+ * | Glob        |Matches states named  |Does not match state named |
+ * |:------------|:---------------------|:--------------------------|
+ * | `'*'`       | `'A'` , `'Z'`        | `'A.B'` , `'Z.Y.X'`       |
+ * | `'A.*'`     | `'A.B'` , `'A.C'`    | `'A'` , `'A.B.C'`         |
+ * | `'A.*.*'`   | `'A.B.C'` , `'A.X.Y'`| `'A'`, `'A.B'` , `'Z.Y.X'`|
+ *
+ * ### Double star (`**`)
+ *
+ * A double star (`'**'`) is a wildcard that matches *zero or more segments*
+ *
+ * | Glob        |Matches states named                           |Does not match state named         |
+ * |:------------|:----------------------------------------------|:----------------------------------|
+ * | `'**'`      | `'A'` , `'A.B'`, `'Z.Y.X'`                    | (matches all states)              |
+ * | `'A.**'`    | `'A'` , `'A.B'` , `'A.C.X'`                   | `'Z.Y.X'`                         |
+ * | `'**.X'`    | `'X'` , `'A.X'` , `'Z.Y.X'`                   | `'A'` , `'A.login.Z'`             |
+ * | `'A.**.X'`  | `'A.X'` , `'A.B.X'` , `'A.B.C.X'`             | `'A'` , `'A.B.C'`                 |
+ *
+ */
+var Glob = /** @class */ (function () {
+    function Glob(text) {
+        this.text = text;
+        this.glob = text.split('.');
+        var regexpString = this.text.split('.')
+            .map(function (seg) {
+            if (seg === '**')
+                return '(?:|(?:\\.[^.]*)*)';
+            if (seg === '*')
+                return '\\.[^.]*';
+            return '\\.' + seg;
+        }).join('');
+        this.regexp = new RegExp("^" + regexpString + "$");
+    }
+    Glob.prototype.matches = function (name) {
+        return this.regexp.test('.' + name);
+    };
+    /** Returns true if the string has glob-like characters in it */
+    Glob.is = function (text) {
+        return !!/[!,*]+/.exec(text);
+    };
+    /** Returns a glob from the string, or null if the string isn't Glob-like */
+    Glob.fromString = function (text) {
+        return Glob.is(text) ? new Glob(text) : null;
+    };
+    return Glob;
+}());
+exports.Glob = Glob;
+//# sourceMappingURL=glob.js.map
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @coreapi
+ * @module transition
+ */
+/** for typedoc */
+var trace_1 = __webpack_require__(7);
+var coreservices_1 = __webpack_require__(4);
+var strings_1 = __webpack_require__(6);
+var common_1 = __webpack_require__(0);
+var predicates_1 = __webpack_require__(2);
+var hof_1 = __webpack_require__(3);
+var interface_1 = __webpack_require__(8); // has or is using
+var transitionHook_1 = __webpack_require__(12);
+var hookRegistry_1 = __webpack_require__(23);
+var hookBuilder_1 = __webpack_require__(28);
+var pathFactory_1 = __webpack_require__(17);
+var param_1 = __webpack_require__(10);
+var resolvable_1 = __webpack_require__(13);
+var resolveContext_1 = __webpack_require__(18);
+/** @hidden */
+var stateSelf = hof_1.prop("self");
+/**
+ * Represents a transition between two states.
+ *
+ * When navigating to a state, we are transitioning **from** the current state **to** the new state.
+ *
+ * This object contains all contextual information about the to/from states, parameters, resolves.
+ * It has information about all states being entered and exited as a result of the transition.
+ */
+var Transition = /** @class */ (function () {
+    /**
+     * Creates a new Transition object.
+     *
+     * If the target state is not valid, an error is thrown.
+     *
+     * @internalapi
+     *
+     * @param fromPath The path of [[PathNode]]s from which the transition is leaving.  The last node in the `fromPath`
+     *        encapsulates the "from state".
+     * @param targetState The target state and parameters being transitioned to (also, the transition options)
+     * @param router The [[UIRouter]] instance
+     */
+    function Transition(fromPath, targetState, router) {
+        var _this = this;
+        /** @hidden */
+        this._deferred = coreservices_1.services.$q.defer();
+        /**
+         * This promise is resolved or rejected based on the outcome of the Transition.
+         *
+         * When the transition is successful, the promise is resolved
+         * When the transition is unsuccessful, the promise is rejected with the [[Rejection]] or javascript error
+         */
+        this.promise = this._deferred.promise;
+        /** @hidden Holds the hook registration functions such as those passed to Transition.onStart() */
+        this._registeredHooks = {};
+        /** @hidden */
+        this._hookBuilder = new hookBuilder_1.HookBuilder(this);
+        /** Checks if this transition is currently active/running. */
+        this.isActive = function () {
+            return _this.router.globals.transition === _this;
+        };
+        this.router = router;
+        this._targetState = targetState;
+        if (!targetState.valid()) {
+            throw new Error(targetState.error());
+        }
+        // current() is assumed to come from targetState.options, but provide a naive implementation otherwise.
+        this._options = common_1.extend({ current: hof_1.val(this) }, targetState.options());
+        this.$id = router.transitionService._transitionCount++;
+        var toPath = pathFactory_1.PathUtils.buildToPath(fromPath, targetState);
+        this._treeChanges = pathFactory_1.PathUtils.treeChanges(fromPath, toPath, this._options.reloadState);
+        this.createTransitionHookRegFns();
+        var onCreateHooks = this._hookBuilder.buildHooksForPhase(interface_1.TransitionHookPhase.CREATE);
+        transitionHook_1.TransitionHook.invokeHooks(onCreateHooks, function () { return null; });
+        this.applyViewConfigs(router);
+    }
+    /** @hidden */
+    Transition.prototype.onBefore = function (criteria, callback, options) { return; };
+    /** @inheritdoc */
+    Transition.prototype.onStart = function (criteria, callback, options) { return; };
+    /** @inheritdoc */
+    Transition.prototype.onExit = function (criteria, callback, options) { return; };
+    /** @inheritdoc */
+    Transition.prototype.onRetain = function (criteria, callback, options) { return; };
+    /** @inheritdoc */
+    Transition.prototype.onEnter = function (criteria, callback, options) { return; };
+    /** @inheritdoc */
+    Transition.prototype.onFinish = function (criteria, callback, options) { return; };
+    /** @inheritdoc */
+    Transition.prototype.onSuccess = function (criteria, callback, options) { return; };
+    /** @inheritdoc */
+    Transition.prototype.onError = function (criteria, callback, options) { return; };
+    /** @hidden
+     * Creates the transition-level hook registration functions
+     * (which can then be used to register hooks)
+     */
+    Transition.prototype.createTransitionHookRegFns = function () {
+        var _this = this;
+        this.router.transitionService._pluginapi._getEvents()
+            .filter(function (type) { return type.hookPhase !== interface_1.TransitionHookPhase.CREATE; })
+            .forEach(function (type) { return hookRegistry_1.makeEvent(_this, _this.router.transitionService, type); });
+    };
+    /** @internalapi */
+    Transition.prototype.getHooks = function (hookName) {
+        return this._registeredHooks[hookName];
+    };
+    Transition.prototype.applyViewConfigs = function (router) {
+        var enteringStates = this._treeChanges.entering.map(function (node) { return node.state; });
+        pathFactory_1.PathUtils.applyViewConfigs(router.transitionService.$view, this._treeChanges.to, enteringStates);
+    };
+    /**
+     * @internalapi
+     *
+     * @returns the internal from [State] object
+     */
+    Transition.prototype.$from = function () {
+        return common_1.tail(this._treeChanges.from).state;
+    };
+    /**
+     * @internalapi
+     *
+     * @returns the internal to [State] object
+     */
+    Transition.prototype.$to = function () {
+        return common_1.tail(this._treeChanges.to).state;
+    };
+    /**
+     * Returns the "from state"
+     *
+     * Returns the state that the transition is coming *from*.
+     *
+     * @returns The state declaration object for the Transition's ("from state").
+     */
+    Transition.prototype.from = function () {
+        return this.$from().self;
+    };
+    /**
+     * Returns the "to state"
+     *
+     * Returns the state that the transition is going *to*.
+     *
+     * @returns The state declaration object for the Transition's target state ("to state").
+     */
+    Transition.prototype.to = function () {
+        return this.$to().self;
+    };
+    /**
+     * Gets the Target State
+     *
+     * A transition's [[TargetState]] encapsulates the [[to]] state, the [[params]], and the [[options]] as a single object.
+     *
+     * @returns the [[TargetState]] of this Transition
+     */
+    Transition.prototype.targetState = function () {
+        return this._targetState;
+    };
+    /**
+     * Determines whether two transitions are equivalent.
+     * @deprecated
+     */
+    Transition.prototype.is = function (compare) {
+        if (compare instanceof Transition) {
+            // TODO: Also compare parameters
+            return this.is({ to: compare.$to().name, from: compare.$from().name });
+        }
+        return !((compare.to && !hookRegistry_1.matchState(this.$to(), compare.to)) ||
+            (compare.from && !hookRegistry_1.matchState(this.$from(), compare.from)));
+    };
+    Transition.prototype.params = function (pathname) {
+        if (pathname === void 0) { pathname = "to"; }
+        return Object.freeze(this._treeChanges[pathname].map(hof_1.prop("paramValues")).reduce(common_1.mergeR, {}));
+    };
+    /**
+     * Creates a [[UIInjector]] Dependency Injector
+     *
+     * Returns a Dependency Injector for the Transition's target state (to state).
+     * The injector provides resolve values which the target state has access to.
+     *
+     * The `UIInjector` can also provide values from the native root/global injector (ng1/ng2).
+     *
+     * #### Example:
+     * ```js
+     * .onEnter({ entering: 'myState' }, trans => {
+     *   var myResolveValue = trans.injector().get('myResolve');
+     *   // Inject a global service from the global/native injector (if it exists)
+     *   var MyService = trans.injector().get('MyService');
+     * })
+     * ```
+     *
+     * In some cases (such as `onBefore`), you may need access to some resolve data but it has not yet been fetched.
+     * You can use [[UIInjector.getAsync]] to get a promise for the data.
+     * #### Example:
+     * ```js
+     * .onBefore({}, trans => {
+     *   return trans.injector().getAsync('myResolve').then(myResolveValue =>
+     *     return myResolveValue !== 'ABORT';
+     *   });
+     * });
+     * ```
+     *
+     * If a `state` is provided, the injector that is returned will be limited to resolve values that the provided state has access to.
+     * This can be useful if both a parent state `foo` and a child state `foo.bar` have both defined a resolve such as `data`.
+     * #### Example:
+     * ```js
+     * .onEnter({ to: 'foo.bar' }, trans => {
+     *   // returns result of `foo` state's `data` resolve
+     *   // even though `foo.bar` also has a `data` resolve
+     *   var fooData = trans.injector('foo').get('data');
+     * });
+     * ```
+     *
+     * If you need resolve data from the exiting states, pass `'from'` as `pathName`.
+     * The resolve data from the `from` path will be returned.
+     * #### Example:
+     * ```js
+     * .onExit({ exiting: 'foo.bar' }, trans => {
+     *   // Gets the resolve value of `data` from the exiting state.
+     *   var fooData = trans.injector(null, 'foo.bar').get('data');
+     * });
+     * ```
+     *
+     *
+     * @param state Limits the resolves provided to only the resolves the provided state has access to.
+     * @param pathName Default: `'to'`: Chooses the path for which to create the injector. Use this to access resolves for `exiting` states.
+     *
+     * @returns a [[UIInjector]]
+     */
+    Transition.prototype.injector = function (state, pathName) {
+        if (pathName === void 0) { pathName = "to"; }
+        var path = this._treeChanges[pathName];
+        if (state)
+            path = pathFactory_1.PathUtils.subPath(path, function (node) { return node.state === state || node.state.name === state; });
+        return new resolveContext_1.ResolveContext(path).injector();
+    };
+    /**
+     * Gets all available resolve tokens (keys)
+     *
+     * This method can be used in conjunction with [[injector]] to inspect the resolve values
+     * available to the Transition.
+     *
+     * This returns all the tokens defined on [[StateDeclaration.resolve]] blocks, for the states
+     * in the Transition's [[TreeChanges.to]] path.
+     *
+     * #### Example:
+     * This example logs all resolve values
+     * ```js
+     * let tokens = trans.getResolveTokens();
+     * tokens.forEach(token => console.log(token + " = " + trans.injector().get(token)));
+     * ```
+     *
+     * #### Example:
+     * This example creates promises for each resolve value.
+     * This triggers fetches of resolves (if any have not yet been fetched).
+     * When all promises have all settled, it logs the resolve values.
+     * ```js
+     * let tokens = trans.getResolveTokens();
+     * let promise = tokens.map(token => trans.injector().getAsync(token));
+     * Promise.all(promises).then(values => console.log("Resolved values: " + values));
+     * ```
+     *
+     * Note: Angular 1 users whould use `$q.all()`
+     *
+     * @param pathname resolve context's path name (e.g., `to` or `from`)
+     *
+     * @returns an array of resolve tokens (keys)
+     */
+    Transition.prototype.getResolveTokens = function (pathname) {
+        if (pathname === void 0) { pathname = "to"; }
+        return new resolveContext_1.ResolveContext(this._treeChanges[pathname]).getTokens();
+    };
+    /**
+     * Dynamically adds a new [[Resolvable]] (i.e., [[StateDeclaration.resolve]]) to this transition.
+     *
+     * #### Example:
+     * ```js
+     * transitionService.onBefore({}, transition => {
+     *   transition.addResolvable({
+     *     token: 'myResolve',
+     *     deps: ['MyService'],
+     *     resolveFn: myService => myService.getData()
+     *   });
+     * });
+     * ```
+     *
+     * @param resolvable a [[ResolvableLiteral]] object (or a [[Resolvable]])
+     * @param state the state in the "to path" which should receive the new resolve (otherwise, the root state)
+     */
+    Transition.prototype.addResolvable = function (resolvable, state) {
+        if (state === void 0) { state = ""; }
+        resolvable = hof_1.is(resolvable_1.Resolvable)(resolvable) ? resolvable : new resolvable_1.Resolvable(resolvable);
+        var stateName = (typeof state === "string") ? state : state.name;
+        var topath = this._treeChanges.to;
+        var targetNode = common_1.find(topath, function (node) { return node.state.name === stateName; });
+        var resolveContext = new resolveContext_1.ResolveContext(topath);
+        resolveContext.addResolvables([resolvable], targetNode.state);
+    };
+    /**
+     * Gets the transition from which this transition was redirected.
+     *
+     * If the current transition is a redirect, this method returns the transition that was redirected.
+     *
+     * #### Example:
+     * ```js
+     * let transitionA = $state.go('A').transition
+     * transitionA.onStart({}, () => $state.target('B'));
+     * $transitions.onSuccess({ to: 'B' }, (trans) => {
+     *   trans.to().name === 'B'; // true
+     *   trans.redirectedFrom() === transitionA; // true
+     * });
+     * ```
+     *
+     * @returns The previous Transition, or null if this Transition is not the result of a redirection
+     */
+    Transition.prototype.redirectedFrom = function () {
+        return this._options.redirectedFrom || null;
+    };
+    /**
+     * Gets the original transition in a redirect chain
+     *
+     * A transition might belong to a long chain of multiple redirects.
+     * This method walks the [[redirectedFrom]] chain back to the original (first) transition in the chain.
+     *
+     * #### Example:
+     * ```js
+     * // states
+     * registry.register({ name: 'A', redirectTo: 'B' });
+     * registry.register({ name: 'B', redirectTo: 'C' });
+     * registry.register({ name: 'C', redirectTo: 'D' });
+     * registry.register({ name: 'D' });
+     *
+     * let transitionA = $state.go('A').transition
+     *
+     * $transitions.onSuccess({ to: 'D' }, (trans) => {
+     *   trans.to().name === 'D'; // true
+     *   trans.redirectedFrom().to().name === 'C'; // true
+     *   trans.originalTransition() === transitionA; // true
+     *   trans.originalTransition().to().name === 'A'; // true
+     * });
+     * ```
+     *
+     * @returns The original Transition that started a redirect chain
+     */
+    Transition.prototype.originalTransition = function () {
+        var rf = this.redirectedFrom();
+        return (rf && rf.originalTransition()) || this;
+    };
+    /**
+     * Get the transition options
+     *
+     * @returns the options for this Transition.
+     */
+    Transition.prototype.options = function () {
+        return this._options;
+    };
+    /**
+     * Gets the states being entered.
+     *
+     * @returns an array of states that will be entered during this transition.
+     */
+    Transition.prototype.entering = function () {
+        return common_1.map(this._treeChanges.entering, hof_1.prop('state')).map(stateSelf);
+    };
+    /**
+     * Gets the states being exited.
+     *
+     * @returns an array of states that will be exited during this transition.
+     */
+    Transition.prototype.exiting = function () {
+        return common_1.map(this._treeChanges.exiting, hof_1.prop('state')).map(stateSelf).reverse();
+    };
+    /**
+     * Gets the states being retained.
+     *
+     * @returns an array of states that are already entered from a previous Transition, that will not be
+     *    exited during this Transition
+     */
+    Transition.prototype.retained = function () {
+        return common_1.map(this._treeChanges.retained, hof_1.prop('state')).map(stateSelf);
+    };
+    /**
+     * Get the [[ViewConfig]]s associated with this Transition
+     *
+     * Each state can define one or more views (template/controller), which are encapsulated as `ViewConfig` objects.
+     * This method fetches the `ViewConfigs` for a given path in the Transition (e.g., "to" or "entering").
+     *
+     * @param pathname the name of the path to fetch views for:
+     *   (`'to'`, `'from'`, `'entering'`, `'exiting'`, `'retained'`)
+     * @param state If provided, only returns the `ViewConfig`s for a single state in the path
+     *
+     * @returns a list of ViewConfig objects for the given path.
+     */
+    Transition.prototype.views = function (pathname, state) {
+        if (pathname === void 0) { pathname = "entering"; }
+        var path = this._treeChanges[pathname];
+        path = !state ? path : path.filter(hof_1.propEq('state', state));
+        return path.map(hof_1.prop("views")).filter(common_1.identity).reduce(common_1.unnestR, []);
+    };
+    Transition.prototype.treeChanges = function (pathname) {
+        return pathname ? this._treeChanges[pathname] : this._treeChanges;
+    };
+    /**
+     * Creates a new transition that is a redirection of the current one.
+     *
+     * This transition can be returned from a [[TransitionService]] hook to
+     * redirect a transition to a new state and/or set of parameters.
+     *
+     * @internalapi
+     *
+     * @returns Returns a new [[Transition]] instance.
+     */
+    Transition.prototype.redirect = function (targetState) {
+        var redirects = 1, trans = this;
+        while ((trans = trans.redirectedFrom()) != null) {
+            if (++redirects > 20)
+                throw new Error("Too many consecutive Transition redirects (20+)");
+        }
+        var redirectOpts = { redirectedFrom: this, source: "redirect" };
+        // If the original transition was caused by URL sync, then use { location: 'replace' }
+        // on the new transition (unless the target state explicitly specifies location: false).
+        // This causes the original url to be replaced with the url for the redirect target
+        // so the original url disappears from the browser history.
+        if (this.options().source === 'url' && targetState.options().location !== false) {
+            redirectOpts.location = 'replace';
+        }
+        var newOptions = common_1.extend({}, this.options(), targetState.options(), redirectOpts);
+        targetState = targetState.withOptions(newOptions, true);
+        var newTransition = this.router.transitionService.create(this._treeChanges.from, targetState);
+        var originalEnteringNodes = this._treeChanges.entering;
+        var redirectEnteringNodes = newTransition._treeChanges.entering;
+        // --- Re-use resolve data from original transition ---
+        // When redirecting from a parent state to a child state where the parent parameter values haven't changed
+        // (because of the redirect), the resolves fetched by the original transition are still valid in the
+        // redirected transition.
+        //
+        // This allows you to define a redirect on a parent state which depends on an async resolve value.
+        // You can wait for the resolve, then redirect to a child state based on the result.
+        // The redirected transition does not have to re-fetch the resolve.
+        // ---------------------------------------------------------
+        var nodeIsReloading = function (reloadState) { return function (node) {
+            return reloadState && node.state.includes[reloadState.name];
+        }; };
+        // Find any "entering" nodes in the redirect path that match the original path and aren't being reloaded
+        var matchingEnteringNodes = pathFactory_1.PathUtils.matching(redirectEnteringNodes, originalEnteringNodes, pathFactory_1.PathUtils.nonDynamicParams)
+            .filter(hof_1.not(nodeIsReloading(targetState.options().reloadState)));
+        // Use the existing (possibly pre-resolved) resolvables for the matching entering nodes.
+        matchingEnteringNodes.forEach(function (node, idx) {
+            node.resolvables = originalEnteringNodes[idx].resolvables;
+        });
+        return newTransition;
+    };
+    /** @hidden If a transition doesn't exit/enter any states, returns any [[Param]] whose value changed */
+    Transition.prototype._changedParams = function () {
+        var tc = this._treeChanges;
+        /** Return undefined if it's not a "dynamic" transition, for the following reasons */
+        // If user explicitly wants a reload
+        if (this._options.reload)
+            return undefined;
+        // If any states are exiting or entering
+        if (tc.exiting.length || tc.entering.length)
+            return undefined;
+        // If to/from path lengths differ
+        if (tc.to.length !== tc.from.length)
+            return undefined;
+        // If the to/from paths are different
+        var pathsDiffer = common_1.arrayTuples(tc.to, tc.from)
+            .map(function (tuple) { return tuple[0].state !== tuple[1].state; })
+            .reduce(common_1.anyTrueR, false);
+        if (pathsDiffer)
+            return undefined;
+        // Find any parameter values that differ
+        var nodeSchemas = tc.to.map(function (node) { return node.paramSchema; });
+        var _a = [tc.to, tc.from].map(function (path) { return path.map(function (x) { return x.paramValues; }); }), toValues = _a[0], fromValues = _a[1];
+        var tuples = common_1.arrayTuples(nodeSchemas, toValues, fromValues);
+        return tuples.map(function (_a) {
+            var schema = _a[0], toVals = _a[1], fromVals = _a[2];
+            return param_1.Param.changed(schema, toVals, fromVals);
+        }).reduce(common_1.unnestR, []);
+    };
+    /**
+     * Returns true if the transition is dynamic.
+     *
+     * A transition is dynamic if no states are entered nor exited, but at least one dynamic parameter has changed.
+     *
+     * @returns true if the Transition is dynamic
+     */
+    Transition.prototype.dynamic = function () {
+        var changes = this._changedParams();
+        return !changes ? false : changes.map(function (x) { return x.dynamic; }).reduce(common_1.anyTrueR, false);
+    };
+    /**
+     * Returns true if the transition is ignored.
+     *
+     * A transition is ignored if no states are entered nor exited, and no parameter values have changed.
+     *
+     * @returns true if the Transition is ignored.
+     */
+    Transition.prototype.ignored = function () {
+        return !!this._ignoredReason();
+    };
+    /** @hidden */
+    Transition.prototype._ignoredReason = function () {
+        var pending = this.router.globals.transition;
+        var reloadState = this._options.reloadState;
+        var same = function (pathA, pathB) {
+            if (pathA.length !== pathB.length)
+                return false;
+            var matching = pathFactory_1.PathUtils.matching(pathA, pathB);
+            return pathA.length === matching.filter(function (node) { return !reloadState || !node.state.includes[reloadState.name]; }).length;
+        };
+        var newTC = this.treeChanges();
+        var pendTC = pending && pending.treeChanges();
+        if (pendTC && same(pendTC.to, newTC.to) && same(pendTC.exiting, newTC.exiting))
+            return "SameAsPending";
+        if (newTC.exiting.length === 0 && newTC.entering.length === 0 && same(newTC.from, newTC.to))
+            return "SameAsCurrent";
+    };
+    /**
+     * Runs the transition
+     *
+     * This method is generally called from the [[StateService.transitionTo]]
+     *
+     * @internalapi
+     *
+     * @returns a promise for a successful transition.
+     */
+    Transition.prototype.run = function () {
+        var _this = this;
+        var runAllHooks = transitionHook_1.TransitionHook.runAllHooks;
+        // Gets transition hooks array for the given phase
+        var getHooksFor = function (phase) {
+            return _this._hookBuilder.buildHooksForPhase(phase);
+        };
+        // When the chain is complete, then resolve or reject the deferred
+        var transitionSuccess = function () {
+            trace_1.trace.traceSuccess(_this.$to(), _this);
+            _this.success = true;
+            _this._deferred.resolve(_this.to());
+            runAllHooks(getHooksFor(interface_1.TransitionHookPhase.SUCCESS));
+        };
+        var transitionError = function (reason) {
+            trace_1.trace.traceError(reason, _this);
+            _this.success = false;
+            _this._deferred.reject(reason);
+            _this._error = reason;
+            runAllHooks(getHooksFor(interface_1.TransitionHookPhase.ERROR));
+        };
+        var runTransition = function () {
+            // Wait to build the RUN hook chain until the BEFORE hooks are done
+            // This allows a BEFORE hook to dynamically add additional RUN hooks via the Transition object.
+            var allRunHooks = getHooksFor(interface_1.TransitionHookPhase.RUN);
+            var done = function () { return coreservices_1.services.$q.when(undefined); };
+            return transitionHook_1.TransitionHook.invokeHooks(allRunHooks, done);
+        };
+        var startTransition = function () {
+            var globals = _this.router.globals;
+            globals.lastStartedTransitionId = _this.$id;
+            globals.transition = _this;
+            globals.transitionHistory.enqueue(_this);
+            trace_1.trace.traceTransitionStart(_this);
+            return coreservices_1.services.$q.when(undefined);
+        };
+        var allBeforeHooks = getHooksFor(interface_1.TransitionHookPhase.BEFORE);
+        transitionHook_1.TransitionHook.invokeHooks(allBeforeHooks, startTransition)
+            .then(runTransition)
+            .then(transitionSuccess, transitionError);
+        return this.promise;
+    };
+    /**
+     * Checks if the Transition is valid
+     *
+     * @returns true if the Transition is valid
+     */
+    Transition.prototype.valid = function () {
+        return !this.error() || this.success !== undefined;
+    };
+    /**
+     * Aborts this transition
+     *
+     * Imperative API to abort a Transition.
+     * This only applies to Transitions that are not yet complete.
+     */
+    Transition.prototype.abort = function () {
+        // Do not set flag if the transition is already complete
+        if (predicates_1.isUndefined(this.success)) {
+            this._aborted = true;
+        }
+    };
+    /**
+     * The Transition error reason.
+     *
+     * If the transition is invalid (and could not be run), returns the reason the transition is invalid.
+     * If the transition was valid and ran, but was not successful, returns the reason the transition failed.
+     *
+     * @returns an error message explaining why the transition is invalid, or the reason the transition failed.
+     */
+    Transition.prototype.error = function () {
+        var state = this.$to();
+        if (state.self.abstract)
+            return "Cannot transition to abstract state '" + state.name + "'";
+        var paramDefs = state.parameters(), values = this.params();
+        var invalidParams = paramDefs.filter(function (param) { return !param.validates(values[param.id]); });
+        if (invalidParams.length) {
+            return "Param values not valid for state '" + state.name + "'. Invalid params: [ " + invalidParams.map(function (param) { return param.id; }).join(', ') + " ]";
+        }
+        if (this.success === false)
+            return this._error;
+    };
+    /**
+     * A string representation of the Transition
+     *
+     * @returns A string representation of the Transition
+     */
+    Transition.prototype.toString = function () {
+        var fromStateOrName = this.from();
+        var toStateOrName = this.to();
+        var avoidEmptyHash = function (params) {
+            return (params["#"] !== null && params["#"] !== undefined) ? params : common_1.omit(params, ["#"]);
+        };
+        // (X) means the to state is invalid.
+        var id = this.$id, from = predicates_1.isObject(fromStateOrName) ? fromStateOrName.name : fromStateOrName, fromParams = strings_1.stringify(avoidEmptyHash(this._treeChanges.from.map(hof_1.prop('paramValues')).reduce(common_1.mergeR, {}))), toValid = this.valid() ? "" : "(X) ", to = predicates_1.isObject(toStateOrName) ? toStateOrName.name : toStateOrName, toParams = strings_1.stringify(avoidEmptyHash(this.params()));
+        return "Transition#" + id + "( '" + from + "'" + fromParams + " -> " + toValid + "'" + to + "'" + toParams + " )";
+    };
+    /** @hidden */
+    Transition.diToken = Transition;
+    return Transition;
+}());
+exports.Transition = Transition;
+//# sourceMappingURL=transition.js.map
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/** @module path */ /** for typedoc */
+Object.defineProperty(exports, "__esModule", { value: true });
+var common_1 = __webpack_require__(0);
+var hof_1 = __webpack_require__(3);
+var targetState_1 = __webpack_require__(9);
+var pathNode_1 = __webpack_require__(24);
+/**
+ * This class contains functions which convert TargetStates, Nodes and paths from one type to another.
+ */
+var PathUtils = /** @class */ (function () {
+    function PathUtils() {
+    }
+    /** Given a PathNode[], create an TargetState */
+    PathUtils.makeTargetState = function (registry, path) {
+        var state = common_1.tail(path).state;
+        return new targetState_1.TargetState(registry, state, path.map(hof_1.prop("paramValues")).reduce(common_1.mergeR, {}), {});
+    };
+    PathUtils.buildPath = function (targetState) {
+        var toParams = targetState.params();
+        return targetState.$state().path.map(function (state) { return new pathNode_1.PathNode(state).applyRawParams(toParams); });
+    };
+    /** Given a fromPath: PathNode[] and a TargetState, builds a toPath: PathNode[] */
+    PathUtils.buildToPath = function (fromPath, targetState) {
+        var toPath = PathUtils.buildPath(targetState);
+        if (targetState.options().inherit) {
+            return PathUtils.inheritParams(fromPath, toPath, Object.keys(targetState.params()));
+        }
+        return toPath;
+    };
+    /**
+     * Creates ViewConfig objects and adds to nodes.
+     *
+     * On each [[PathNode]], creates ViewConfig objects from the views: property of the node's state
+     */
+    PathUtils.applyViewConfigs = function ($view, path, states) {
+        // Only apply the viewConfigs to the nodes for the given states
+        path.filter(function (node) { return common_1.inArray(states, node.state); }).forEach(function (node) {
+            var viewDecls = common_1.values(node.state.views || {});
+            var subPath = PathUtils.subPath(path, function (n) { return n === node; });
+            var viewConfigs = viewDecls.map(function (view) { return $view.createViewConfig(subPath, view); });
+            node.views = viewConfigs.reduce(common_1.unnestR, []);
+        });
+    };
+    /**
+     * Given a fromPath and a toPath, returns a new to path which inherits parameters from the fromPath
+     *
+     * For a parameter in a node to be inherited from the from path:
+     * - The toPath's node must have a matching node in the fromPath (by state).
+     * - The parameter name must not be found in the toKeys parameter array.
+     *
+     * Note: the keys provided in toKeys are intended to be those param keys explicitly specified by some
+     * caller, for instance, $state.transitionTo(..., toParams).  If a key was found in toParams,
+     * it is not inherited from the fromPath.
+     */
+    PathUtils.inheritParams = function (fromPath, toPath, toKeys) {
+        if (toKeys === void 0) { toKeys = []; }
+        function nodeParamVals(path, state) {
+            var node = common_1.find(path, hof_1.propEq('state', state));
+            return common_1.extend({}, node && node.paramValues);
+        }
+        var noInherit = fromPath.map(function (node) { return node.paramSchema; })
+            .reduce(common_1.unnestR, [])
+            .filter(function (param) { return !param.inherit; })
+            .map(hof_1.prop('id'));
+        /**
+         * Given an [[PathNode]] "toNode", return a new [[PathNode]] with param values inherited from the
+         * matching node in fromPath.  Only inherit keys that aren't found in "toKeys" from the node in "fromPath""
+         */
+        function makeInheritedParamsNode(toNode) {
+            // All param values for the node (may include default key/vals, when key was not found in toParams)
+            var toParamVals = common_1.extend({}, toNode && toNode.paramValues);
+            // limited to only those keys found in toParams
+            var incomingParamVals = common_1.pick(toParamVals, toKeys);
+            toParamVals = common_1.omit(toParamVals, toKeys);
+            var fromParamVals = common_1.omit(nodeParamVals(fromPath, toNode.state) || {}, noInherit);
+            // extend toParamVals with any fromParamVals, then override any of those those with incomingParamVals
+            var ownParamVals = common_1.extend(toParamVals, fromParamVals, incomingParamVals);
+            return new pathNode_1.PathNode(toNode.state).applyRawParams(ownParamVals);
+        }
+        // The param keys specified by the incoming toParams
+        return toPath.map(makeInheritedParamsNode);
+    };
+    /**
+     * Computes the tree changes (entering, exiting) between a fromPath and toPath.
+     */
+    PathUtils.treeChanges = function (fromPath, toPath, reloadState) {
+        var keep = 0, max = Math.min(fromPath.length, toPath.length);
+        var nodesMatch = function (node1, node2) {
+            return node1.equals(node2, PathUtils.nonDynamicParams);
+        };
+        while (keep < max && fromPath[keep].state !== reloadState && nodesMatch(fromPath[keep], toPath[keep])) {
+            keep++;
+        }
+        /** Given a retained node, return a new node which uses the to node's param values */
+        function applyToParams(retainedNode, idx) {
+            var cloned = pathNode_1.PathNode.clone(retainedNode);
+            cloned.paramValues = toPath[idx].paramValues;
+            return cloned;
+        }
+        var from, retained, exiting, entering, to;
+        from = fromPath;
+        retained = from.slice(0, keep);
+        exiting = from.slice(keep);
+        // Create a new retained path (with shallow copies of nodes) which have the params of the toPath mapped
+        var retainedWithToParams = retained.map(applyToParams);
+        entering = toPath.slice(keep);
+        to = (retainedWithToParams).concat(entering);
+        return { from: from, to: to, retained: retained, exiting: exiting, entering: entering };
+    };
+    /**
+     * Returns a new path which is: the subpath of the first path which matches the second path.
+     *
+     * The new path starts from root and contains any nodes that match the nodes in the second path.
+     * It stops before the first non-matching node.
+     *
+     * Nodes are compared using their state property and their parameter values.
+     * If a `paramsFn` is provided, only the [[Param]] returned by the function will be considered when comparing nodes.
+     *
+     * @param pathA the first path
+     * @param pathB the second path
+     * @param paramsFn a function which returns the parameters to consider when comparing
+     *
+     * @returns an array of PathNodes from the first path which match the nodes in the second path
+     */
+    PathUtils.matching = function (pathA, pathB, paramsFn) {
+        var done = false;
+        var tuples = common_1.arrayTuples(pathA, pathB);
+        return tuples.reduce(function (matching, _a) {
+            var nodeA = _a[0], nodeB = _a[1];
+            done = done || !nodeA.equals(nodeB, paramsFn);
+            return done ? matching : matching.concat(nodeA);
+        }, []);
+    };
+    /**
+     * Returns true if two paths are identical.
+     *
+     * @param pathA
+     * @param pathB
+     * @param paramsFn a function which returns the parameters to consider when comparing
+     * @returns true if the the states and parameter values for both paths are identical
+     */
+    PathUtils.equals = function (pathA, pathB, paramsFn) {
+        return pathA.length === pathB.length &&
+            PathUtils.matching(pathA, pathB, paramsFn).length === pathA.length;
+    };
+    /**
+     * Return a subpath of a path, which stops at the first matching node
+     *
+     * Given an array of nodes, returns a subset of the array starting from the first node,
+     * stopping when the first node matches the predicate.
+     *
+     * @param path a path of [[PathNode]]s
+     * @param predicate a [[Predicate]] fn that matches [[PathNode]]s
+     * @returns a subpath up to the matching node, or undefined if no match is found
+     */
+    PathUtils.subPath = function (path, predicate) {
+        var node = common_1.find(path, predicate);
+        var elementIdx = path.indexOf(node);
+        return elementIdx === -1 ? undefined : path.slice(0, elementIdx + 1);
+    };
+    PathUtils.nonDynamicParams = function (node) {
+        return node.state.parameters({ inherit: false })
+            .filter(function (param) { return !param.dynamic; });
+    };
+    /** Gets the raw parameter values from a path */
+    PathUtils.paramValues = function (path) {
+        return path.reduce(function (acc, node) { return common_1.extend(acc, node.paramValues); }, {});
+    };
+    return PathUtils;
+}());
+exports.PathUtils = PathUtils;
+//# sourceMappingURL=pathFactory.js.map
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/** @module resolve */
+/** for typedoc */
+var common_1 = __webpack_require__(0);
+var hof_1 = __webpack_require__(3);
+var trace_1 = __webpack_require__(7);
+var coreservices_1 = __webpack_require__(4);
+var interface_1 = __webpack_require__(29);
+var resolvable_1 = __webpack_require__(13);
+var pathFactory_1 = __webpack_require__(17);
+var strings_1 = __webpack_require__(6);
+var common_2 = __webpack_require__(5);
+var whens = interface_1.resolvePolicies.when;
+var ALL_WHENS = [whens.EAGER, whens.LAZY];
+var EAGER_WHENS = [whens.EAGER];
+exports.NATIVE_INJECTOR_TOKEN = "Native Injector";
+/**
+ * Encapsulates Dependency Injection for a path of nodes
+ *
+ * UI-Router states are organized as a tree.
+ * A nested state has a path of ancestors to the root of the tree.
+ * When a state is being activated, each element in the path is wrapped as a [[PathNode]].
+ * A `PathNode` is a stateful object that holds things like parameters and resolvables for the state being activated.
+ *
+ * The ResolveContext closes over the [[PathNode]]s, and provides DI for the last node in the path.
+ */
+var ResolveContext = /** @class */ (function () {
+    function ResolveContext(_path) {
+        this._path = _path;
+    }
+    /** Gets all the tokens found in the resolve context, de-duplicated */
+    ResolveContext.prototype.getTokens = function () {
+        return this._path.reduce(function (acc, node) { return acc.concat(node.resolvables.map(function (r) { return r.token; })); }, []).reduce(common_1.uniqR, []);
+    };
+    /**
+     * Gets the Resolvable that matches the token
+     *
+     * Gets the last Resolvable that matches the token in this context, or undefined.
+     * Throws an error if it doesn't exist in the ResolveContext
+     */
+    ResolveContext.prototype.getResolvable = function (token) {
+        var matching = this._path.map(function (node) { return node.resolvables; })
+            .reduce(common_1.unnestR, [])
+            .filter(function (r) { return r.token === token; });
+        return common_1.tail(matching);
+    };
+    /** Returns the [[ResolvePolicy]] for the given [[Resolvable]] */
+    ResolveContext.prototype.getPolicy = function (resolvable) {
+        var node = this.findNode(resolvable);
+        return resolvable.getPolicy(node.state);
+    };
+    /**
+     * Returns a ResolveContext that includes a portion of this one
+     *
+     * Given a state, this method creates a new ResolveContext from this one.
+     * The new context starts at the first node (root) and stops at the node for the `state` parameter.
+     *
+     * #### Why
+     *
+     * When a transition is created, the nodes in the "To Path" are injected from a ResolveContext.
+     * A ResolveContext closes over a path of [[PathNode]]s and processes the resolvables.
+     * The "To State" can inject values from its own resolvables, as well as those from all its ancestor state's (node's).
+     * This method is used to create a narrower context when injecting ancestor nodes.
+     *
+     * @example
+     * `let ABCD = new ResolveContext([A, B, C, D]);`
+     *
+     * Given a path `[A, B, C, D]`, where `A`, `B`, `C` and `D` are nodes for states `a`, `b`, `c`, `d`:
+     * When injecting `D`, `D` should have access to all resolvables from `A`, `B`, `C`, `D`.
+     * However, `B` should only be able to access resolvables from `A`, `B`.
+     *
+     * When resolving for the `B` node, first take the full "To Path" Context `[A,B,C,D]` and limit to the subpath `[A,B]`.
+     * `let AB = ABCD.subcontext(a)`
+     */
+    ResolveContext.prototype.subContext = function (state) {
+        return new ResolveContext(pathFactory_1.PathUtils.subPath(this._path, function (node) { return node.state === state; }));
+    };
+    /**
+     * Adds Resolvables to the node that matches the state
+     *
+     * This adds a [[Resolvable]] (generally one created on the fly; not declared on a [[StateDeclaration.resolve]] block).
+     * The resolvable is added to the node matching the `state` parameter.
+     *
+     * These new resolvables are not automatically fetched.
+     * The calling code should either fetch them, fetch something that depends on them,
+     * or rely on [[resolvePath]] being called when some state is being entered.
+     *
+     * Note: each resolvable's [[ResolvePolicy]] is merged with the state's policy, and the global default.
+     *
+     * @param newResolvables the new Resolvables
+     * @param state Used to find the node to put the resolvable on
+     */
+    ResolveContext.prototype.addResolvables = function (newResolvables, state) {
+        var node = common_1.find(this._path, hof_1.propEq('state', state));
+        var keys = newResolvables.map(function (r) { return r.token; });
+        node.resolvables = node.resolvables.filter(function (r) { return keys.indexOf(r.token) === -1; }).concat(newResolvables);
+    };
+    /**
+     * Returns a promise for an array of resolved path Element promises
+     *
+     * @param when
+     * @param trans
+     * @returns {Promise<any>|any}
+     */
+    ResolveContext.prototype.resolvePath = function (when, trans) {
+        var _this = this;
+        if (when === void 0) { when = "LAZY"; }
+        // This option determines which 'when' policy Resolvables we are about to fetch.
+        var whenOption = common_1.inArray(ALL_WHENS, when) ? when : "LAZY";
+        // If the caller specified EAGER, only the EAGER Resolvables are fetched.
+        // if the caller specified LAZY, both EAGER and LAZY Resolvables are fetched.`
+        var matchedWhens = whenOption === interface_1.resolvePolicies.when.EAGER ? EAGER_WHENS : ALL_WHENS;
+        // get the subpath to the state argument, if provided
+        trace_1.trace.traceResolvePath(this._path, when, trans);
+        var matchesPolicy = function (acceptedVals, whenOrAsync) {
+            return function (resolvable) {
+                return common_1.inArray(acceptedVals, _this.getPolicy(resolvable)[whenOrAsync]);
+            };
+        };
+        // Trigger all the (matching) Resolvables in the path
+        // Reduce all the "WAIT" Resolvables into an array
+        var promises = this._path.reduce(function (acc, node) {
+            var nodeResolvables = node.resolvables.filter(matchesPolicy(matchedWhens, 'when'));
+            var nowait = nodeResolvables.filter(matchesPolicy(['NOWAIT'], 'async'));
+            var wait = nodeResolvables.filter(hof_1.not(matchesPolicy(['NOWAIT'], 'async')));
+            // For the matching Resolvables, start their async fetch process.
+            var subContext = _this.subContext(node.state);
+            var getResult = function (r) { return r.get(subContext, trans)
+                .then(function (value) { return ({ token: r.token, value: value }); }); };
+            nowait.forEach(getResult);
+            return acc.concat(wait.map(getResult));
+        }, []);
+        // Wait for all the "WAIT" resolvables
+        return coreservices_1.services.$q.all(promises);
+    };
+    ResolveContext.prototype.injector = function () {
+        return this._injector || (this._injector = new UIInjectorImpl(this));
+    };
+    ResolveContext.prototype.findNode = function (resolvable) {
+        return common_1.find(this._path, function (node) { return common_1.inArray(node.resolvables, resolvable); });
+    };
+    /**
+     * Gets the async dependencies of a Resolvable
+     *
+     * Given a Resolvable, returns its dependencies as a Resolvable[]
+     */
+    ResolveContext.prototype.getDependencies = function (resolvable) {
+        var _this = this;
+        var node = this.findNode(resolvable);
+        // Find which other resolvables are "visible" to the `resolvable` argument
+        // subpath stopping at resolvable's node, or the whole path (if the resolvable isn't in the path)
+        var subPath = pathFactory_1.PathUtils.subPath(this._path, function (x) { return x === node; }) || this._path;
+        var availableResolvables = subPath
+            .reduce(function (acc, _node) { return acc.concat(_node.resolvables); }, []) //all of subpath's resolvables
+            .filter(function (res) { return res !== resolvable; }); // filter out the `resolvable` argument
+        var getDependency = function (token) {
+            var matching = availableResolvables.filter(function (r) { return r.token === token; });
+            if (matching.length)
+                return common_1.tail(matching);
+            var fromInjector = _this.injector().getNative(token);
+            if (common_2.isUndefined(fromInjector)) {
+                throw new Error("Could not find Dependency Injection token: " + strings_1.stringify(token));
+            }
+            return new resolvable_1.Resolvable(token, function () { return fromInjector; }, [], fromInjector);
+        };
+        return resolvable.deps.map(getDependency);
+    };
+    return ResolveContext;
+}());
+exports.ResolveContext = ResolveContext;
+var UIInjectorImpl = /** @class */ (function () {
+    function UIInjectorImpl(context) {
+        this.context = context;
+        this.native = this.get(exports.NATIVE_INJECTOR_TOKEN) || coreservices_1.services.$injector;
+    }
+    UIInjectorImpl.prototype.get = function (token) {
+        var resolvable = this.context.getResolvable(token);
+        if (resolvable) {
+            if (this.context.getPolicy(resolvable).async === 'NOWAIT') {
+                return resolvable.get(this.context);
+            }
+            if (!resolvable.resolved) {
+                throw new Error("Resolvable async .get() not complete:" + strings_1.stringify(resolvable.token));
+            }
+            return resolvable.data;
+        }
+        return this.getNative(token);
+    };
+    UIInjectorImpl.prototype.getAsync = function (token) {
+        var resolvable = this.context.getResolvable(token);
+        if (resolvable)
+            return resolvable.get(this.context);
+        return coreservices_1.services.$q.when(this.native.get(token));
+    };
+    UIInjectorImpl.prototype.getNative = function (token) {
+        return this.native && this.native.get(token);
+    };
+    return UIInjectorImpl;
+}());
+//# sourceMappingURL=resolveContext.js.map
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @coreapi
+ * @module url
+ */
+/** for typedoc */
+var common_1 = __webpack_require__(0);
+var hof_1 = __webpack_require__(3);
+var predicates_1 = __webpack_require__(2);
+var param_1 = __webpack_require__(10);
+var strings_1 = __webpack_require__(6);
+/** @hidden */
+function quoteRegExp(string, param) {
+    var surroundPattern = ['', ''], result = string.replace(/[\\\[\]\^$*+?.()|{}]/g, "\\$&");
+    if (!param)
+        return result;
+    switch (param.squash) {
+        case false:
+            surroundPattern = ['(', ')' + (param.isOptional ? '?' : '')];
+            break;
+        case true:
+            result = result.replace(/\/$/, '');
+            surroundPattern = ['(?:\/(', ')|\/)?'];
+            break;
+        default:
+            surroundPattern = ["(" + param.squash + "|", ')?'];
+            break;
+    }
+    return result + surroundPattern[0] + param.type.pattern.source + surroundPattern[1];
+}
+/** @hidden */
+var memoizeTo = function (obj, prop, fn) {
+    return obj[prop] = obj[prop] || fn();
+};
+/** @hidden */
+var splitOnSlash = strings_1.splitOnDelim('/');
+/**
+ * Matches URLs against patterns.
+ *
+ * Matches URLs against patterns and extracts named parameters from the path or the search
+ * part of the URL.
+ *
+ * A URL pattern consists of a path pattern, optionally followed by '?' and a list of search (query)
+ * parameters. Multiple search parameter names are separated by '&'. Search parameters
+ * do not influence whether or not a URL is matched, but their values are passed through into
+ * the matched parameters returned by [[UrlMatcher.exec]].
+ *
+ * - *Path parameters* are defined using curly brace placeholders (`/somepath/{param}`)
+ * or colon placeholders (`/somePath/:param`).
+ *
+ * - *A parameter RegExp* may be defined for a param after a colon
+ * (`/somePath/{param:[a-zA-Z0-9]+}`) in a curly brace placeholder.
+ * The regexp must match for the url to be matched.
+ * Should the regexp itself contain curly braces, they must be in matched pairs or escaped with a backslash.
+ *
+ * Note: a RegExp parameter will encode its value using either [[ParamTypes.path]] or [[ParamTypes.query]].
+ *
+ * - *Custom parameter types* may also be specified after a colon (`/somePath/{param:int}`) in curly brace parameters.
+ *   See [[UrlMatcherFactory.type]] for more information.
+ *
+ * - *Catch-all parameters* are defined using an asterisk placeholder (`/somepath/*catchallparam`).
+ *   A catch-all * parameter value will contain the remainder of the URL.
+ *
+ * ---
+ *
+ * Parameter names may contain only word characters (latin letters, digits, and underscore) and
+ * must be unique within the pattern (across both path and search parameters).
+ * A path parameter matches any number of characters other than '/'. For catch-all
+ * placeholders the path parameter matches any number of characters.
+ *
+ * Examples:
+ *
+ * * `'/hello/'` - Matches only if the path is exactly '/hello/'. There is no special treatment for
+ *   trailing slashes, and patterns have to match the entire path, not just a prefix.
+ * * `'/user/:id'` - Matches '/user/bob' or '/user/1234!!!' or even '/user/' but not '/user' or
+ *   '/user/bob/details'. The second path segment will be captured as the parameter 'id'.
+ * * `'/user/{id}'` - Same as the previous example, but using curly brace syntax.
+ * * `'/user/{id:[^/]*}'` - Same as the previous example.
+ * * `'/user/{id:[0-9a-fA-F]{1,8}}'` - Similar to the previous example, but only matches if the id
+ *   parameter consists of 1 to 8 hex digits.
+ * * `'/files/{path:.*}'` - Matches any URL starting with '/files/' and captures the rest of the
+ *   path into the parameter 'path'.
+ * * `'/files/*path'` - ditto.
+ * * `'/calendar/{start:date}'` - Matches "/calendar/2014-11-12" (because the pattern defined
+ *   in the built-in  `date` ParamType matches `2014-11-12`) and provides a Date object in $stateParams.start
+ *
+ */
+var UrlMatcher = /** @class */ (function () {
+    /**
+     * @param pattern The pattern to compile into a matcher.
+     * @param paramTypes The [[ParamTypes]] registry
+     * @param config  A configuration object
+     * - `caseInsensitive` - `true` if URL matching should be case insensitive, otherwise `false`, the default value (for backward compatibility) is `false`.
+     * - `strict` - `false` if matching against a URL with a trailing slash should be treated as equivalent to a URL without a trailing slash, the default value is `true`.
+     */
+    function UrlMatcher(pattern, paramTypes, paramFactory, config) {
+        var _this = this;
+        this.config = config;
+        /** @hidden */
+        this._cache = { path: [this] };
+        /** @hidden */
+        this._children = [];
+        /** @hidden */
+        this._params = [];
+        /** @hidden */
+        this._segments = [];
+        /** @hidden */
+        this._compiled = [];
+        this.pattern = pattern;
+        this.config = common_1.defaults(this.config, {
+            params: {},
+            strict: true,
+            caseInsensitive: false,
+            paramMap: common_1.identity
+        });
+        // Find all placeholders and create a compiled pattern, using either classic or curly syntax:
+        //   '*' name
+        //   ':' name
+        //   '{' name '}'
+        //   '{' name ':' regexp '}'
+        // The regular expression is somewhat complicated due to the need to allow curly braces
+        // inside the regular expression. The placeholder regexp breaks down as follows:
+        //    ([:*])([\w\[\]]+)              - classic placeholder ($1 / $2) (search version has - for snake-case)
+        //    \{([\w\[\]]+)(?:\:\s*( ... ))?\}  - curly brace placeholder ($3) with optional regexp/type ... ($4) (search version has - for snake-case
+        //    (?: ... | ... | ... )+         - the regexp consists of any number of atoms, an atom being either
+        //    [^{}\\]+                       - anything other than curly braces or backslash
+        //    \\.                            - a backslash escape
+        //    \{(?:[^{}\\]+|\\.)*\}          - a matched set of curly braces containing other atoms
+        var placeholder = /([:*])([\w\[\]]+)|\{([\w\[\]]+)(?:\:\s*((?:[^{}\\]+|\\.|\{(?:[^{}\\]+|\\.)*\})+))?\}/g, searchPlaceholder = /([:]?)([\w\[\].-]+)|\{([\w\[\].-]+)(?:\:\s*((?:[^{}\\]+|\\.|\{(?:[^{}\\]+|\\.)*\})+))?\}/g, last = 0, m, patterns = [];
+        var checkParamErrors = function (id) {
+            if (!UrlMatcher.nameValidator.test(id))
+                throw new Error("Invalid parameter name '" + id + "' in pattern '" + pattern + "'");
+            if (common_1.find(_this._params, hof_1.propEq('id', id)))
+                throw new Error("Duplicate parameter name '" + id + "' in pattern '" + pattern + "'");
+        };
+        // Split into static segments separated by path parameter placeholders.
+        // The number of segments is always 1 more than the number of parameters.
+        var matchDetails = function (m, isSearch) {
+            // IE[78] returns '' for unmatched groups instead of null
+            var id = m[2] || m[3];
+            var regexp = isSearch ? m[4] : m[4] || (m[1] === '*' ? '[\\s\\S]*' : null);
+            var makeRegexpType = function (regexp) { return common_1.inherit(paramTypes.type(isSearch ? "query" : "path"), {
+                pattern: new RegExp(regexp, _this.config.caseInsensitive ? 'i' : undefined)
+            }); };
+            return {
+                id: id,
+                regexp: regexp,
+                cfg: _this.config.params[id],
+                segment: pattern.substring(last, m.index),
+                type: !regexp ? null : paramTypes.type(regexp) || makeRegexpType(regexp)
+            };
+        };
+        var p, segment;
+        while ((m = placeholder.exec(pattern))) {
+            p = matchDetails(m, false);
+            if (p.segment.indexOf('?') >= 0)
+                break; // we're into the search part
+            checkParamErrors(p.id);
+            this._params.push(paramFactory.fromPath(p.id, p.type, this.config.paramMap(p.cfg, false)));
+            this._segments.push(p.segment);
+            patterns.push([p.segment, common_1.tail(this._params)]);
+            last = placeholder.lastIndex;
+        }
+        segment = pattern.substring(last);
+        // Find any search parameter names and remove them from the last segment
+        var i = segment.indexOf('?');
+        if (i >= 0) {
+            var search = segment.substring(i);
+            segment = segment.substring(0, i);
+            if (search.length > 0) {
+                last = 0;
+                while ((m = searchPlaceholder.exec(search))) {
+                    p = matchDetails(m, true);
+                    checkParamErrors(p.id);
+                    this._params.push(paramFactory.fromSearch(p.id, p.type, this.config.paramMap(p.cfg, true)));
+                    last = placeholder.lastIndex;
+                    // check if ?&
+                }
+            }
+        }
+        this._segments.push(segment);
+        this._compiled = patterns.map(function (pattern) { return quoteRegExp.apply(null, pattern); }).concat(quoteRegExp(segment));
+    }
+    /**
+     * Creates a new concatenated UrlMatcher
+     *
+     * Builds a new UrlMatcher by appending another UrlMatcher to this one.
+     *
+     * @param url A `UrlMatcher` instance to append as a child of the current `UrlMatcher`.
+     */
+    UrlMatcher.prototype.append = function (url) {
+        this._children.push(url);
+        url._cache = {
+            path: this._cache.path.concat(url),
+            parent: this,
+            pattern: null,
+        };
+        return url;
+    };
+    /** @hidden */
+    UrlMatcher.prototype.isRoot = function () {
+        return this._cache.path[0] === this;
+    };
+    /** Returns the input pattern string */
+    UrlMatcher.prototype.toString = function () {
+        return this.pattern;
+    };
+    /**
+     * Tests the specified url/path against this matcher.
+     *
+     * Tests if the given url matches this matcher's pattern, and returns an object containing the captured
+     * parameter values.  Returns null if the path does not match.
+     *
+     * The returned object contains the values
+     * of any search parameters that are mentioned in the pattern, but their value may be null if
+     * they are not present in `search`. This means that search parameters are always treated
+     * as optional.
+     *
+     * #### Example:
+     * ```js
+     * new UrlMatcher('/user/{id}?q&r').exec('/user/bob', {
+     *   x: '1', q: 'hello'
+     * });
+     * // returns { id: 'bob', q: 'hello', r: null }
+     * ```
+     *
+     * @param path    The URL path to match, e.g. `$location.path()`.
+     * @param search  URL search parameters, e.g. `$location.search()`.
+     * @param hash    URL hash e.g. `$location.hash()`.
+     * @param options
+     *
+     * @returns The captured parameter values.
+     */
+    UrlMatcher.prototype.exec = function (path, search, hash, options) {
+        var _this = this;
+        if (search === void 0) { search = {}; }
+        if (options === void 0) { options = {}; }
+        var match = memoizeTo(this._cache, 'pattern', function () {
+            return new RegExp([
+                '^',
+                common_1.unnest(_this._cache.path.map(hof_1.prop('_compiled'))).join(''),
+                _this.config.strict === false ? '\/?' : '',
+                '$'
+            ].join(''), _this.config.caseInsensitive ? 'i' : undefined);
+        }).exec(path);
+        if (!match)
+            return null;
+        //options = defaults(options, { isolate: false });
+        var allParams = this.parameters(), pathParams = allParams.filter(function (param) { return !param.isSearch(); }), searchParams = allParams.filter(function (param) { return param.isSearch(); }), nPathSegments = this._cache.path.map(function (urlm) { return urlm._segments.length - 1; }).reduce(function (a, x) { return a + x; }), values = {};
+        if (nPathSegments !== match.length - 1)
+            throw new Error("Unbalanced capture group in route '" + this.pattern + "'");
+        function decodePathArray(string) {
+            var reverseString = function (str) { return str.split("").reverse().join(""); };
+            var unquoteDashes = function (str) { return str.replace(/\\-/g, "-"); };
+            var split = reverseString(string).split(/-(?!\\)/);
+            var allReversed = common_1.map(split, reverseString);
+            return common_1.map(allReversed, unquoteDashes).reverse();
+        }
+        for (var i = 0; i < nPathSegments; i++) {
+            var param = pathParams[i];
+            var value = match[i + 1];
+            // if the param value matches a pre-replace pair, replace the value before decoding.
+            for (var j = 0; j < param.replace.length; j++) {
+                if (param.replace[j].from === value)
+                    value = param.replace[j].to;
+            }
+            if (value && param.array === true)
+                value = decodePathArray(value);
+            if (predicates_1.isDefined(value))
+                value = param.type.decode(value);
+            values[param.id] = param.value(value);
+        }
+        searchParams.forEach(function (param) {
+            var value = search[param.id];
+            for (var j = 0; j < param.replace.length; j++) {
+                if (param.replace[j].from === value)
+                    value = param.replace[j].to;
+            }
+            if (predicates_1.isDefined(value))
+                value = param.type.decode(value);
+            values[param.id] = param.value(value);
+        });
+        if (hash)
+            values["#"] = hash;
+        return values;
+    };
+    /**
+     * @hidden
+     * Returns all the [[Param]] objects of all path and search parameters of this pattern in order of appearance.
+     *
+     * @returns {Array.<Param>}  An array of [[Param]] objects. Must be treated as read-only. If the
+     *    pattern has no parameters, an empty array is returned.
+     */
+    UrlMatcher.prototype.parameters = function (opts) {
+        if (opts === void 0) { opts = {}; }
+        if (opts.inherit === false)
+            return this._params;
+        return common_1.unnest(this._cache.path.map(function (matcher) { return matcher._params; }));
+    };
+    /**
+     * @hidden
+     * Returns a single parameter from this UrlMatcher by id
+     *
+     * @param id
+     * @param opts
+     * @returns {T|Param|any|boolean|UrlMatcher|null}
+     */
+    UrlMatcher.prototype.parameter = function (id, opts) {
+        var _this = this;
+        if (opts === void 0) { opts = {}; }
+        var findParam = function () {
+            for (var _i = 0, _a = _this._params; _i < _a.length; _i++) {
+                var param = _a[_i];
+                if (param.id === id)
+                    return param;
+            }
+        };
+        var parent = this._cache.parent;
+        return findParam() || (opts.inherit !== false && parent && parent.parameter(id, opts)) || null;
+    };
+    /**
+     * Validates the input parameter values against this UrlMatcher
+     *
+     * Checks an object hash of parameters to validate their correctness according to the parameter
+     * types of this `UrlMatcher`.
+     *
+     * @param params The object hash of parameters to validate.
+     * @returns Returns `true` if `params` validates, otherwise `false`.
+     */
+    UrlMatcher.prototype.validates = function (params) {
+        var validParamVal = function (param, val) {
+            return !param || param.validates(val);
+        };
+        params = params || {};
+        // I'm not sure why this checks only the param keys passed in, and not all the params known to the matcher
+        var paramSchema = this.parameters().filter(function (paramDef) { return params.hasOwnProperty(paramDef.id); });
+        return paramSchema.map(function (paramDef) { return validParamVal(paramDef, params[paramDef.id]); }).reduce(common_1.allTrueR, true);
+    };
+    /**
+     * Given a set of parameter values, creates a URL from this UrlMatcher.
+     *
+     * Creates a URL that matches this pattern by substituting the specified values
+     * for the path and search parameters.
+     *
+     * #### Example:
+     * ```js
+     * new UrlMatcher('/user/{id}?q').format({ id:'bob', q:'yes' });
+     * // returns '/user/bob?q=yes'
+     * ```
+     *
+     * @param values  the values to substitute for the parameters in this pattern.
+     * @returns the formatted URL (path and optionally search part).
+     */
+    UrlMatcher.prototype.format = function (values) {
+        if (values === void 0) { values = {}; }
+        // Build the full path of UrlMatchers (including all parent UrlMatchers)
+        var urlMatchers = this._cache.path;
+        // Extract all the static segments and Params (processed as ParamDetails)
+        // into an ordered array
+        var pathSegmentsAndParams = urlMatchers.map(UrlMatcher.pathSegmentsAndParams)
+            .reduce(common_1.unnestR, [])
+            .map(function (x) { return predicates_1.isString(x) ? x : getDetails(x); });
+        // Extract the query params into a separate array
+        var queryParams = urlMatchers.map(UrlMatcher.queryParams)
+            .reduce(common_1.unnestR, [])
+            .map(getDetails);
+        var isInvalid = function (param) { return param.isValid === false; };
+        if (pathSegmentsAndParams.concat(queryParams).filter(isInvalid).length) {
+            return null;
+        }
+        /**
+         * Given a Param, applies the parameter value, then returns detailed information about it
+         */
+        function getDetails(param) {
+            // Normalize to typed value
+            var value = param.value(values[param.id]);
+            var isValid = param.validates(value);
+            var isDefaultValue = param.isDefaultValue(value);
+            // Check if we're in squash mode for the parameter
+            var squash = isDefaultValue ? param.squash : false;
+            // Allow the Parameter's Type to encode the value
+            var encoded = param.type.encode(value);
+            return { param: param, value: value, isValid: isValid, isDefaultValue: isDefaultValue, squash: squash, encoded: encoded };
+        }
+        // Build up the path-portion from the list of static segments and parameters
+        var pathString = pathSegmentsAndParams.reduce(function (acc, x) {
+            // The element is a static segment (a raw string); just append it
+            if (predicates_1.isString(x))
+                return acc + x;
+            // Otherwise, it's a ParamDetails.
+            var squash = x.squash, encoded = x.encoded, param = x.param;
+            // If squash is === true, try to remove a slash from the path
+            if (squash === true)
+                return (acc.match(/\/$/)) ? acc.slice(0, -1) : acc;
+            // If squash is a string, use the string for the param value
+            if (predicates_1.isString(squash))
+                return acc + squash;
+            if (squash !== false)
+                return acc; // ?
+            if (encoded == null)
+                return acc;
+            // If this parameter value is an array, encode the value using encodeDashes
+            if (predicates_1.isArray(encoded))
+                return acc + common_1.map(encoded, UrlMatcher.encodeDashes).join("-");
+            // If the parameter type is "raw", then do not encodeURIComponent
+            if (param.raw)
+                return acc + encoded;
+            // Encode the value
+            return acc + encodeURIComponent(encoded);
+        }, "");
+        // Build the query string by applying parameter values (array or regular)
+        // then mapping to key=value, then flattening and joining using "&"
+        var queryString = queryParams.map(function (paramDetails) {
+            var param = paramDetails.param, squash = paramDetails.squash, encoded = paramDetails.encoded, isDefaultValue = paramDetails.isDefaultValue;
+            if (encoded == null || (isDefaultValue && squash !== false))
+                return;
+            if (!predicates_1.isArray(encoded))
+                encoded = [encoded];
+            if (encoded.length === 0)
+                return;
+            if (!param.raw)
+                encoded = common_1.map(encoded, encodeURIComponent);
+            return encoded.map(function (val) { return param.id + "=" + val; });
+        }).filter(common_1.identity).reduce(common_1.unnestR, []).join("&");
+        // Concat the pathstring with the queryString (if exists) and the hashString (if exists)
+        return pathString + (queryString ? "?" + queryString : "") + (values["#"] ? "#" + values["#"] : "");
+    };
+    /** @hidden */
+    UrlMatcher.encodeDashes = function (str) {
+        return encodeURIComponent(str).replace(/-/g, function (c) { return "%5C%" + c.charCodeAt(0).toString(16).toUpperCase(); });
+    };
+    /** @hidden Given a matcher, return an array with the matcher's path segments and path params, in order */
+    UrlMatcher.pathSegmentsAndParams = function (matcher) {
+        var staticSegments = matcher._segments;
+        var pathParams = matcher._params.filter(function (p) { return p.location === param_1.DefType.PATH; });
+        return common_1.arrayTuples(staticSegments, pathParams.concat(undefined))
+            .reduce(common_1.unnestR, [])
+            .filter(function (x) { return x !== "" && predicates_1.isDefined(x); });
+    };
+    /** @hidden Given a matcher, return an array with the matcher's query params */
+    UrlMatcher.queryParams = function (matcher) {
+        return matcher._params.filter(function (p) { return p.location === param_1.DefType.SEARCH; });
+    };
+    /**
+     * Compare two UrlMatchers
+     *
+     * This comparison function converts a UrlMatcher into static and dynamic path segments.
+     * Each static path segment is a static string between a path separator (slash character).
+     * Each dynamic segment is a path parameter.
+     *
+     * The comparison function sorts static segments before dynamic ones.
+     */
+    UrlMatcher.compare = function (a, b) {
+        /**
+         * Turn a UrlMatcher and all its parent matchers into an array
+         * of slash literals '/', string literals, and Param objects
+         *
+         * This example matcher matches strings like "/foo/:param/tail":
+         * var matcher = $umf.compile("/foo").append($umf.compile("/:param")).append($umf.compile("/")).append($umf.compile("tail"));
+         * var result = segments(matcher); // [ '/', 'foo', '/', Param, '/', 'tail' ]
+         *
+         * Caches the result as `matcher._cache.segments`
+         */
+        var segments = function (matcher) {
+            return matcher._cache.segments = matcher._cache.segments ||
+                matcher._cache.path.map(UrlMatcher.pathSegmentsAndParams)
+                    .reduce(common_1.unnestR, [])
+                    .reduce(strings_1.joinNeighborsR, [])
+                    .map(function (x) { return predicates_1.isString(x) ? splitOnSlash(x) : x; })
+                    .reduce(common_1.unnestR, []);
+        };
+        /**
+         * Gets the sort weight for each segment of a UrlMatcher
+         *
+         * Caches the result as `matcher._cache.weights`
+         */
+        var weights = function (matcher) {
+            return matcher._cache.weights = matcher._cache.weights ||
+                segments(matcher).map(function (segment) {
+                    // Sort slashes first, then static strings, the Params
+                    if (segment === '/')
+                        return 1;
+                    if (predicates_1.isString(segment))
+                        return 2;
+                    if (segment instanceof param_1.Param)
+                        return 3;
+                });
+        };
+        /**
+         * Pads shorter array in-place (mutates)
+         */
+        var padArrays = function (l, r, padVal) {
+            var len = Math.max(l.length, r.length);
+            while (l.length < len)
+                l.push(padVal);
+            while (r.length < len)
+                r.push(padVal);
+        };
+        var weightsA = weights(a), weightsB = weights(b);
+        padArrays(weightsA, weightsB, 0);
+        var cmp, i, pairs = common_1.arrayTuples(weightsA, weightsB);
+        for (i = 0; i < pairs.length; i++) {
+            cmp = pairs[i][0] - pairs[i][1];
+            if (cmp !== 0)
+                return cmp;
+        }
+        return 0;
+    };
+    /** @hidden */
+    UrlMatcher.nameValidator = /^\w+([-.]+\w+)*(?:\[\])?$/;
+    return UrlMatcher;
+}());
+exports.UrlMatcher = UrlMatcher;
+//# sourceMappingURL=urlMatcher.js.map
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/**
+ * @internalapi
+ * @module vanilla
+ */ /** */
+Object.defineProperty(exports, "__esModule", { value: true });
+var common_1 = __webpack_require__(5);
+var utils_1 = __webpack_require__(27);
+/** A base `LocationServices` */
+var BaseLocationServices = /** @class */ (function () {
+    function BaseLocationServices(router, fireAfterUpdate) {
+        var _this = this;
+        this.fireAfterUpdate = fireAfterUpdate;
+        this._listener = function (evt) { return _this._listeners.forEach(function (cb) { return cb(evt); }); };
+        this._listeners = [];
+        this.hash = function () { return utils_1.parseUrl(_this._get()).hash; };
+        this.path = function () { return utils_1.parseUrl(_this._get()).path; };
+        this.search = function () { return utils_1.getParams(utils_1.parseUrl(_this._get()).search); };
+        this._location = common_1.root.location;
+        this._history = common_1.root.history;
+    }
+    BaseLocationServices.prototype.url = function (url, replace) {
+        if (replace === void 0) { replace = true; }
+        if (common_1.isDefined(url) && url !== this._get()) {
+            this._set(null, null, url, replace);
+            if (this.fireAfterUpdate) {
+                this._listeners.forEach(function (cb) { return cb({ url: url }); });
+            }
+        }
+        return utils_1.buildUrl(this);
+    };
+    BaseLocationServices.prototype.onChange = function (cb) {
+        var _this = this;
+        this._listeners.push(cb);
+        return function () { return common_1.removeFrom(_this._listeners, cb); };
+    };
+    BaseLocationServices.prototype.dispose = function (router) {
+        common_1.deregAll(this._listeners);
+    };
+    return BaseLocationServices;
+}());
+exports.BaseLocationServices = BaseLocationServices;
+//# sourceMappingURL=baseLocationService.js.map
+
+/***/ }),
 /* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5946,7 +5946,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = __webpack_require__(0);
 var hof_1 = __webpack_require__(3);
-var glob_1 = __webpack_require__(14);
+var glob_1 = __webpack_require__(15);
 var predicates_1 = __webpack_require__(2);
 /**
  * Internal representation of a UI-Router state.
@@ -6123,7 +6123,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = __webpack_require__(0);
 var predicates_1 = __webpack_require__(2);
 var interface_1 = __webpack_require__(8); // has or is using
-var glob_1 = __webpack_require__(14);
+var glob_1 = __webpack_require__(15);
 /**
  * Determines if the given state matches the matchCriteria
  *
@@ -6520,7 +6520,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 /** for typedoc */
 var interface_1 = __webpack_require__(8);
-var transition_1 = __webpack_require__(15);
+var transition_1 = __webpack_require__(16);
 var hookRegistry_1 = __webpack_require__(23);
 var coreResolvables_1 = __webpack_require__(64);
 var redirectTo_1 = __webpack_require__(65);
@@ -7802,14 +7802,14 @@ var common_1 = __webpack_require__(0);
 var predicates_1 = __webpack_require__(2);
 var queue_1 = __webpack_require__(22);
 var coreservices_1 = __webpack_require__(4);
-var pathFactory_1 = __webpack_require__(16);
+var pathFactory_1 = __webpack_require__(17);
 var pathNode_1 = __webpack_require__(24);
 var transitionService_1 = __webpack_require__(26);
 var rejectFactory_1 = __webpack_require__(11);
 var targetState_1 = __webpack_require__(9);
 var param_1 = __webpack_require__(10);
-var glob_1 = __webpack_require__(14);
-var resolveContext_1 = __webpack_require__(17);
+var glob_1 = __webpack_require__(15);
+var resolveContext_1 = __webpack_require__(18);
 var lazyLoad_1 = __webpack_require__(44);
 var hof_1 = __webpack_require__(3);
 /**
@@ -8567,7 +8567,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */ /** for typedoc */
 var common_1 = __webpack_require__(0);
 var predicates_1 = __webpack_require__(2);
-var urlMatcher_1 = __webpack_require__(18);
+var urlMatcher_1 = __webpack_require__(19);
 var param_1 = __webpack_require__(10);
 var paramTypes_1 = __webpack_require__(30);
 /**
@@ -8701,7 +8701,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** for typedoc */
 var common_1 = __webpack_require__(0);
 var predicates_1 = __webpack_require__(2);
-var urlMatcher_1 = __webpack_require__(18);
+var urlMatcher_1 = __webpack_require__(19);
 var hof_1 = __webpack_require__(3);
 var urlRule_1 = __webpack_require__(40);
 var targetState_1 = __webpack_require__(9);
@@ -9019,7 +9019,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @coreapi
  * @module url
  */ /** */
-var urlMatcher_1 = __webpack_require__(18);
+var urlMatcher_1 = __webpack_require__(19);
 var predicates_1 = __webpack_require__(2);
 var common_1 = __webpack_require__(0);
 var hof_1 = __webpack_require__(3);
@@ -9971,7 +9971,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 /** */
 var common_1 = __webpack_require__(5);
-var baseLocationService_1 = __webpack_require__(19);
+var baseLocationService_1 = __webpack_require__(20);
 /** A `LocationServices` that uses the browser hash "#" to get/set the current location */
 var HashLocationService = /** @class */ (function (_super) {
     __extends(HashLocationService, _super);
@@ -10017,7 +10017,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @module vanilla
  */
 /** */
-var baseLocationService_1 = __webpack_require__(19);
+var baseLocationService_1 = __webpack_require__(20);
 /** A `LocationServices` that gets/sets the current location from an in-memory object */
 var MemoryLocationService = /** @class */ (function (_super) {
     __extends(MemoryLocationService, _super);
@@ -10052,7 +10052,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var baseLocationService_1 = __webpack_require__(19);
+var baseLocationService_1 = __webpack_require__(20);
 var common_1 = __webpack_require__(5);
 /**
  * A `LocationServices` that gets/sets the current location using the browser's `location` and `history` apis
@@ -10215,10 +10215,10 @@ __webpack_require__(54);
 Object.defineProperty(exports, "__esModule", { value: true });
 __webpack_require__(55);
 var angular = __webpack_require__(1);
-var angularjs_1 = __webpack_require__(20);
+var angularjs_1 = __webpack_require__(14);
 var app_component_1 = __webpack_require__(80);
 var components_module_1 = __webpack_require__(81);
-var common_module_1 = __webpack_require__(114);
+var common_module_1 = __webpack_require__(121);
 var AppModule = angular.module('app', [angularjs_1.default, common_module_1.default.name, components_module_1.default.name]).component('app', app_component_1.default);
 exports.default = AppModule;
 
@@ -54466,7 +54466,7 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module path */ /** for typedoc */
 __export(__webpack_require__(24));
-__export(__webpack_require__(16));
+__export(__webpack_require__(17));
 //# sourceMappingURL=index.js.map
 
 /***/ }),
@@ -54482,7 +54482,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** @module resolve */ /** for typedoc */
 __export(__webpack_require__(29));
 __export(__webpack_require__(13));
-__export(__webpack_require__(17));
+__export(__webpack_require__(18));
 //# sourceMappingURL=index.js.map
 
 /***/ }),
@@ -54512,7 +54512,7 @@ __export(__webpack_require__(9));
 
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** */
-var transition_1 = __webpack_require__(15);
+var transition_1 = __webpack_require__(16);
 var router_1 = __webpack_require__(37);
 function addCoreResolvables(trans) {
     trans.addResolvable({ token: router_1.UIRouter, deps: [], resolveFn: function () { return trans.router; }, data: trans.router }, "");
@@ -54644,7 +54644,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */
 /** for typedoc */
 var common_1 = __webpack_require__(0);
-var resolveContext_1 = __webpack_require__(17);
+var resolveContext_1 = __webpack_require__(18);
 var hof_1 = __webpack_require__(3);
 /**
  * A [[TransitionHookFn]] which resolves all EAGER Resolvables in the To Path
@@ -54898,7 +54898,7 @@ __export(__webpack_require__(8));
 __export(__webpack_require__(28));
 __export(__webpack_require__(23));
 __export(__webpack_require__(11));
-__export(__webpack_require__(15));
+__export(__webpack_require__(16));
 __export(__webpack_require__(12));
 __export(__webpack_require__(45));
 __export(__webpack_require__(26));
@@ -54914,7 +54914,7 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(18));
+__export(__webpack_require__(19));
 __export(__webpack_require__(38));
 __export(__webpack_require__(39));
 __export(__webpack_require__(40));
@@ -54964,7 +54964,7 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(__webpack_require__(46));
 __export(__webpack_require__(47));
-__export(__webpack_require__(19));
+__export(__webpack_require__(20));
 __export(__webpack_require__(48));
 __export(__webpack_require__(49));
 __export(__webpack_require__(50));
@@ -55057,24 +55057,32 @@ exports.default = AppComponent;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(82);
 var angular = __webpack_require__(1);
-var home_module_1 = __webpack_require__(82);
-var playground_module_1 = __webpack_require__(87);
-var ComponentsModule = angular.module('app.components', [home_module_1.default.name, playground_module_1.default.name]);
+var home_module_1 = __webpack_require__(83);
+var playground_module_1 = __webpack_require__(88);
+var real_world_module_1 = __webpack_require__(115);
+var ComponentsModule = angular.module('app.components', [home_module_1.default.name, playground_module_1.default.name, real_world_module_1.default.name]);
 exports.default = ComponentsModule;
 
 /***/ }),
 /* 82 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(83);
+__webpack_require__(84);
 var angular = __webpack_require__(1);
-var angularjs_1 = __webpack_require__(20);
-var home_component_1 = __webpack_require__(84);
+var angularjs_1 = __webpack_require__(14);
+var home_component_1 = __webpack_require__(85);
 var HomeModule = angular.module('app.components.home', [angularjs_1.default]).component('home', home_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('home', {
         component: 'home',
@@ -55085,21 +55093,21 @@ var HomeModule = angular.module('app.components.home', [angularjs_1.default]).co
 exports.default = HomeModule;
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var home_controller_1 = __webpack_require__(85);
-var template = __webpack_require__(86);
+var home_controller_1 = __webpack_require__(86);
+var template = __webpack_require__(87);
 var HomeComponent = {
     template: template,
     controller: home_controller_1.default
@@ -55107,7 +55115,7 @@ var HomeComponent = {
 exports.default = HomeComponent;
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55124,25 +55132,25 @@ var HomeController = function HomeController() {
 exports.default = HomeController;
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container-fluid home\">\n    <h1 class=\"text-center home__title\">TypeScript</h1>\n    <img src=\"/img/home/background.png\" class=\"home__background animated zoomIn\" alt=\"Home Background\">\n    <h2 class=\"text-center\">Application Scale JavaScript Development</h2>\n\n    <a ui-sref=\"playground\">\n        <img src=\"/img/home/play.png\" class=\"home__play animated bounce infinite\" alt=\"Let's Play\">\n    </a>\n</div>";
+module.exports = "<div class=\"container-fluid home\">\n    <h1 class=\"text-center home__title\">TypeScript</h1>\n    <img src=\"/img/home/background.png\" class=\"home__background animated pulse\" alt=\"Home Background\">\n    <h2 class=\"text-center\">Application Scale JavaScript Development</h2>\n\n    <a ui-sref=\"playground\">\n        <img src=\"/img/home/play.svg\" class=\"home__play animated bounce\" alt=\"Let's Play\">\n    </a>\n\n    <a ui-sref=\"real-world\">\n        <img src=\"/img/home/real.svg\" class=\"home__real animated bounce\" alt=\"Real World Examples\">\n    </a>\n</div>";
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(88);
+__webpack_require__(89);
 var angular = __webpack_require__(1);
-var angularjs_1 = __webpack_require__(20);
-var playground_component_1 = __webpack_require__(89);
-var playground_service_1 = __webpack_require__(92);
-var topics_module_1 = __webpack_require__(93);
+var angularjs_1 = __webpack_require__(14);
+var playground_component_1 = __webpack_require__(90);
+var playground_service_1 = __webpack_require__(93);
+var topics_module_1 = __webpack_require__(94);
 var PlaygroundModule = angular.module('app.components.playground', [angularjs_1.default, topics_module_1.default.name]).component('playground', playground_component_1.default).service('PlaygroundService', playground_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('playground', {
         component: 'playground',
@@ -55153,21 +55161,21 @@ var PlaygroundModule = angular.module('app.components.playground', [angularjs_1.
 exports.default = PlaygroundModule;
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var playground_controller_1 = __webpack_require__(90);
-var template = __webpack_require__(91);
+var playground_controller_1 = __webpack_require__(91);
+var template = __webpack_require__(92);
 var PlaygroundComponent = {
     template: template,
     controller: playground_controller_1.default
@@ -55175,7 +55183,7 @@ var PlaygroundComponent = {
 exports.default = PlaygroundComponent;
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55196,13 +55204,13 @@ PlaygroundController.$inject = ['PlaygroundService'];
 exports.default = PlaygroundController;
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container playground\">\n    <h1>TypeScript Topics:</h1>\n\n    <ul class=\"playground__topics\">\n        <li class=\"topic__item\" ng-repeat=\"topic in $ctrl.topics\">\n            <a href=\"#\">{{ topic.label }}</a>\n        </li>\n    </ul>\n</div>";
+module.exports = "<div class=\"container workshop\">\n    <h1>TypeScript Topics:</h1>\n\n    <ul class=\"workshop__topics\">\n        <li class=\"topic__item\" ng-repeat=\"topic in $ctrl.topics\">\n            <a href=\"#\">{{ topic.label }}</a>\n        </li>\n    </ul>\n</div>";
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55234,7 +55242,7 @@ var PlaygroundService = function () {
 exports.default = PlaygroundService;
 
 /***/ }),
-/* 93 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55242,31 +55250,31 @@ exports.default = PlaygroundService;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var angular = __webpack_require__(1);
-var advanced_types_module_1 = __webpack_require__(94);
-var basic_types_module_1 = __webpack_require__(95);
-var classes_module_1 = __webpack_require__(96);
-var declaration_files_module_1 = __webpack_require__(97);
-var declaration_merging_module_1 = __webpack_require__(98);
-var decorators_module_1 = __webpack_require__(99);
-var enums_module_1 = __webpack_require__(100);
-var functions_module_1 = __webpack_require__(101);
-var generics_module_1 = __webpack_require__(102);
-var interfaces_module_1 = __webpack_require__(103);
-var mixins_module_1 = __webpack_require__(104);
-var module_resolution_module_1 = __webpack_require__(105);
-var modules_module_1 = __webpack_require__(106);
-var namespaces_module_1 = __webpack_require__(107);
-var namespaces_and_modules_module_1 = __webpack_require__(108);
-var symbols_module_1 = __webpack_require__(109);
-var triple_slash_directives_module_1 = __webpack_require__(110);
-var type_compatibility_module_1 = __webpack_require__(111);
-var type_inference_module_1 = __webpack_require__(112);
-var variable_declarations_module_1 = __webpack_require__(113);
+var advanced_types_module_1 = __webpack_require__(95);
+var basic_types_module_1 = __webpack_require__(96);
+var classes_module_1 = __webpack_require__(97);
+var declaration_files_module_1 = __webpack_require__(98);
+var declaration_merging_module_1 = __webpack_require__(99);
+var decorators_module_1 = __webpack_require__(100);
+var enums_module_1 = __webpack_require__(101);
+var functions_module_1 = __webpack_require__(102);
+var generics_module_1 = __webpack_require__(103);
+var interfaces_module_1 = __webpack_require__(104);
+var mixins_module_1 = __webpack_require__(105);
+var module_resolution_module_1 = __webpack_require__(106);
+var modules_module_1 = __webpack_require__(107);
+var namespaces_module_1 = __webpack_require__(108);
+var namespaces_and_modules_module_1 = __webpack_require__(109);
+var symbols_module_1 = __webpack_require__(110);
+var triple_slash_directives_module_1 = __webpack_require__(111);
+var type_compatibility_module_1 = __webpack_require__(112);
+var type_inference_module_1 = __webpack_require__(113);
+var variable_declarations_module_1 = __webpack_require__(114);
 var TopicsModule = angular.module('app.components.playground.topics', [advanced_types_module_1.default.name, basic_types_module_1.default.name, classes_module_1.default.name, declaration_files_module_1.default.name, declaration_merging_module_1.default.name, decorators_module_1.default.name, enums_module_1.default.name, functions_module_1.default.name, generics_module_1.default.name, interfaces_module_1.default.name, mixins_module_1.default.name, module_resolution_module_1.default.name, modules_module_1.default.name, namespaces_module_1.default.name, namespaces_and_modules_module_1.default.name, symbols_module_1.default.name, triple_slash_directives_module_1.default.name, type_compatibility_module_1.default.name, type_inference_module_1.default.name, variable_declarations_module_1.default.name]);
 exports.default = TopicsModule;
 
 /***/ }),
-/* 94 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55278,7 +55286,7 @@ var AdvancedTypesModule = angular.module('app.components.playground.topics.advan
 exports.default = AdvancedTypesModule;
 
 /***/ }),
-/* 95 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55290,7 +55298,7 @@ var BasicTypesModule = angular.module('app.components.playground.topics.basic-ty
 exports.default = BasicTypesModule;
 
 /***/ }),
-/* 96 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55302,7 +55310,7 @@ var ClassesModule = angular.module('app.components.playground.topics.classes', [
 exports.default = ClassesModule;
 
 /***/ }),
-/* 97 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55314,7 +55322,7 @@ var DeclarationFilesModule = angular.module('app.components.playground.topics.de
 exports.default = DeclarationFilesModule;
 
 /***/ }),
-/* 98 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55326,7 +55334,7 @@ var DeclarationMergingModule = angular.module('app.components.playground.topics.
 exports.default = DeclarationMergingModule;
 
 /***/ }),
-/* 99 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55338,7 +55346,7 @@ var DecoratorsModule = angular.module('app.components.playground.topics.decorato
 exports.default = DecoratorsModule;
 
 /***/ }),
-/* 100 */
+/* 101 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55350,7 +55358,7 @@ var EnumsModule = angular.module('app.components.playground.topics.enums', []);
 exports.default = EnumsModule;
 
 /***/ }),
-/* 101 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55362,7 +55370,7 @@ var FunctionsModule = angular.module('app.components.playground.topics.functions
 exports.default = FunctionsModule;
 
 /***/ }),
-/* 102 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55374,7 +55382,7 @@ var GenericsModule = angular.module('app.components.playground.topics.generics',
 exports.default = GenericsModule;
 
 /***/ }),
-/* 103 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55386,7 +55394,7 @@ var InterfacesModule = angular.module('app.components.playground.topics.interfac
 exports.default = InterfacesModule;
 
 /***/ }),
-/* 104 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55398,7 +55406,7 @@ var MixinsModule = angular.module('app.components.playground.topics.mixins', [])
 exports.default = MixinsModule;
 
 /***/ }),
-/* 105 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55410,7 +55418,7 @@ var ModuleResolutionModule = angular.module('app.components.playground.topics.mo
 exports.default = ModuleResolutionModule;
 
 /***/ }),
-/* 106 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55422,7 +55430,7 @@ var ModulesModule = angular.module('app.components.playground.topics.modules', [
 exports.default = ModulesModule;
 
 /***/ }),
-/* 107 */
+/* 108 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55434,7 +55442,7 @@ var NamespacesModule = angular.module('app.components.playground.topics.namespac
 exports.default = NamespacesModule;
 
 /***/ }),
-/* 108 */
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55446,7 +55454,7 @@ var NamespacesAndModulesModule = angular.module('app.components.playground.topic
 exports.default = NamespacesAndModulesModule;
 
 /***/ }),
-/* 109 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55458,7 +55466,7 @@ var Symbols = angular.module('app.components.playground.topics.symbols', []);
 exports.default = Symbols;
 
 /***/ }),
-/* 110 */
+/* 111 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55470,7 +55478,7 @@ var TripleSlashDirectives = angular.module('app.components.playground.topics.tri
 exports.default = TripleSlashDirectives;
 
 /***/ }),
-/* 111 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55482,7 +55490,7 @@ var TypeCompatibility = angular.module('app.components.playground.topics.type-co
 exports.default = TypeCompatibility;
 
 /***/ }),
-/* 112 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55494,7 +55502,7 @@ var TypeInference = angular.module('app.components.playground.topics.type-infere
 exports.default = TypeInference;
 
 /***/ }),
-/* 113 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55506,22 +55514,6 @@ var VariableDeclarations = angular.module('app.components.playground.topics.vari
 exports.default = VariableDeclarations;
 
 /***/ }),
-/* 114 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
-var nav_module_1 = __webpack_require__(115);
-var footer_module_1 = __webpack_require__(120);
-var highlighter_module_1 = __webpack_require__(125);
-var logger_module_1 = __webpack_require__(130);
-var CommonModule = angular.module('app.common', [nav_module_1.default.name, footer_module_1.default.name, highlighter_module_1.default.name, logger_module_1.default.name]);
-exports.default = CommonModule;
-
-/***/ }),
 /* 115 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -55531,9 +55523,17 @@ exports.default = CommonModule;
 Object.defineProperty(exports, "__esModule", { value: true });
 __webpack_require__(116);
 var angular = __webpack_require__(1);
-var nav_component_1 = __webpack_require__(117);
-var NavModule = angular.module('app.common.nav', []).component('footer', nav_component_1.default);
-exports.default = NavModule;
+var angularjs_1 = __webpack_require__(14);
+var real_world_component_1 = __webpack_require__(117);
+var real_world_service_1 = __webpack_require__(120);
+var RealWorldModule = angular.module('app.components.real-world', [angularjs_1.default]).component('realWorld', real_world_component_1.default).service('RealWorldService', real_world_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
+    $stateProvider.state('real-world', {
+        component: 'realWorld',
+        url: '/real-world'
+    });
+    $urlRouterProvider.otherwise('/');
+});
+exports.default = RealWorldModule;
 
 /***/ }),
 /* 116 */
@@ -55549,8 +55549,119 @@ exports.default = NavModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var nav_controller_1 = __webpack_require__(118);
+var real_world_controller_1 = __webpack_require__(118);
 var template = __webpack_require__(119);
+var PlaygroundComponent = {
+    template: template,
+    controller: real_world_controller_1.default
+};
+exports.default = PlaygroundComponent;
+
+/***/ }),
+/* 118 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var RealWorldController = function RealWorldController(realWorldService) {
+    _classCallCheck(this, RealWorldController);
+
+    this.realWorldService = realWorldService;
+    this.topics = realWorldService.getTopics();
+};
+
+RealWorldController.$inject = ['RealWorldService'];
+exports.default = RealWorldController;
+
+/***/ }),
+/* 119 */
+/***/ (function(module, exports) {
+
+module.exports = "<div class=\"container workshop\">\n    <h1>Real World Topics:</h1>\n\n    <ul class=\"workshop__topics\">\n        <li class=\"topic__item\" ng-repeat=\"topic in $ctrl.topics\">\n            <a href=\"#\">{{ topic.label }}</a>\n        </li>\n    </ul>\n</div>";
+
+/***/ }),
+/* 120 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var RealWorldService = function () {
+    function RealWorldService() {
+        _classCallCheck(this, RealWorldService);
+
+        this.topics = [{ label: 'Todo CRUD', state: 'Hello' }, { label: 'Fixer API', state: 'Hello' }];
+    }
+
+    _createClass(RealWorldService, [{
+        key: "getTopics",
+        value: function getTopics() {
+            return this.topics;
+        }
+    }]);
+
+    return RealWorldService;
+}();
+
+exports.default = RealWorldService;
+
+/***/ }),
+/* 121 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var angular = __webpack_require__(1);
+var nav_module_1 = __webpack_require__(122);
+var footer_module_1 = __webpack_require__(127);
+var highlighter_module_1 = __webpack_require__(132);
+var logger_module_1 = __webpack_require__(137);
+var CommonModule = angular.module('app.common', [nav_module_1.default.name, footer_module_1.default.name, highlighter_module_1.default.name, logger_module_1.default.name]);
+exports.default = CommonModule;
+
+/***/ }),
+/* 122 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(123);
+var angular = __webpack_require__(1);
+var nav_component_1 = __webpack_require__(124);
+var NavModule = angular.module('app.common.nav', []).component('footer', nav_component_1.default);
+exports.default = NavModule;
+
+/***/ }),
+/* 123 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 124 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var nav_controller_1 = __webpack_require__(125);
+var template = __webpack_require__(126);
 var NavComponent = {
     template: template,
     controller: nav_controller_1.default
@@ -55558,7 +55669,7 @@ var NavComponent = {
 exports.default = NavComponent;
 
 /***/ }),
-/* 118 */
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55575,41 +55686,41 @@ var NavController = function NavController() {
 exports.default = NavController;
 
 /***/ }),
-/* 119 */
+/* 126 */
 /***/ (function(module, exports) {
 
 module.exports = "";
 
 /***/ }),
-/* 120 */
+/* 127 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(121);
+__webpack_require__(128);
 var angular = __webpack_require__(1);
-var footer_component_1 = __webpack_require__(122);
+var footer_component_1 = __webpack_require__(129);
 var FooterModule = angular.module('app.common.footer', []).component('footer', footer_component_1.default);
 exports.default = FooterModule;
 
 /***/ }),
-/* 121 */
+/* 128 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 122 */
+/* 129 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var footer_controller_1 = __webpack_require__(123);
-var template = __webpack_require__(124);
+var footer_controller_1 = __webpack_require__(130);
+var template = __webpack_require__(131);
 var FooterComponent = {
     template: template,
     controller: footer_controller_1.default
@@ -55617,7 +55728,7 @@ var FooterComponent = {
 exports.default = FooterComponent;
 
 /***/ }),
-/* 123 */
+/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55634,41 +55745,41 @@ var FooterController = function FooterController() {
 exports.default = FooterController;
 
 /***/ }),
-/* 124 */
+/* 131 */
 /***/ (function(module, exports) {
 
 module.exports = "";
 
 /***/ }),
-/* 125 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(126);
+__webpack_require__(133);
 var angular = __webpack_require__(1);
-var highlighter_component_1 = __webpack_require__(127);
+var highlighter_component_1 = __webpack_require__(134);
 var HighlighterModule = angular.module('app.common.highlighter', []).component('highlighter', highlighter_component_1.default);
 exports.default = HighlighterModule;
 
 /***/ }),
-/* 126 */
+/* 133 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 127 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var highlighter_controller_1 = __webpack_require__(128);
-var template = __webpack_require__(129);
+var highlighter_controller_1 = __webpack_require__(135);
+var template = __webpack_require__(136);
 var HighlighterComponent = {
     template: template,
     controller: highlighter_controller_1.default
@@ -55676,7 +55787,7 @@ var HighlighterComponent = {
 exports.default = HighlighterComponent;
 
 /***/ }),
-/* 128 */
+/* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55693,41 +55804,41 @@ var HighlighterController = function HighlighterController() {
 exports.default = HighlighterController;
 
 /***/ }),
-/* 129 */
+/* 136 */
 /***/ (function(module, exports) {
 
 module.exports = "";
 
 /***/ }),
-/* 130 */
+/* 137 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(131);
+__webpack_require__(138);
 var angular = __webpack_require__(1);
-var logger_component_1 = __webpack_require__(132);
+var logger_component_1 = __webpack_require__(139);
 var LoggerModule = angular.module('app.common.logger', []).component('logger', logger_component_1.default);
 exports.default = LoggerModule;
 
 /***/ }),
-/* 131 */
+/* 138 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 132 */
+/* 139 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var logger_controller_1 = __webpack_require__(133);
-var template = __webpack_require__(134);
+var logger_controller_1 = __webpack_require__(140);
+var template = __webpack_require__(141);
 var LoggerComponent = {
     template: template,
     controller: logger_controller_1.default
@@ -55735,7 +55846,7 @@ var LoggerComponent = {
 exports.default = LoggerComponent;
 
 /***/ }),
-/* 133 */
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55752,7 +55863,7 @@ var LoggerController = function LoggerController() {
 exports.default = LoggerController;
 
 /***/ }),
-/* 134 */
+/* 141 */
 /***/ (function(module, exports) {
 
 module.exports = "";

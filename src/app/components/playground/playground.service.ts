@@ -1,6 +1,7 @@
-import ITopic from './contracts/ITopic';
+import ITopic from '../ITopic';
+import IWorkshop from '../IWorkshop';
 
-class PlaygroundService {
+class PlaygroundService implements IWorkshop {
     public topics: ITopic[] = [
         {label: 'Basic Types', state: 'Hello'},
         {label: 'Variable Declarations', state: 'Hello'},
