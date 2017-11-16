@@ -96,3 +96,4 @@ module.exports = () => {
 // Todo: add minification for css output file
 // Todo: add minification for html output file
 // Todo: add hashing and cashing of chunks
+// Todo: add image compressor
