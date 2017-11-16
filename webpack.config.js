@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextWebpackPlugin = require('extract-text-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = () => {
     return {
@@ -59,7 +60,7 @@ module.exports = () => {
                     test: /\.tsx?$/,
                     loaders: ['babel-loader', 'awesome-typescript-loader'],
                     exclude: /node_modules/
-                },
+                }
             ]
         },
         resolve: {
@@ -81,7 +82,10 @@ module.exports = () => {
                 template: path.resolve(__dirname, 'src', 'index.html'),
                 hash: true,
                 chunks: ['app']
-            })
+            }),
+            new CopyWebpackPlugin([
+                {from: 'img', to: 'img'}
+            ])
         ],
         devServer: {
             contentBase: path.resolve(__dirname),
