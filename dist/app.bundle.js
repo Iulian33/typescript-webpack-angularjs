@@ -55516,7 +55516,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var angular = __webpack_require__(1);
 var nav_module_1 = __webpack_require__(115);
 var footer_module_1 = __webpack_require__(120);
-var CommonModule = angular.module('app.common', [nav_module_1.default.name, footer_module_1.default.name]);
+var highlighter_module_1 = __webpack_require__(125);
+var logger_module_1 = __webpack_require__(130);
+var CommonModule = angular.module('app.common', [nav_module_1.default.name, footer_module_1.default.name, highlighter_module_1.default.name, logger_module_1.default.name]);
 exports.default = CommonModule;
 
 /***/ }),
@@ -55633,6 +55635,124 @@ exports.default = FooterController;
 
 /***/ }),
 /* 124 */
+/***/ (function(module, exports) {
+
+module.exports = "";
+
+/***/ }),
+/* 125 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(126);
+var angular = __webpack_require__(1);
+var highlighter_component_1 = __webpack_require__(127);
+var HighlighterModule = angular.module('app.common.highlighter', []).component('highlighter', highlighter_component_1.default);
+exports.default = HighlighterModule;
+
+/***/ }),
+/* 126 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 127 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var highlighter_controller_1 = __webpack_require__(128);
+var template = __webpack_require__(129);
+var HighlighterComponent = {
+    template: template,
+    controller: highlighter_controller_1.default
+};
+exports.default = HighlighterComponent;
+
+/***/ }),
+/* 128 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var HighlighterController = function HighlighterController() {
+  _classCallCheck(this, HighlighterController);
+};
+
+exports.default = HighlighterController;
+
+/***/ }),
+/* 129 */
+/***/ (function(module, exports) {
+
+module.exports = "";
+
+/***/ }),
+/* 130 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(131);
+var angular = __webpack_require__(1);
+var logger_component_1 = __webpack_require__(132);
+var LoggerModule = angular.module('app.common.logger', []).component('logger', logger_component_1.default);
+exports.default = LoggerModule;
+
+/***/ }),
+/* 131 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 132 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var logger_controller_1 = __webpack_require__(133);
+var template = __webpack_require__(134);
+var LoggerComponent = {
+    template: template,
+    controller: logger_controller_1.default
+};
+exports.default = LoggerComponent;
+
+/***/ }),
+/* 133 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var LoggerController = function LoggerController() {
+  _classCallCheck(this, LoggerController);
+};
+
+exports.default = LoggerController;
+
+/***/ }),
+/* 134 */
 /***/ (function(module, exports) {
 
 module.exports = "";
