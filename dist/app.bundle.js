@@ -67,6 +67,14 @@
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
+__webpack_require__(56);
+module.exports = angular;
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global) {
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -631,14 +639,6 @@ exports.silentRejection = function (error) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(59)))
 
 /***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(56);
-module.exports = angular;
-
-
-/***/ }),
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -970,7 +970,7 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module common */ /** for typedoc */
-__export(__webpack_require__(0));
+__export(__webpack_require__(1));
 __export(__webpack_require__(4));
 __export(__webpack_require__(15));
 __export(__webpack_require__(3));
@@ -995,11 +995,11 @@ __export(__webpack_require__(7));
  */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
 var predicates_1 = __webpack_require__(2);
-var rejectFactory_1 = __webpack_require__(11);
-var common_1 = __webpack_require__(0);
+var rejectFactory_1 = __webpack_require__(12);
+var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
 var transition_1 = __webpack_require__(16);
-var resolvable_1 = __webpack_require__(13);
+var resolvable_1 = __webpack_require__(14);
 /**
  * Returns a string shortened to a maximum length
  *
@@ -1393,853 +1393,6 @@ exports.trace = trace;
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var TransitionHookPhase;
-(function (TransitionHookPhase) {
-    TransitionHookPhase[TransitionHookPhase["CREATE"] = 0] = "CREATE";
-    TransitionHookPhase[TransitionHookPhase["BEFORE"] = 1] = "BEFORE";
-    TransitionHookPhase[TransitionHookPhase["RUN"] = 2] = "RUN";
-    TransitionHookPhase[TransitionHookPhase["SUCCESS"] = 3] = "SUCCESS";
-    TransitionHookPhase[TransitionHookPhase["ERROR"] = 4] = "ERROR";
-})(TransitionHookPhase = exports.TransitionHookPhase || (exports.TransitionHookPhase = {}));
-var TransitionHookScope;
-(function (TransitionHookScope) {
-    TransitionHookScope[TransitionHookScope["TRANSITION"] = 0] = "TRANSITION";
-    TransitionHookScope[TransitionHookScope["STATE"] = 1] = "STATE";
-})(TransitionHookScope = exports.TransitionHookScope || (exports.TransitionHookScope = {}));
-//# sourceMappingURL=interface.js.map
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-/**
- * @coreapi
- * @module state
- */ /** for typedoc */
-Object.defineProperty(exports, "__esModule", { value: true });
-var predicates_1 = __webpack_require__(2);
-var strings_1 = __webpack_require__(6);
-var common_1 = __webpack_require__(5);
-/**
- * Encapsulate the target (destination) state/params/options of a [[Transition]].
- *
- * This class is frequently used to redirect a transition to a new destination.
- *
- * See:
- *
- * - [[HookResult]]
- * - [[TransitionHookFn]]
- * - [[TransitionService.onStart]]
- *
- * To create a `TargetState`, use [[StateService.target]].
- *
- * ---
- *
- * This class wraps:
- *
- * 1) an identifier for a state
- * 2) a set of parameters
- * 3) and transition options
- * 4) the registered state object (the [[StateDeclaration]])
- *
- * Many UI-Router APIs such as [[StateService.go]] take a [[StateOrName]] argument which can
- * either be a *state object* (a [[StateDeclaration]] or [[StateObject]]) or a *state name* (a string).
- * The `TargetState` class normalizes those options.
- *
- * A `TargetState` may be valid (the state being targeted exists in the registry)
- * or invalid (the state being targeted is not registered).
- */
-var TargetState = /** @class */ (function () {
-    /**
-     * The TargetState constructor
-     *
-     * Note: Do not construct a `TargetState` manually.
-     * To create a `TargetState`, use the [[StateService.target]] factory method.
-     *
-     * @param _stateRegistry The StateRegistry to use to look up the _definition
-     * @param _identifier An identifier for a state.
-     *    Either a fully-qualified state name, or the object used to define the state.
-     * @param _params Parameters for the target state
-     * @param _options Transition options.
-     *
-     * @internalapi
-     */
-    function TargetState(_stateRegistry, _identifier, _params, _options) {
-        this._stateRegistry = _stateRegistry;
-        this._identifier = _identifier;
-        this._identifier = _identifier;
-        this._params = common_1.extend({}, _params || {});
-        this._options = common_1.extend({}, _options || {});
-        this._definition = _stateRegistry.matcher.find(_identifier, this._options.relative);
-    }
-    /** The name of the state this object targets */
-    TargetState.prototype.name = function () {
-        return this._definition && this._definition.name || this._identifier;
-    };
-    /** The identifier used when creating this TargetState */
-    TargetState.prototype.identifier = function () {
-        return this._identifier;
-    };
-    /** The target parameter values */
-    TargetState.prototype.params = function () {
-        return this._params;
-    };
-    /** The internal state object (if it was found) */
-    TargetState.prototype.$state = function () {
-        return this._definition;
-    };
-    /** The internal state declaration (if it was found) */
-    TargetState.prototype.state = function () {
-        return this._definition && this._definition.self;
-    };
-    /** The target options */
-    TargetState.prototype.options = function () {
-        return this._options;
-    };
-    /** True if the target state was found */
-    TargetState.prototype.exists = function () {
-        return !!(this._definition && this._definition.self);
-    };
-    /** True if the object is valid */
-    TargetState.prototype.valid = function () {
-        return !this.error();
-    };
-    /** If the object is invalid, returns the reason why */
-    TargetState.prototype.error = function () {
-        var base = this.options().relative;
-        if (!this._definition && !!base) {
-            var stateName = base.name ? base.name : base;
-            return "Could not resolve '" + this.name() + "' from state '" + stateName + "'";
-        }
-        if (!this._definition)
-            return "No such state '" + this.name() + "'";
-        if (!this._definition.self)
-            return "State '" + this.name() + "' has an invalid definition";
-    };
-    TargetState.prototype.toString = function () {
-        return "'" + this.name() + "'" + strings_1.stringify(this.params());
-    };
-    /**
-     * Returns a copy of this TargetState which targets a different state.
-     * The new TargetState has the same parameter values and transition options.
-     *
-     * @param state The new state that should be targeted
-     */
-    TargetState.prototype.withState = function (state) {
-        return new TargetState(this._stateRegistry, state, this._params, this._options);
-    };
-    /**
-     * Returns a copy of this TargetState, using the specified parameter values.
-     *
-     * @param params the new parameter values to use
-     * @param replace When false (default) the new parameter values will be merged with the current values.
-     *                When true the parameter values will be used instead of the current values.
-     */
-    TargetState.prototype.withParams = function (params, replace) {
-        if (replace === void 0) { replace = false; }
-        var newParams = replace ? params : common_1.extend({}, this._params, params);
-        return new TargetState(this._stateRegistry, this._identifier, newParams, this._options);
-    };
-    /**
-     * Returns a copy of this TargetState, using the specified Transition Options.
-     *
-     * @param options the new options to use
-     * @param replace When false (default) the new options will be merged with the current options.
-     *                When true the options will be used instead of the current options.
-     */
-    TargetState.prototype.withOptions = function (options, replace) {
-        if (replace === void 0) { replace = false; }
-        var newOpts = replace ? options : common_1.extend({}, this._options, options);
-        return new TargetState(this._stateRegistry, this._identifier, this._params, newOpts);
-    };
-    /** Returns true if the object has a state property that might be a state or state name */
-    TargetState.isDef = function (obj) {
-        return obj && obj.state && (predicates_1.isString(obj.state) || predicates_1.isString(obj.state.name));
-    };
-    return TargetState;
-}());
-exports.TargetState = TargetState;
-//# sourceMappingURL=targetState.js.map
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * @coreapi
- * @module params
- */ /** for typedoc */
-var common_1 = __webpack_require__(0);
-var hof_1 = __webpack_require__(3);
-var predicates_1 = __webpack_require__(2);
-var coreservices_1 = __webpack_require__(4);
-var paramType_1 = __webpack_require__(25);
-/** @hidden */ var hasOwn = Object.prototype.hasOwnProperty;
-/** @hidden */ var isShorthand = function (cfg) {
-    return ["value", "type", "squash", "array", "dynamic"].filter(hasOwn.bind(cfg || {})).length === 0;
-};
-/** @internalapi */
-var DefType;
-(function (DefType) {
-    DefType[DefType["PATH"] = 0] = "PATH";
-    DefType[DefType["SEARCH"] = 1] = "SEARCH";
-    DefType[DefType["CONFIG"] = 2] = "CONFIG";
-})(DefType = exports.DefType || (exports.DefType = {}));
-/** @hidden */
-function unwrapShorthand(cfg) {
-    cfg = isShorthand(cfg) && { value: cfg } || cfg;
-    getStaticDefaultValue['__cacheable'] = true;
-    function getStaticDefaultValue() {
-        return cfg.value;
-    }
-    return common_1.extend(cfg, {
-        $$fn: predicates_1.isInjectable(cfg.value) ? cfg.value : getStaticDefaultValue,
-    });
-}
-/** @hidden */
-function getType(cfg, urlType, location, id, paramTypes) {
-    if (cfg.type && urlType && urlType.name !== 'string')
-        throw new Error("Param '" + id + "' has two type configurations.");
-    if (cfg.type && urlType && urlType.name === 'string' && paramTypes.type(cfg.type))
-        return paramTypes.type(cfg.type);
-    if (urlType)
-        return urlType;
-    if (!cfg.type) {
-        var type = location === DefType.CONFIG ? "any" :
-            location === DefType.PATH ? "path" :
-                location === DefType.SEARCH ? "query" : "string";
-        return paramTypes.type(type);
-    }
-    return cfg.type instanceof paramType_1.ParamType ? cfg.type : paramTypes.type(cfg.type);
-}
-/**
- * @internalapi
- * returns false, true, or the squash value to indicate the "default parameter url squash policy".
- */
-function getSquashPolicy(config, isOptional, defaultPolicy) {
-    var squash = config.squash;
-    if (!isOptional || squash === false)
-        return false;
-    if (!predicates_1.isDefined(squash) || squash == null)
-        return defaultPolicy;
-    if (squash === true || predicates_1.isString(squash))
-        return squash;
-    throw new Error("Invalid squash policy: '" + squash + "'. Valid policies: false, true, or arbitrary string");
-}
-/** @internalapi */
-function getReplace(config, arrayMode, isOptional, squash) {
-    var replace, configuredKeys, defaultPolicy = [
-        { from: "", to: (isOptional || arrayMode ? undefined : "") },
-        { from: null, to: (isOptional || arrayMode ? undefined : "") },
-    ];
-    replace = predicates_1.isArray(config.replace) ? config.replace : [];
-    if (predicates_1.isString(squash))
-        replace.push({ from: squash, to: undefined });
-    configuredKeys = common_1.map(replace, hof_1.prop("from"));
-    return common_1.filter(defaultPolicy, function (item) { return configuredKeys.indexOf(item.from) === -1; }).concat(replace);
-}
-/** @internalapi */
-var Param = /** @class */ (function () {
-    function Param(id, type, config, location, urlMatcherFactory) {
-        config = unwrapShorthand(config);
-        type = getType(config, type, location, id, urlMatcherFactory.paramTypes);
-        var arrayMode = getArrayMode();
-        type = arrayMode ? type.$asArray(arrayMode, location === DefType.SEARCH) : type;
-        var isOptional = config.value !== undefined || location === DefType.SEARCH;
-        var dynamic = predicates_1.isDefined(config.dynamic) ? !!config.dynamic : !!type.dynamic;
-        var raw = predicates_1.isDefined(config.raw) ? !!config.raw : !!type.raw;
-        var squash = getSquashPolicy(config, isOptional, urlMatcherFactory.defaultSquashPolicy());
-        var replace = getReplace(config, arrayMode, isOptional, squash);
-        var inherit = predicates_1.isDefined(config.inherit) ? !!config.inherit : !!type.inherit;
-        // array config: param name (param[]) overrides default settings.  explicit config overrides param name.
-        function getArrayMode() {
-            var arrayDefaults = { array: (location === DefType.SEARCH ? "auto" : false) };
-            var arrayParamNomenclature = id.match(/\[\]$/) ? { array: true } : {};
-            return common_1.extend(arrayDefaults, arrayParamNomenclature, config).array;
-        }
-        common_1.extend(this, { id: id, type: type, location: location, isOptional: isOptional, dynamic: dynamic, raw: raw, squash: squash, replace: replace, inherit: inherit, array: arrayMode, config: config });
-    }
-    Param.prototype.isDefaultValue = function (value) {
-        return this.isOptional && this.type.equals(this.value(), value);
-    };
-    /**
-     * [Internal] Gets the decoded representation of a value if the value is defined, otherwise, returns the
-     * default value, which may be the result of an injectable function.
-     */
-    Param.prototype.value = function (value) {
-        var _this = this;
-        /**
-         * [Internal] Get the default value of a parameter, which may be an injectable function.
-         */
-        var getDefaultValue = function () {
-            if (_this._defaultValueCache)
-                return _this._defaultValueCache.defaultValue;
-            if (!coreservices_1.services.$injector)
-                throw new Error("Injectable functions cannot be called at configuration time");
-            var defaultValue = coreservices_1.services.$injector.invoke(_this.config.$$fn);
-            if (defaultValue !== null && defaultValue !== undefined && !_this.type.is(defaultValue))
-                throw new Error("Default value (" + defaultValue + ") for parameter '" + _this.id + "' is not an instance of ParamType (" + _this.type.name + ")");
-            if (_this.config.$$fn['__cacheable']) {
-                _this._defaultValueCache = { defaultValue: defaultValue };
-            }
-            return defaultValue;
-        };
-        var replaceSpecialValues = function (val) {
-            for (var _i = 0, _a = _this.replace; _i < _a.length; _i++) {
-                var tuple = _a[_i];
-                if (tuple.from === val)
-                    return tuple.to;
-            }
-            return val;
-        };
-        value = replaceSpecialValues(value);
-        return predicates_1.isUndefined(value) ? getDefaultValue() : this.type.$normalize(value);
-    };
-    Param.prototype.isSearch = function () {
-        return this.location === DefType.SEARCH;
-    };
-    Param.prototype.validates = function (value) {
-        // There was no parameter value, but the param is optional
-        if ((predicates_1.isUndefined(value) || value === null) && this.isOptional)
-            return true;
-        // The value was not of the correct ParamType, and could not be decoded to the correct ParamType
-        var normalized = this.type.$normalize(value);
-        if (!this.type.is(normalized))
-            return false;
-        // The value was of the correct type, but when encoded, did not match the ParamType's regexp
-        var encoded = this.type.encode(normalized);
-        return !(predicates_1.isString(encoded) && !this.type.pattern.exec(encoded));
-    };
-    Param.prototype.toString = function () {
-        return "{Param:" + this.id + " " + this.type + " squash: '" + this.squash + "' optional: " + this.isOptional + "}";
-    };
-    Param.values = function (params, values) {
-        if (values === void 0) { values = {}; }
-        var paramValues = {};
-        for (var _i = 0, params_1 = params; _i < params_1.length; _i++) {
-            var param = params_1[_i];
-            paramValues[param.id] = param.value(values[param.id]);
-        }
-        return paramValues;
-    };
-    /**
-     * Finds [[Param]] objects which have different param values
-     *
-     * Filters a list of [[Param]] objects to only those whose parameter values differ in two param value objects
-     *
-     * @param params: The list of Param objects to filter
-     * @param values1: The first set of parameter values
-     * @param values2: the second set of parameter values
-     *
-     * @returns any Param objects whose values were different between values1 and values2
-     */
-    Param.changed = function (params, values1, values2) {
-        if (values1 === void 0) { values1 = {}; }
-        if (values2 === void 0) { values2 = {}; }
-        return params.filter(function (param) { return !param.type.equals(values1[param.id], values2[param.id]); });
-    };
-    /**
-     * Checks if two param value objects are equal (for a set of [[Param]] objects)
-     *
-     * @param params The list of [[Param]] objects to check
-     * @param values1 The first set of param values
-     * @param values2 The second set of param values
-     *
-     * @returns true if the param values in values1 and values2 are equal
-     */
-    Param.equals = function (params, values1, values2) {
-        if (values1 === void 0) { values1 = {}; }
-        if (values2 === void 0) { values2 = {}; }
-        return Param.changed(params, values1, values2).length === 0;
-    };
-    /** Returns true if a the parameter values are valid, according to the Param definitions */
-    Param.validates = function (params, values) {
-        if (values === void 0) { values = {}; }
-        return params.map(function (param) { return param.validates(values[param.id]); }).reduce(common_1.allTrueR, true);
-    };
-    return Param;
-}());
-exports.Param = Param;
-//# sourceMappingURL=param.js.map
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/**
- * @coreapi
- * @module transition
- */ /** for typedoc */
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var common_1 = __webpack_require__(0);
-var strings_1 = __webpack_require__(6);
-var hof_1 = __webpack_require__(3);
-var RejectType;
-(function (RejectType) {
-    RejectType[RejectType["SUPERSEDED"] = 2] = "SUPERSEDED";
-    RejectType[RejectType["ABORTED"] = 3] = "ABORTED";
-    RejectType[RejectType["INVALID"] = 4] = "INVALID";
-    RejectType[RejectType["IGNORED"] = 5] = "IGNORED";
-    RejectType[RejectType["ERROR"] = 6] = "ERROR";
-})(RejectType = exports.RejectType || (exports.RejectType = {}));
-/** @hidden */ var id = 0;
-var Rejection = /** @class */ (function () {
-    function Rejection(type, message, detail) {
-        this.$id = id++;
-        this.type = type;
-        this.message = message;
-        this.detail = detail;
-    }
-    Rejection.prototype.toString = function () {
-        var detailString = function (d) {
-            return d && d.toString !== Object.prototype.toString ? d.toString() : strings_1.stringify(d);
-        };
-        var detail = detailString(this.detail);
-        var _a = this, $id = _a.$id, type = _a.type, message = _a.message;
-        return "Transition Rejection($id: " + $id + " type: " + type + ", message: " + message + ", detail: " + detail + ")";
-    };
-    Rejection.prototype.toPromise = function () {
-        return common_1.extend(common_1.silentRejection(this), { _transitionRejection: this });
-    };
-    /** Returns true if the obj is a rejected promise created from the `asPromise` factory */
-    Rejection.isRejectionPromise = function (obj) {
-        return obj && (typeof obj.then === 'function') && hof_1.is(Rejection)(obj._transitionRejection);
-    };
-    /** Returns a Rejection due to transition superseded */
-    Rejection.superseded = function (detail, options) {
-        var message = "The transition has been superseded by a different transition";
-        var rejection = new Rejection(RejectType.SUPERSEDED, message, detail);
-        if (options && options.redirected) {
-            rejection.redirected = true;
-        }
-        return rejection;
-    };
-    /** Returns a Rejection due to redirected transition */
-    Rejection.redirected = function (detail) {
-        return Rejection.superseded(detail, { redirected: true });
-    };
-    /** Returns a Rejection due to invalid transition */
-    Rejection.invalid = function (detail) {
-        var message = "This transition is invalid";
-        return new Rejection(RejectType.INVALID, message, detail);
-    };
-    /** Returns a Rejection due to ignored transition */
-    Rejection.ignored = function (detail) {
-        var message = "The transition was ignored";
-        return new Rejection(RejectType.IGNORED, message, detail);
-    };
-    /** Returns a Rejection due to aborted transition */
-    Rejection.aborted = function (detail) {
-        var message = "The transition has been aborted";
-        return new Rejection(RejectType.ABORTED, message, detail);
-    };
-    /** Returns a Rejection due to aborted transition */
-    Rejection.errored = function (detail) {
-        var message = "The transition errored";
-        return new Rejection(RejectType.ERROR, message, detail);
-    };
-    /**
-     * Returns a Rejection
-     *
-     * Normalizes a value as a Rejection.
-     * If the value is already a Rejection, returns it.
-     * Otherwise, wraps and returns the value as a Rejection (Rejection type: ERROR).
-     *
-     * @returns `detail` if it is already a `Rejection`, else returns an ERROR Rejection.
-     */
-    Rejection.normalize = function (detail) {
-        return hof_1.is(Rejection)(detail) ? detail : Rejection.errored(detail);
-    };
-    return Rejection;
-}());
-exports.Rejection = Rejection;
-//# sourceMappingURL=rejectFactory.js.map
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * @coreapi
- * @module transition
- */
-/** for typedoc */
-var interface_1 = __webpack_require__(8);
-var common_1 = __webpack_require__(0);
-var strings_1 = __webpack_require__(6);
-var predicates_1 = __webpack_require__(2);
-var hof_1 = __webpack_require__(3);
-var trace_1 = __webpack_require__(7);
-var coreservices_1 = __webpack_require__(4);
-var rejectFactory_1 = __webpack_require__(11);
-var targetState_1 = __webpack_require__(9);
-var defaultOptions = {
-    current: common_1.noop,
-    transition: null,
-    traceData: {},
-    bind: null,
-};
-/** @hidden */
-var TransitionHook = /** @class */ (function () {
-    function TransitionHook(transition, stateContext, registeredHook, options) {
-        var _this = this;
-        this.transition = transition;
-        this.stateContext = stateContext;
-        this.registeredHook = registeredHook;
-        this.options = options;
-        this.isSuperseded = function () {
-            return _this.type.hookPhase === interface_1.TransitionHookPhase.RUN && !_this.options.transition.isActive();
-        };
-        this.options = common_1.defaults(options, defaultOptions);
-        this.type = registeredHook.eventType;
-    }
-    TransitionHook.prototype.logError = function (err) {
-        this.transition.router.stateService.defaultErrorHandler()(err);
-    };
-    TransitionHook.prototype.invokeHook = function () {
-        var _this = this;
-        var hook = this.registeredHook;
-        if (hook._deregistered)
-            return;
-        var notCurrent = this.getNotCurrentRejection();
-        if (notCurrent)
-            return notCurrent;
-        var options = this.options;
-        trace_1.trace.traceHookInvocation(this, this.transition, options);
-        var invokeCallback = function () {
-            return hook.callback.call(options.bind, _this.transition, _this.stateContext);
-        };
-        var normalizeErr = function (err) {
-            return rejectFactory_1.Rejection.normalize(err).toPromise();
-        };
-        var handleError = function (err) {
-            return hook.eventType.getErrorHandler(_this)(err);
-        };
-        var handleResult = function (result) {
-            return hook.eventType.getResultHandler(_this)(result);
-        };
-        try {
-            var result = invokeCallback();
-            if (!this.type.synchronous && predicates_1.isPromise(result)) {
-                return result.catch(normalizeErr)
-                    .then(handleResult, handleError);
-            }
-            else {
-                return handleResult(result);
-            }
-        }
-        catch (err) {
-            // If callback throws (synchronously)
-            return handleError(rejectFactory_1.Rejection.normalize(err));
-        }
-        finally {
-            if (hook.invokeLimit && ++hook.invokeCount >= hook.invokeLimit) {
-                hook.deregister();
-            }
-        }
-    };
-    /**
-     * This method handles the return value of a Transition Hook.
-     *
-     * A hook can return false (cancel), a TargetState (redirect),
-     * or a promise (which may later resolve to false or a redirect)
-     *
-     * This also handles "transition superseded" -- when a new transition
-     * was started while the hook was still running
-     */
-    TransitionHook.prototype.handleHookResult = function (result) {
-        var _this = this;
-        var notCurrent = this.getNotCurrentRejection();
-        if (notCurrent)
-            return notCurrent;
-        // Hook returned a promise
-        if (predicates_1.isPromise(result)) {
-            // Wait for the promise, then reprocess with the resulting value
-            return result.then(function (val) { return _this.handleHookResult(val); });
-        }
-        trace_1.trace.traceHookResult(result, this.transition, this.options);
-        // Hook returned false
-        if (result === false) {
-            // Abort this Transition
-            return rejectFactory_1.Rejection.aborted("Hook aborted transition").toPromise();
-        }
-        var isTargetState = hof_1.is(targetState_1.TargetState);
-        // hook returned a TargetState
-        if (isTargetState(result)) {
-            // Halt the current Transition and redirect (a new Transition) to the TargetState.
-            return rejectFactory_1.Rejection.redirected(result).toPromise();
-        }
-    };
-    /**
-     * Return a Rejection promise if the transition is no longer current due
-     * to a stopped router (disposed), or a new transition has started and superseded this one.
-     */
-    TransitionHook.prototype.getNotCurrentRejection = function () {
-        var router = this.transition.router;
-        // The router is stopped
-        if (router._disposed) {
-            return rejectFactory_1.Rejection.aborted("UIRouter instance #" + router.$id + " has been stopped (disposed)").toPromise();
-        }
-        if (this.transition._aborted) {
-            return rejectFactory_1.Rejection.aborted().toPromise();
-        }
-        // This transition is no longer current.
-        // Another transition started while this hook was still running.
-        if (this.isSuperseded()) {
-            // Abort this transition
-            return rejectFactory_1.Rejection.superseded(this.options.current()).toPromise();
-        }
-    };
-    TransitionHook.prototype.toString = function () {
-        var _a = this, options = _a.options, registeredHook = _a.registeredHook;
-        var event = hof_1.parse("traceData.hookType")(options) || "internal", context = hof_1.parse("traceData.context.state.name")(options) || hof_1.parse("traceData.context")(options) || "unknown", name = strings_1.fnToString(registeredHook.callback);
-        return event + " context: " + context + ", " + strings_1.maxLength(200, name);
-    };
-    /**
-     * Chains together an array of TransitionHooks.
-     *
-     * Given a list of [[TransitionHook]] objects, chains them together.
-     * Each hook is invoked after the previous one completes.
-     *
-     * #### Example:
-     * ```js
-     * var hooks: TransitionHook[] = getHooks();
-     * let promise: Promise<any> = TransitionHook.chain(hooks);
-     *
-     * promise.then(handleSuccess, handleError);
-     * ```
-     *
-     * @param hooks the list of hooks to chain together
-     * @param waitFor if provided, the chain is `.then()`'ed off this promise
-     * @returns a `Promise` for sequentially invoking the hooks (in order)
-     */
-    TransitionHook.chain = function (hooks, waitFor) {
-        // Chain the next hook off the previous
-        var createHookChainR = function (prev, nextHook) {
-            return prev.then(function () { return nextHook.invokeHook(); });
-        };
-        return hooks.reduce(createHookChainR, waitFor || coreservices_1.services.$q.when());
-    };
-    /**
-     * Invokes all the provided TransitionHooks, in order.
-     * Each hook's return value is checked.
-     * If any hook returns a promise, then the rest of the hooks are chained off that promise, and the promise is returned.
-     * If no hook returns a promise, then all hooks are processed synchronously.
-     *
-     * @param hooks the list of TransitionHooks to invoke
-     * @param doneCallback a callback that is invoked after all the hooks have successfully completed
-     *
-     * @returns a promise for the async result, or the result of the callback
-     */
-    TransitionHook.invokeHooks = function (hooks, doneCallback) {
-        for (var idx = 0; idx < hooks.length; idx++) {
-            var hookResult = hooks[idx].invokeHook();
-            if (predicates_1.isPromise(hookResult)) {
-                var remainingHooks = hooks.slice(idx + 1);
-                return TransitionHook.chain(remainingHooks, hookResult)
-                    .then(doneCallback);
-            }
-        }
-        return doneCallback();
-    };
-    /**
-     * Run all TransitionHooks, ignoring their return value.
-     */
-    TransitionHook.runAllHooks = function (hooks) {
-        hooks.forEach(function (hook) { return hook.invokeHook(); });
-    };
-    /**
-     * These GetResultHandler(s) are used by [[invokeHook]] below
-     * Each HookType chooses a GetResultHandler (See: [[TransitionService._defineCoreEvents]])
-     */
-    TransitionHook.HANDLE_RESULT = function (hook) { return function (result) {
-        return hook.handleHookResult(result);
-    }; };
-    /**
-     * If the result is a promise rejection, log it.
-     * Otherwise, ignore the result.
-     */
-    TransitionHook.LOG_REJECTED_RESULT = function (hook) { return function (result) {
-        predicates_1.isPromise(result) && result.catch(function (err) {
-            return hook.logError(rejectFactory_1.Rejection.normalize(err));
-        });
-        return undefined;
-    }; };
-    /**
-     * These GetErrorHandler(s) are used by [[invokeHook]] below
-     * Each HookType chooses a GetErrorHandler (See: [[TransitionService._defineCoreEvents]])
-     */
-    TransitionHook.LOG_ERROR = function (hook) { return function (error) {
-        return hook.logError(error);
-    }; };
-    TransitionHook.REJECT_ERROR = function (hook) { return function (error) {
-        return common_1.silentRejection(error);
-    }; };
-    TransitionHook.THROW_ERROR = function (hook) { return function (error) {
-        throw error;
-    }; };
-    return TransitionHook;
-}());
-exports.TransitionHook = TransitionHook;
-//# sourceMappingURL=transitionHook.js.map
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * @coreapi
- * @module resolve
- */ /** for typedoc */
-var common_1 = __webpack_require__(0);
-var coreservices_1 = __webpack_require__(4);
-var trace_1 = __webpack_require__(7);
-var strings_1 = __webpack_require__(6);
-var predicates_1 = __webpack_require__(2);
-var common_2 = __webpack_require__(5);
-// TODO: explicitly make this user configurable
-exports.defaultResolvePolicy = {
-    when: "LAZY",
-    async: "WAIT"
-};
-/**
- * The basic building block for the resolve system.
- *
- * Resolvables encapsulate a state's resolve's resolveFn, the resolveFn's declared dependencies, the wrapped (.promise),
- * and the unwrapped-when-complete (.data) result of the resolveFn.
- *
- * Resolvable.get() either retrieves the Resolvable's existing promise, or else invokes resolve() (which invokes the
- * resolveFn) and returns the resulting promise.
- *
- * Resolvable.get() and Resolvable.resolve() both execute within a context path, which is passed as the first
- * parameter to those fns.
- */
-var Resolvable = /** @class */ (function () {
-    function Resolvable(arg1, resolveFn, deps, policy, data) {
-        this.resolved = false;
-        this.promise = undefined;
-        if (arg1 instanceof Resolvable) {
-            common_1.extend(this, arg1);
-        }
-        else if (predicates_1.isFunction(resolveFn)) {
-            if (common_2.isNullOrUndefined(arg1))
-                throw new Error("new Resolvable(): token argument is required");
-            if (!predicates_1.isFunction(resolveFn))
-                throw new Error("new Resolvable(): resolveFn argument must be a function");
-            this.token = arg1;
-            this.policy = policy;
-            this.resolveFn = resolveFn;
-            this.deps = deps || [];
-            this.data = data;
-            this.resolved = data !== undefined;
-            this.promise = this.resolved ? coreservices_1.services.$q.when(this.data) : undefined;
-        }
-        else if (predicates_1.isObject(arg1) && arg1.token && predicates_1.isFunction(arg1.resolveFn)) {
-            var literal = arg1;
-            return new Resolvable(literal.token, literal.resolveFn, literal.deps, literal.policy, literal.data);
-        }
-    }
-    Resolvable.prototype.getPolicy = function (state) {
-        var thisPolicy = this.policy || {};
-        var statePolicy = state && state.resolvePolicy || {};
-        return {
-            when: thisPolicy.when || statePolicy.when || exports.defaultResolvePolicy.when,
-            async: thisPolicy.async || statePolicy.async || exports.defaultResolvePolicy.async,
-        };
-    };
-    /**
-     * Asynchronously resolve this Resolvable's data
-     *
-     * Given a ResolveContext that this Resolvable is found in:
-     * Wait for this Resolvable's dependencies, then invoke this Resolvable's function
-     * and update the Resolvable's state
-     */
-    Resolvable.prototype.resolve = function (resolveContext, trans) {
-        var _this = this;
-        var $q = coreservices_1.services.$q;
-        // Gets all dependencies from ResolveContext and wait for them to be resolved
-        var getResolvableDependencies = function () {
-            return $q.all(resolveContext.getDependencies(_this).map(function (resolvable) {
-                return resolvable.get(resolveContext, trans);
-            }));
-        };
-        // Invokes the resolve function passing the resolved dependencies as arguments
-        var invokeResolveFn = function (resolvedDeps) {
-            return _this.resolveFn.apply(null, resolvedDeps);
-        };
-        /**
-         * For RXWAIT policy:
-         *
-         * Given an observable returned from a resolve function:
-         * - enables .cache() mode (this allows multicast subscribers)
-         * - then calls toPromise() (this triggers subscribe() and thus fetches)
-         * - Waits for the promise, then return the cached observable (not the first emitted value).
-         */
-        var waitForRx = function (observable$) {
-            var cached = observable$.cache(1);
-            return cached.take(1).toPromise().then(function () { return cached; });
-        };
-        // If the resolve policy is RXWAIT, wait for the observable to emit something. otherwise pass through.
-        var node = resolveContext.findNode(this);
-        var state = node && node.state;
-        var maybeWaitForRx = this.getPolicy(state).async === "RXWAIT" ? waitForRx : common_1.identity;
-        // After the final value has been resolved, update the state of the Resolvable
-        var applyResolvedValue = function (resolvedValue) {
-            _this.data = resolvedValue;
-            _this.resolved = true;
-            trace_1.trace.traceResolvableResolved(_this, trans);
-            return _this.data;
-        };
-        // Sets the promise property first, then getsResolvableDependencies in the context of the promise chain. Always waits one tick.
-        return this.promise = $q.when()
-            .then(getResolvableDependencies)
-            .then(invokeResolveFn)
-            .then(maybeWaitForRx)
-            .then(applyResolvedValue);
-    };
-    /**
-     * Gets a promise for this Resolvable's data.
-     *
-     * Fetches the data and returns a promise.
-     * Returns the existing promise if it has already been fetched once.
-     */
-    Resolvable.prototype.get = function (resolveContext, trans) {
-        return this.promise || this.resolve(resolveContext, trans);
-    };
-    Resolvable.prototype.toString = function () {
-        return "Resolvable(token: " + strings_1.stringify(this.token) + ", requires: [" + this.deps.map(strings_1.stringify) + "])";
-    };
-    Resolvable.prototype.clone = function () {
-        return new Resolvable(this);
-    };
-    Resolvable.fromData = function (token, data) {
-        return new Resolvable(token, function () { return data; }, null, null, data);
-    };
-    return Resolvable;
-}());
-exports.Resolvable = Resolvable;
-//# sourceMappingURL=resolvable.js.map
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
 /**
  * State-based routing for AngularJS 1.x
  * This bundle requires the ui-router-core.js bundle from the @uirouter/core package.
@@ -2248,7 +1401,7 @@ exports.Resolvable = Resolvable;
  * @license MIT License, http://www.opensource.org/licenses/MIT
  */
 (function (global, factory) {
-	 true ? factory(exports, __webpack_require__(1), __webpack_require__(58)) :
+	 true ? factory(exports, __webpack_require__(0), __webpack_require__(58)) :
 	typeof define === 'function' && define.amd ? define(['exports', 'angular', '@uirouter/core'], factory) :
 	(factory((global['@uirouter/angularjs'] = {}),global.angular,global['@uirouter/core']));
 }(this, (function (exports,ng_from_import,core) { 'use strict';
@@ -4257,6 +3410,853 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 
 /***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var TransitionHookPhase;
+(function (TransitionHookPhase) {
+    TransitionHookPhase[TransitionHookPhase["CREATE"] = 0] = "CREATE";
+    TransitionHookPhase[TransitionHookPhase["BEFORE"] = 1] = "BEFORE";
+    TransitionHookPhase[TransitionHookPhase["RUN"] = 2] = "RUN";
+    TransitionHookPhase[TransitionHookPhase["SUCCESS"] = 3] = "SUCCESS";
+    TransitionHookPhase[TransitionHookPhase["ERROR"] = 4] = "ERROR";
+})(TransitionHookPhase = exports.TransitionHookPhase || (exports.TransitionHookPhase = {}));
+var TransitionHookScope;
+(function (TransitionHookScope) {
+    TransitionHookScope[TransitionHookScope["TRANSITION"] = 0] = "TRANSITION";
+    TransitionHookScope[TransitionHookScope["STATE"] = 1] = "STATE";
+})(TransitionHookScope = exports.TransitionHookScope || (exports.TransitionHookScope = {}));
+//# sourceMappingURL=interface.js.map
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/**
+ * @coreapi
+ * @module state
+ */ /** for typedoc */
+Object.defineProperty(exports, "__esModule", { value: true });
+var predicates_1 = __webpack_require__(2);
+var strings_1 = __webpack_require__(6);
+var common_1 = __webpack_require__(5);
+/**
+ * Encapsulate the target (destination) state/params/options of a [[Transition]].
+ *
+ * This class is frequently used to redirect a transition to a new destination.
+ *
+ * See:
+ *
+ * - [[HookResult]]
+ * - [[TransitionHookFn]]
+ * - [[TransitionService.onStart]]
+ *
+ * To create a `TargetState`, use [[StateService.target]].
+ *
+ * ---
+ *
+ * This class wraps:
+ *
+ * 1) an identifier for a state
+ * 2) a set of parameters
+ * 3) and transition options
+ * 4) the registered state object (the [[StateDeclaration]])
+ *
+ * Many UI-Router APIs such as [[StateService.go]] take a [[StateOrName]] argument which can
+ * either be a *state object* (a [[StateDeclaration]] or [[StateObject]]) or a *state name* (a string).
+ * The `TargetState` class normalizes those options.
+ *
+ * A `TargetState` may be valid (the state being targeted exists in the registry)
+ * or invalid (the state being targeted is not registered).
+ */
+var TargetState = /** @class */ (function () {
+    /**
+     * The TargetState constructor
+     *
+     * Note: Do not construct a `TargetState` manually.
+     * To create a `TargetState`, use the [[StateService.target]] factory method.
+     *
+     * @param _stateRegistry The StateRegistry to use to look up the _definition
+     * @param _identifier An identifier for a state.
+     *    Either a fully-qualified state name, or the object used to define the state.
+     * @param _params Parameters for the target state
+     * @param _options Transition options.
+     *
+     * @internalapi
+     */
+    function TargetState(_stateRegistry, _identifier, _params, _options) {
+        this._stateRegistry = _stateRegistry;
+        this._identifier = _identifier;
+        this._identifier = _identifier;
+        this._params = common_1.extend({}, _params || {});
+        this._options = common_1.extend({}, _options || {});
+        this._definition = _stateRegistry.matcher.find(_identifier, this._options.relative);
+    }
+    /** The name of the state this object targets */
+    TargetState.prototype.name = function () {
+        return this._definition && this._definition.name || this._identifier;
+    };
+    /** The identifier used when creating this TargetState */
+    TargetState.prototype.identifier = function () {
+        return this._identifier;
+    };
+    /** The target parameter values */
+    TargetState.prototype.params = function () {
+        return this._params;
+    };
+    /** The internal state object (if it was found) */
+    TargetState.prototype.$state = function () {
+        return this._definition;
+    };
+    /** The internal state declaration (if it was found) */
+    TargetState.prototype.state = function () {
+        return this._definition && this._definition.self;
+    };
+    /** The target options */
+    TargetState.prototype.options = function () {
+        return this._options;
+    };
+    /** True if the target state was found */
+    TargetState.prototype.exists = function () {
+        return !!(this._definition && this._definition.self);
+    };
+    /** True if the object is valid */
+    TargetState.prototype.valid = function () {
+        return !this.error();
+    };
+    /** If the object is invalid, returns the reason why */
+    TargetState.prototype.error = function () {
+        var base = this.options().relative;
+        if (!this._definition && !!base) {
+            var stateName = base.name ? base.name : base;
+            return "Could not resolve '" + this.name() + "' from state '" + stateName + "'";
+        }
+        if (!this._definition)
+            return "No such state '" + this.name() + "'";
+        if (!this._definition.self)
+            return "State '" + this.name() + "' has an invalid definition";
+    };
+    TargetState.prototype.toString = function () {
+        return "'" + this.name() + "'" + strings_1.stringify(this.params());
+    };
+    /**
+     * Returns a copy of this TargetState which targets a different state.
+     * The new TargetState has the same parameter values and transition options.
+     *
+     * @param state The new state that should be targeted
+     */
+    TargetState.prototype.withState = function (state) {
+        return new TargetState(this._stateRegistry, state, this._params, this._options);
+    };
+    /**
+     * Returns a copy of this TargetState, using the specified parameter values.
+     *
+     * @param params the new parameter values to use
+     * @param replace When false (default) the new parameter values will be merged with the current values.
+     *                When true the parameter values will be used instead of the current values.
+     */
+    TargetState.prototype.withParams = function (params, replace) {
+        if (replace === void 0) { replace = false; }
+        var newParams = replace ? params : common_1.extend({}, this._params, params);
+        return new TargetState(this._stateRegistry, this._identifier, newParams, this._options);
+    };
+    /**
+     * Returns a copy of this TargetState, using the specified Transition Options.
+     *
+     * @param options the new options to use
+     * @param replace When false (default) the new options will be merged with the current options.
+     *                When true the options will be used instead of the current options.
+     */
+    TargetState.prototype.withOptions = function (options, replace) {
+        if (replace === void 0) { replace = false; }
+        var newOpts = replace ? options : common_1.extend({}, this._options, options);
+        return new TargetState(this._stateRegistry, this._identifier, this._params, newOpts);
+    };
+    /** Returns true if the object has a state property that might be a state or state name */
+    TargetState.isDef = function (obj) {
+        return obj && obj.state && (predicates_1.isString(obj.state) || predicates_1.isString(obj.state.name));
+    };
+    return TargetState;
+}());
+exports.TargetState = TargetState;
+//# sourceMappingURL=targetState.js.map
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @coreapi
+ * @module params
+ */ /** for typedoc */
+var common_1 = __webpack_require__(1);
+var hof_1 = __webpack_require__(3);
+var predicates_1 = __webpack_require__(2);
+var coreservices_1 = __webpack_require__(4);
+var paramType_1 = __webpack_require__(25);
+/** @hidden */ var hasOwn = Object.prototype.hasOwnProperty;
+/** @hidden */ var isShorthand = function (cfg) {
+    return ["value", "type", "squash", "array", "dynamic"].filter(hasOwn.bind(cfg || {})).length === 0;
+};
+/** @internalapi */
+var DefType;
+(function (DefType) {
+    DefType[DefType["PATH"] = 0] = "PATH";
+    DefType[DefType["SEARCH"] = 1] = "SEARCH";
+    DefType[DefType["CONFIG"] = 2] = "CONFIG";
+})(DefType = exports.DefType || (exports.DefType = {}));
+/** @hidden */
+function unwrapShorthand(cfg) {
+    cfg = isShorthand(cfg) && { value: cfg } || cfg;
+    getStaticDefaultValue['__cacheable'] = true;
+    function getStaticDefaultValue() {
+        return cfg.value;
+    }
+    return common_1.extend(cfg, {
+        $$fn: predicates_1.isInjectable(cfg.value) ? cfg.value : getStaticDefaultValue,
+    });
+}
+/** @hidden */
+function getType(cfg, urlType, location, id, paramTypes) {
+    if (cfg.type && urlType && urlType.name !== 'string')
+        throw new Error("Param '" + id + "' has two type configurations.");
+    if (cfg.type && urlType && urlType.name === 'string' && paramTypes.type(cfg.type))
+        return paramTypes.type(cfg.type);
+    if (urlType)
+        return urlType;
+    if (!cfg.type) {
+        var type = location === DefType.CONFIG ? "any" :
+            location === DefType.PATH ? "path" :
+                location === DefType.SEARCH ? "query" : "string";
+        return paramTypes.type(type);
+    }
+    return cfg.type instanceof paramType_1.ParamType ? cfg.type : paramTypes.type(cfg.type);
+}
+/**
+ * @internalapi
+ * returns false, true, or the squash value to indicate the "default parameter url squash policy".
+ */
+function getSquashPolicy(config, isOptional, defaultPolicy) {
+    var squash = config.squash;
+    if (!isOptional || squash === false)
+        return false;
+    if (!predicates_1.isDefined(squash) || squash == null)
+        return defaultPolicy;
+    if (squash === true || predicates_1.isString(squash))
+        return squash;
+    throw new Error("Invalid squash policy: '" + squash + "'. Valid policies: false, true, or arbitrary string");
+}
+/** @internalapi */
+function getReplace(config, arrayMode, isOptional, squash) {
+    var replace, configuredKeys, defaultPolicy = [
+        { from: "", to: (isOptional || arrayMode ? undefined : "") },
+        { from: null, to: (isOptional || arrayMode ? undefined : "") },
+    ];
+    replace = predicates_1.isArray(config.replace) ? config.replace : [];
+    if (predicates_1.isString(squash))
+        replace.push({ from: squash, to: undefined });
+    configuredKeys = common_1.map(replace, hof_1.prop("from"));
+    return common_1.filter(defaultPolicy, function (item) { return configuredKeys.indexOf(item.from) === -1; }).concat(replace);
+}
+/** @internalapi */
+var Param = /** @class */ (function () {
+    function Param(id, type, config, location, urlMatcherFactory) {
+        config = unwrapShorthand(config);
+        type = getType(config, type, location, id, urlMatcherFactory.paramTypes);
+        var arrayMode = getArrayMode();
+        type = arrayMode ? type.$asArray(arrayMode, location === DefType.SEARCH) : type;
+        var isOptional = config.value !== undefined || location === DefType.SEARCH;
+        var dynamic = predicates_1.isDefined(config.dynamic) ? !!config.dynamic : !!type.dynamic;
+        var raw = predicates_1.isDefined(config.raw) ? !!config.raw : !!type.raw;
+        var squash = getSquashPolicy(config, isOptional, urlMatcherFactory.defaultSquashPolicy());
+        var replace = getReplace(config, arrayMode, isOptional, squash);
+        var inherit = predicates_1.isDefined(config.inherit) ? !!config.inherit : !!type.inherit;
+        // array config: param name (param[]) overrides default settings.  explicit config overrides param name.
+        function getArrayMode() {
+            var arrayDefaults = { array: (location === DefType.SEARCH ? "auto" : false) };
+            var arrayParamNomenclature = id.match(/\[\]$/) ? { array: true } : {};
+            return common_1.extend(arrayDefaults, arrayParamNomenclature, config).array;
+        }
+        common_1.extend(this, { id: id, type: type, location: location, isOptional: isOptional, dynamic: dynamic, raw: raw, squash: squash, replace: replace, inherit: inherit, array: arrayMode, config: config });
+    }
+    Param.prototype.isDefaultValue = function (value) {
+        return this.isOptional && this.type.equals(this.value(), value);
+    };
+    /**
+     * [Internal] Gets the decoded representation of a value if the value is defined, otherwise, returns the
+     * default value, which may be the result of an injectable function.
+     */
+    Param.prototype.value = function (value) {
+        var _this = this;
+        /**
+         * [Internal] Get the default value of a parameter, which may be an injectable function.
+         */
+        var getDefaultValue = function () {
+            if (_this._defaultValueCache)
+                return _this._defaultValueCache.defaultValue;
+            if (!coreservices_1.services.$injector)
+                throw new Error("Injectable functions cannot be called at configuration time");
+            var defaultValue = coreservices_1.services.$injector.invoke(_this.config.$$fn);
+            if (defaultValue !== null && defaultValue !== undefined && !_this.type.is(defaultValue))
+                throw new Error("Default value (" + defaultValue + ") for parameter '" + _this.id + "' is not an instance of ParamType (" + _this.type.name + ")");
+            if (_this.config.$$fn['__cacheable']) {
+                _this._defaultValueCache = { defaultValue: defaultValue };
+            }
+            return defaultValue;
+        };
+        var replaceSpecialValues = function (val) {
+            for (var _i = 0, _a = _this.replace; _i < _a.length; _i++) {
+                var tuple = _a[_i];
+                if (tuple.from === val)
+                    return tuple.to;
+            }
+            return val;
+        };
+        value = replaceSpecialValues(value);
+        return predicates_1.isUndefined(value) ? getDefaultValue() : this.type.$normalize(value);
+    };
+    Param.prototype.isSearch = function () {
+        return this.location === DefType.SEARCH;
+    };
+    Param.prototype.validates = function (value) {
+        // There was no parameter value, but the param is optional
+        if ((predicates_1.isUndefined(value) || value === null) && this.isOptional)
+            return true;
+        // The value was not of the correct ParamType, and could not be decoded to the correct ParamType
+        var normalized = this.type.$normalize(value);
+        if (!this.type.is(normalized))
+            return false;
+        // The value was of the correct type, but when encoded, did not match the ParamType's regexp
+        var encoded = this.type.encode(normalized);
+        return !(predicates_1.isString(encoded) && !this.type.pattern.exec(encoded));
+    };
+    Param.prototype.toString = function () {
+        return "{Param:" + this.id + " " + this.type + " squash: '" + this.squash + "' optional: " + this.isOptional + "}";
+    };
+    Param.values = function (params, values) {
+        if (values === void 0) { values = {}; }
+        var paramValues = {};
+        for (var _i = 0, params_1 = params; _i < params_1.length; _i++) {
+            var param = params_1[_i];
+            paramValues[param.id] = param.value(values[param.id]);
+        }
+        return paramValues;
+    };
+    /**
+     * Finds [[Param]] objects which have different param values
+     *
+     * Filters a list of [[Param]] objects to only those whose parameter values differ in two param value objects
+     *
+     * @param params: The list of Param objects to filter
+     * @param values1: The first set of parameter values
+     * @param values2: the second set of parameter values
+     *
+     * @returns any Param objects whose values were different between values1 and values2
+     */
+    Param.changed = function (params, values1, values2) {
+        if (values1 === void 0) { values1 = {}; }
+        if (values2 === void 0) { values2 = {}; }
+        return params.filter(function (param) { return !param.type.equals(values1[param.id], values2[param.id]); });
+    };
+    /**
+     * Checks if two param value objects are equal (for a set of [[Param]] objects)
+     *
+     * @param params The list of [[Param]] objects to check
+     * @param values1 The first set of param values
+     * @param values2 The second set of param values
+     *
+     * @returns true if the param values in values1 and values2 are equal
+     */
+    Param.equals = function (params, values1, values2) {
+        if (values1 === void 0) { values1 = {}; }
+        if (values2 === void 0) { values2 = {}; }
+        return Param.changed(params, values1, values2).length === 0;
+    };
+    /** Returns true if a the parameter values are valid, according to the Param definitions */
+    Param.validates = function (params, values) {
+        if (values === void 0) { values = {}; }
+        return params.map(function (param) { return param.validates(values[param.id]); }).reduce(common_1.allTrueR, true);
+    };
+    return Param;
+}());
+exports.Param = Param;
+//# sourceMappingURL=param.js.map
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/**
+ * @coreapi
+ * @module transition
+ */ /** for typedoc */
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var common_1 = __webpack_require__(1);
+var strings_1 = __webpack_require__(6);
+var hof_1 = __webpack_require__(3);
+var RejectType;
+(function (RejectType) {
+    RejectType[RejectType["SUPERSEDED"] = 2] = "SUPERSEDED";
+    RejectType[RejectType["ABORTED"] = 3] = "ABORTED";
+    RejectType[RejectType["INVALID"] = 4] = "INVALID";
+    RejectType[RejectType["IGNORED"] = 5] = "IGNORED";
+    RejectType[RejectType["ERROR"] = 6] = "ERROR";
+})(RejectType = exports.RejectType || (exports.RejectType = {}));
+/** @hidden */ var id = 0;
+var Rejection = /** @class */ (function () {
+    function Rejection(type, message, detail) {
+        this.$id = id++;
+        this.type = type;
+        this.message = message;
+        this.detail = detail;
+    }
+    Rejection.prototype.toString = function () {
+        var detailString = function (d) {
+            return d && d.toString !== Object.prototype.toString ? d.toString() : strings_1.stringify(d);
+        };
+        var detail = detailString(this.detail);
+        var _a = this, $id = _a.$id, type = _a.type, message = _a.message;
+        return "Transition Rejection($id: " + $id + " type: " + type + ", message: " + message + ", detail: " + detail + ")";
+    };
+    Rejection.prototype.toPromise = function () {
+        return common_1.extend(common_1.silentRejection(this), { _transitionRejection: this });
+    };
+    /** Returns true if the obj is a rejected promise created from the `asPromise` factory */
+    Rejection.isRejectionPromise = function (obj) {
+        return obj && (typeof obj.then === 'function') && hof_1.is(Rejection)(obj._transitionRejection);
+    };
+    /** Returns a Rejection due to transition superseded */
+    Rejection.superseded = function (detail, options) {
+        var message = "The transition has been superseded by a different transition";
+        var rejection = new Rejection(RejectType.SUPERSEDED, message, detail);
+        if (options && options.redirected) {
+            rejection.redirected = true;
+        }
+        return rejection;
+    };
+    /** Returns a Rejection due to redirected transition */
+    Rejection.redirected = function (detail) {
+        return Rejection.superseded(detail, { redirected: true });
+    };
+    /** Returns a Rejection due to invalid transition */
+    Rejection.invalid = function (detail) {
+        var message = "This transition is invalid";
+        return new Rejection(RejectType.INVALID, message, detail);
+    };
+    /** Returns a Rejection due to ignored transition */
+    Rejection.ignored = function (detail) {
+        var message = "The transition was ignored";
+        return new Rejection(RejectType.IGNORED, message, detail);
+    };
+    /** Returns a Rejection due to aborted transition */
+    Rejection.aborted = function (detail) {
+        var message = "The transition has been aborted";
+        return new Rejection(RejectType.ABORTED, message, detail);
+    };
+    /** Returns a Rejection due to aborted transition */
+    Rejection.errored = function (detail) {
+        var message = "The transition errored";
+        return new Rejection(RejectType.ERROR, message, detail);
+    };
+    /**
+     * Returns a Rejection
+     *
+     * Normalizes a value as a Rejection.
+     * If the value is already a Rejection, returns it.
+     * Otherwise, wraps and returns the value as a Rejection (Rejection type: ERROR).
+     *
+     * @returns `detail` if it is already a `Rejection`, else returns an ERROR Rejection.
+     */
+    Rejection.normalize = function (detail) {
+        return hof_1.is(Rejection)(detail) ? detail : Rejection.errored(detail);
+    };
+    return Rejection;
+}());
+exports.Rejection = Rejection;
+//# sourceMappingURL=rejectFactory.js.map
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @coreapi
+ * @module transition
+ */
+/** for typedoc */
+var interface_1 = __webpack_require__(9);
+var common_1 = __webpack_require__(1);
+var strings_1 = __webpack_require__(6);
+var predicates_1 = __webpack_require__(2);
+var hof_1 = __webpack_require__(3);
+var trace_1 = __webpack_require__(7);
+var coreservices_1 = __webpack_require__(4);
+var rejectFactory_1 = __webpack_require__(12);
+var targetState_1 = __webpack_require__(10);
+var defaultOptions = {
+    current: common_1.noop,
+    transition: null,
+    traceData: {},
+    bind: null,
+};
+/** @hidden */
+var TransitionHook = /** @class */ (function () {
+    function TransitionHook(transition, stateContext, registeredHook, options) {
+        var _this = this;
+        this.transition = transition;
+        this.stateContext = stateContext;
+        this.registeredHook = registeredHook;
+        this.options = options;
+        this.isSuperseded = function () {
+            return _this.type.hookPhase === interface_1.TransitionHookPhase.RUN && !_this.options.transition.isActive();
+        };
+        this.options = common_1.defaults(options, defaultOptions);
+        this.type = registeredHook.eventType;
+    }
+    TransitionHook.prototype.logError = function (err) {
+        this.transition.router.stateService.defaultErrorHandler()(err);
+    };
+    TransitionHook.prototype.invokeHook = function () {
+        var _this = this;
+        var hook = this.registeredHook;
+        if (hook._deregistered)
+            return;
+        var notCurrent = this.getNotCurrentRejection();
+        if (notCurrent)
+            return notCurrent;
+        var options = this.options;
+        trace_1.trace.traceHookInvocation(this, this.transition, options);
+        var invokeCallback = function () {
+            return hook.callback.call(options.bind, _this.transition, _this.stateContext);
+        };
+        var normalizeErr = function (err) {
+            return rejectFactory_1.Rejection.normalize(err).toPromise();
+        };
+        var handleError = function (err) {
+            return hook.eventType.getErrorHandler(_this)(err);
+        };
+        var handleResult = function (result) {
+            return hook.eventType.getResultHandler(_this)(result);
+        };
+        try {
+            var result = invokeCallback();
+            if (!this.type.synchronous && predicates_1.isPromise(result)) {
+                return result.catch(normalizeErr)
+                    .then(handleResult, handleError);
+            }
+            else {
+                return handleResult(result);
+            }
+        }
+        catch (err) {
+            // If callback throws (synchronously)
+            return handleError(rejectFactory_1.Rejection.normalize(err));
+        }
+        finally {
+            if (hook.invokeLimit && ++hook.invokeCount >= hook.invokeLimit) {
+                hook.deregister();
+            }
+        }
+    };
+    /**
+     * This method handles the return value of a Transition Hook.
+     *
+     * A hook can return false (cancel), a TargetState (redirect),
+     * or a promise (which may later resolve to false or a redirect)
+     *
+     * This also handles "transition superseded" -- when a new transition
+     * was started while the hook was still running
+     */
+    TransitionHook.prototype.handleHookResult = function (result) {
+        var _this = this;
+        var notCurrent = this.getNotCurrentRejection();
+        if (notCurrent)
+            return notCurrent;
+        // Hook returned a promise
+        if (predicates_1.isPromise(result)) {
+            // Wait for the promise, then reprocess with the resulting value
+            return result.then(function (val) { return _this.handleHookResult(val); });
+        }
+        trace_1.trace.traceHookResult(result, this.transition, this.options);
+        // Hook returned false
+        if (result === false) {
+            // Abort this Transition
+            return rejectFactory_1.Rejection.aborted("Hook aborted transition").toPromise();
+        }
+        var isTargetState = hof_1.is(targetState_1.TargetState);
+        // hook returned a TargetState
+        if (isTargetState(result)) {
+            // Halt the current Transition and redirect (a new Transition) to the TargetState.
+            return rejectFactory_1.Rejection.redirected(result).toPromise();
+        }
+    };
+    /**
+     * Return a Rejection promise if the transition is no longer current due
+     * to a stopped router (disposed), or a new transition has started and superseded this one.
+     */
+    TransitionHook.prototype.getNotCurrentRejection = function () {
+        var router = this.transition.router;
+        // The router is stopped
+        if (router._disposed) {
+            return rejectFactory_1.Rejection.aborted("UIRouter instance #" + router.$id + " has been stopped (disposed)").toPromise();
+        }
+        if (this.transition._aborted) {
+            return rejectFactory_1.Rejection.aborted().toPromise();
+        }
+        // This transition is no longer current.
+        // Another transition started while this hook was still running.
+        if (this.isSuperseded()) {
+            // Abort this transition
+            return rejectFactory_1.Rejection.superseded(this.options.current()).toPromise();
+        }
+    };
+    TransitionHook.prototype.toString = function () {
+        var _a = this, options = _a.options, registeredHook = _a.registeredHook;
+        var event = hof_1.parse("traceData.hookType")(options) || "internal", context = hof_1.parse("traceData.context.state.name")(options) || hof_1.parse("traceData.context")(options) || "unknown", name = strings_1.fnToString(registeredHook.callback);
+        return event + " context: " + context + ", " + strings_1.maxLength(200, name);
+    };
+    /**
+     * Chains together an array of TransitionHooks.
+     *
+     * Given a list of [[TransitionHook]] objects, chains them together.
+     * Each hook is invoked after the previous one completes.
+     *
+     * #### Example:
+     * ```js
+     * var hooks: TransitionHook[] = getHooks();
+     * let promise: Promise<any> = TransitionHook.chain(hooks);
+     *
+     * promise.then(handleSuccess, handleError);
+     * ```
+     *
+     * @param hooks the list of hooks to chain together
+     * @param waitFor if provided, the chain is `.then()`'ed off this promise
+     * @returns a `Promise` for sequentially invoking the hooks (in order)
+     */
+    TransitionHook.chain = function (hooks, waitFor) {
+        // Chain the next hook off the previous
+        var createHookChainR = function (prev, nextHook) {
+            return prev.then(function () { return nextHook.invokeHook(); });
+        };
+        return hooks.reduce(createHookChainR, waitFor || coreservices_1.services.$q.when());
+    };
+    /**
+     * Invokes all the provided TransitionHooks, in order.
+     * Each hook's return value is checked.
+     * If any hook returns a promise, then the rest of the hooks are chained off that promise, and the promise is returned.
+     * If no hook returns a promise, then all hooks are processed synchronously.
+     *
+     * @param hooks the list of TransitionHooks to invoke
+     * @param doneCallback a callback that is invoked after all the hooks have successfully completed
+     *
+     * @returns a promise for the async result, or the result of the callback
+     */
+    TransitionHook.invokeHooks = function (hooks, doneCallback) {
+        for (var idx = 0; idx < hooks.length; idx++) {
+            var hookResult = hooks[idx].invokeHook();
+            if (predicates_1.isPromise(hookResult)) {
+                var remainingHooks = hooks.slice(idx + 1);
+                return TransitionHook.chain(remainingHooks, hookResult)
+                    .then(doneCallback);
+            }
+        }
+        return doneCallback();
+    };
+    /**
+     * Run all TransitionHooks, ignoring their return value.
+     */
+    TransitionHook.runAllHooks = function (hooks) {
+        hooks.forEach(function (hook) { return hook.invokeHook(); });
+    };
+    /**
+     * These GetResultHandler(s) are used by [[invokeHook]] below
+     * Each HookType chooses a GetResultHandler (See: [[TransitionService._defineCoreEvents]])
+     */
+    TransitionHook.HANDLE_RESULT = function (hook) { return function (result) {
+        return hook.handleHookResult(result);
+    }; };
+    /**
+     * If the result is a promise rejection, log it.
+     * Otherwise, ignore the result.
+     */
+    TransitionHook.LOG_REJECTED_RESULT = function (hook) { return function (result) {
+        predicates_1.isPromise(result) && result.catch(function (err) {
+            return hook.logError(rejectFactory_1.Rejection.normalize(err));
+        });
+        return undefined;
+    }; };
+    /**
+     * These GetErrorHandler(s) are used by [[invokeHook]] below
+     * Each HookType chooses a GetErrorHandler (See: [[TransitionService._defineCoreEvents]])
+     */
+    TransitionHook.LOG_ERROR = function (hook) { return function (error) {
+        return hook.logError(error);
+    }; };
+    TransitionHook.REJECT_ERROR = function (hook) { return function (error) {
+        return common_1.silentRejection(error);
+    }; };
+    TransitionHook.THROW_ERROR = function (hook) { return function (error) {
+        throw error;
+    }; };
+    return TransitionHook;
+}());
+exports.TransitionHook = TransitionHook;
+//# sourceMappingURL=transitionHook.js.map
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @coreapi
+ * @module resolve
+ */ /** for typedoc */
+var common_1 = __webpack_require__(1);
+var coreservices_1 = __webpack_require__(4);
+var trace_1 = __webpack_require__(7);
+var strings_1 = __webpack_require__(6);
+var predicates_1 = __webpack_require__(2);
+var common_2 = __webpack_require__(5);
+// TODO: explicitly make this user configurable
+exports.defaultResolvePolicy = {
+    when: "LAZY",
+    async: "WAIT"
+};
+/**
+ * The basic building block for the resolve system.
+ *
+ * Resolvables encapsulate a state's resolve's resolveFn, the resolveFn's declared dependencies, the wrapped (.promise),
+ * and the unwrapped-when-complete (.data) result of the resolveFn.
+ *
+ * Resolvable.get() either retrieves the Resolvable's existing promise, or else invokes resolve() (which invokes the
+ * resolveFn) and returns the resulting promise.
+ *
+ * Resolvable.get() and Resolvable.resolve() both execute within a context path, which is passed as the first
+ * parameter to those fns.
+ */
+var Resolvable = /** @class */ (function () {
+    function Resolvable(arg1, resolveFn, deps, policy, data) {
+        this.resolved = false;
+        this.promise = undefined;
+        if (arg1 instanceof Resolvable) {
+            common_1.extend(this, arg1);
+        }
+        else if (predicates_1.isFunction(resolveFn)) {
+            if (common_2.isNullOrUndefined(arg1))
+                throw new Error("new Resolvable(): token argument is required");
+            if (!predicates_1.isFunction(resolveFn))
+                throw new Error("new Resolvable(): resolveFn argument must be a function");
+            this.token = arg1;
+            this.policy = policy;
+            this.resolveFn = resolveFn;
+            this.deps = deps || [];
+            this.data = data;
+            this.resolved = data !== undefined;
+            this.promise = this.resolved ? coreservices_1.services.$q.when(this.data) : undefined;
+        }
+        else if (predicates_1.isObject(arg1) && arg1.token && predicates_1.isFunction(arg1.resolveFn)) {
+            var literal = arg1;
+            return new Resolvable(literal.token, literal.resolveFn, literal.deps, literal.policy, literal.data);
+        }
+    }
+    Resolvable.prototype.getPolicy = function (state) {
+        var thisPolicy = this.policy || {};
+        var statePolicy = state && state.resolvePolicy || {};
+        return {
+            when: thisPolicy.when || statePolicy.when || exports.defaultResolvePolicy.when,
+            async: thisPolicy.async || statePolicy.async || exports.defaultResolvePolicy.async,
+        };
+    };
+    /**
+     * Asynchronously resolve this Resolvable's data
+     *
+     * Given a ResolveContext that this Resolvable is found in:
+     * Wait for this Resolvable's dependencies, then invoke this Resolvable's function
+     * and update the Resolvable's state
+     */
+    Resolvable.prototype.resolve = function (resolveContext, trans) {
+        var _this = this;
+        var $q = coreservices_1.services.$q;
+        // Gets all dependencies from ResolveContext and wait for them to be resolved
+        var getResolvableDependencies = function () {
+            return $q.all(resolveContext.getDependencies(_this).map(function (resolvable) {
+                return resolvable.get(resolveContext, trans);
+            }));
+        };
+        // Invokes the resolve function passing the resolved dependencies as arguments
+        var invokeResolveFn = function (resolvedDeps) {
+            return _this.resolveFn.apply(null, resolvedDeps);
+        };
+        /**
+         * For RXWAIT policy:
+         *
+         * Given an observable returned from a resolve function:
+         * - enables .cache() mode (this allows multicast subscribers)
+         * - then calls toPromise() (this triggers subscribe() and thus fetches)
+         * - Waits for the promise, then return the cached observable (not the first emitted value).
+         */
+        var waitForRx = function (observable$) {
+            var cached = observable$.cache(1);
+            return cached.take(1).toPromise().then(function () { return cached; });
+        };
+        // If the resolve policy is RXWAIT, wait for the observable to emit something. otherwise pass through.
+        var node = resolveContext.findNode(this);
+        var state = node && node.state;
+        var maybeWaitForRx = this.getPolicy(state).async === "RXWAIT" ? waitForRx : common_1.identity;
+        // After the final value has been resolved, update the state of the Resolvable
+        var applyResolvedValue = function (resolvedValue) {
+            _this.data = resolvedValue;
+            _this.resolved = true;
+            trace_1.trace.traceResolvableResolved(_this, trans);
+            return _this.data;
+        };
+        // Sets the promise property first, then getsResolvableDependencies in the context of the promise chain. Always waits one tick.
+        return this.promise = $q.when()
+            .then(getResolvableDependencies)
+            .then(invokeResolveFn)
+            .then(maybeWaitForRx)
+            .then(applyResolvedValue);
+    };
+    /**
+     * Gets a promise for this Resolvable's data.
+     *
+     * Fetches the data and returns a promise.
+     * Returns the existing promise if it has already been fetched once.
+     */
+    Resolvable.prototype.get = function (resolveContext, trans) {
+        return this.promise || this.resolve(resolveContext, trans);
+    };
+    Resolvable.prototype.toString = function () {
+        return "Resolvable(token: " + strings_1.stringify(this.token) + ", requires: [" + this.deps.map(strings_1.stringify) + "])";
+    };
+    Resolvable.prototype.clone = function () {
+        return new Resolvable(this);
+    };
+    Resolvable.fromData = function (token, data) {
+        return new Resolvable(token, function () { return data; }, null, null, data);
+    };
+    return Resolvable;
+}());
+exports.Resolvable = Resolvable;
+//# sourceMappingURL=resolvable.js.map
+
+/***/ }),
 /* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -4360,16 +4360,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var trace_1 = __webpack_require__(7);
 var coreservices_1 = __webpack_require__(4);
 var strings_1 = __webpack_require__(6);
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
 var hof_1 = __webpack_require__(3);
-var interface_1 = __webpack_require__(8); // has or is using
-var transitionHook_1 = __webpack_require__(12);
+var interface_1 = __webpack_require__(9); // has or is using
+var transitionHook_1 = __webpack_require__(13);
 var hookRegistry_1 = __webpack_require__(23);
 var hookBuilder_1 = __webpack_require__(28);
 var pathFactory_1 = __webpack_require__(17);
-var param_1 = __webpack_require__(10);
-var resolvable_1 = __webpack_require__(13);
+var param_1 = __webpack_require__(11);
+var resolvable_1 = __webpack_require__(14);
 var resolveContext_1 = __webpack_require__(18);
 /** @hidden */
 var stateSelf = hof_1.prop("self");
@@ -4989,9 +4989,9 @@ exports.Transition = Transition;
 
 /** @module path */ /** for typedoc */
 Object.defineProperty(exports, "__esModule", { value: true });
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
-var targetState_1 = __webpack_require__(9);
+var targetState_1 = __webpack_require__(10);
 var pathNode_1 = __webpack_require__(24);
 /**
  * This class contains functions which convert TargetStates, Nodes and paths from one type to another.
@@ -5169,12 +5169,12 @@ exports.PathUtils = PathUtils;
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module resolve */
 /** for typedoc */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
 var trace_1 = __webpack_require__(7);
 var coreservices_1 = __webpack_require__(4);
 var interface_1 = __webpack_require__(29);
-var resolvable_1 = __webpack_require__(13);
+var resolvable_1 = __webpack_require__(14);
 var pathFactory_1 = __webpack_require__(17);
 var strings_1 = __webpack_require__(6);
 var common_2 = __webpack_require__(5);
@@ -5379,10 +5379,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @module url
  */
 /** for typedoc */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
 var predicates_1 = __webpack_require__(2);
-var param_1 = __webpack_require__(10);
+var param_1 = __webpack_require__(11);
 var strings_1 = __webpack_require__(6);
 /** @hidden */
 function quoteRegExp(string, param) {
@@ -5944,7 +5944,7 @@ exports.BaseLocationServices = BaseLocationServices;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
 var glob_1 = __webpack_require__(15);
 var predicates_1 = __webpack_require__(2);
@@ -6120,9 +6120,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @coreapi
  * @module transition
  */ /** for typedoc */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
-var interface_1 = __webpack_require__(8); // has or is using
+var interface_1 = __webpack_require__(9); // has or is using
 var glob_1 = __webpack_require__(15);
 /**
  * Determines if the given state matches the matchCriteria
@@ -6284,9 +6284,9 @@ exports.makeEvent = makeEvent;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module path */ /** for typedoc */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
-var param_1 = __webpack_require__(10);
+var param_1 = __webpack_require__(11);
 /**
  * @internalapi
  *
@@ -6371,7 +6371,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @module params
  */
 /** */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
 /**
  * An internal class which implements [[ParamTypeDefinition]].
@@ -6519,7 +6519,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @module transition
  */
 /** for typedoc */
-var interface_1 = __webpack_require__(8);
+var interface_1 = __webpack_require__(9);
 var transition_1 = __webpack_require__(16);
 var hookRegistry_1 = __webpack_require__(23);
 var coreResolvables_1 = __webpack_require__(64);
@@ -6531,9 +6531,9 @@ var updateGlobals_1 = __webpack_require__(69);
 var url_1 = __webpack_require__(70);
 var lazyLoad_1 = __webpack_require__(44);
 var transitionEventType_1 = __webpack_require__(45);
-var transitionHook_1 = __webpack_require__(12);
+var transitionHook_1 = __webpack_require__(13);
 var predicates_1 = __webpack_require__(2);
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
 var ignoredTransition_1 = __webpack_require__(71);
 var invalidTransition_1 = __webpack_require__(72);
@@ -6824,10 +6824,10 @@ exports.locationPluginFactory = locationPluginFactory;
  * @module transition
  */ /** for typedoc */
 Object.defineProperty(exports, "__esModule", { value: true });
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
-var interface_1 = __webpack_require__(8);
-var transitionHook_1 = __webpack_require__(12);
+var interface_1 = __webpack_require__(9);
+var transitionHook_1 = __webpack_require__(13);
 /**
  * This class returns applicable TransitionHooks for a specific Transition instance.
  *
@@ -6971,7 +6971,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @module params
  */
 /** */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
 var hof_1 = __webpack_require__(3);
 var coreservices_1 = __webpack_require__(4);
@@ -7133,7 +7133,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @module params
  */
 /** */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 /** @internalapi */
 var StateParams = /** @class */ (function () {
     function StateParams(params) {
@@ -7179,11 +7179,11 @@ exports.StateParams = StateParams;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
 var strings_1 = __webpack_require__(6);
 var hof_1 = __webpack_require__(3);
-var resolvable_1 = __webpack_require__(13);
+var resolvable_1 = __webpack_require__(14);
 var coreservices_1 = __webpack_require__(4);
 var parseUrl = function (url) {
     if (!predicates_1.isString(url))
@@ -7466,7 +7466,7 @@ exports.StateBuilder = StateBuilder;
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
 var predicates_1 = __webpack_require__(2);
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var StateMatcher = /** @class */ (function () {
     function StateMatcher(_states) {
         this._states = _states;
@@ -7534,7 +7534,7 @@ exports.StateMatcher = StateMatcher;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
 var stateObject_1 = __webpack_require__(21);
 var hof_1 = __webpack_require__(3);
@@ -7638,7 +7638,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var stateMatcher_1 = __webpack_require__(33);
 var stateBuilder_1 = __webpack_require__(32);
 var stateQueueManager_1 = __webpack_require__(34);
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
 var StateRegistry = /** @class */ (function () {
     /** @internalapi */
@@ -7798,16 +7798,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @module state
  */
 /** */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
 var queue_1 = __webpack_require__(22);
 var coreservices_1 = __webpack_require__(4);
 var pathFactory_1 = __webpack_require__(17);
 var pathNode_1 = __webpack_require__(24);
 var transitionService_1 = __webpack_require__(26);
-var rejectFactory_1 = __webpack_require__(11);
-var targetState_1 = __webpack_require__(9);
-var param_1 = __webpack_require__(10);
+var rejectFactory_1 = __webpack_require__(12);
+var targetState_1 = __webpack_require__(10);
+var param_1 = __webpack_require__(11);
 var glob_1 = __webpack_require__(15);
 var resolveContext_1 = __webpack_require__(18);
 var lazyLoad_1 = __webpack_require__(44);
@@ -8382,7 +8382,7 @@ var view_1 = __webpack_require__(41);
 var stateRegistry_1 = __webpack_require__(35);
 var stateService_1 = __webpack_require__(36);
 var globals_1 = __webpack_require__(42);
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
 var urlService_1 = __webpack_require__(43);
 var trace_1 = __webpack_require__(7);
@@ -8565,10 +8565,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @internalapi
  * @module url
  */ /** for typedoc */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
 var urlMatcher_1 = __webpack_require__(19);
-var param_1 = __webpack_require__(10);
+var param_1 = __webpack_require__(11);
 var paramTypes_1 = __webpack_require__(30);
 /**
  * Factory for [[UrlMatcher]] instances.
@@ -8699,12 +8699,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @module url
  */
 /** for typedoc */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
 var urlMatcher_1 = __webpack_require__(19);
 var hof_1 = __webpack_require__(3);
 var urlRule_1 = __webpack_require__(40);
-var targetState_1 = __webpack_require__(9);
+var targetState_1 = __webpack_require__(10);
 var common_2 = __webpack_require__(5);
 /** @hidden */
 function appendBasePath(url, isHtml5, absolute, baseHref) {
@@ -9021,7 +9021,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */ /** */
 var urlMatcher_1 = __webpack_require__(19);
 var predicates_1 = __webpack_require__(2);
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
 /**
  * Creates a [[UrlRule]]
@@ -9234,7 +9234,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @coreapi
  * @module view
  */ /** for typedoc */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
 var predicates_1 = __webpack_require__(2);
 var trace_1 = __webpack_require__(7);
@@ -9570,7 +9570,7 @@ exports.UIRouterGlobals = UIRouterGlobals;
  */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
 var coreservices_1 = __webpack_require__(4);
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 /** @hidden */
 var makeStub = function (keys) {
     return keys.reduce(function (acc, key) { return (acc[key] = coreservices_1.notImplemented(key), acc); }, { dispose: common_1.noop });
@@ -9754,7 +9754,7 @@ exports.lazyLoadState = lazyLoadState;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var transitionHook_1 = __webpack_require__(12);
+var transitionHook_1 = __webpack_require__(13);
 /**
  * This class defines a type of hook, such as `onBefore` or `onEnter`.
  * Plugins can define custom hook types, such as sticky states does for `onInactive`.
@@ -10118,7 +10118,7 @@ exports.PushStateLocationService = PushStateLocationService;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var predicates_1 = __webpack_require__(2);
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 /** A `LocationConfig` mock that gets/sets all config from an in-memory object */
 var MemoryLocationConfig = /** @class */ (function () {
     function MemoryLocationConfig() {
@@ -10214,11 +10214,11 @@ __webpack_require__(54);
 
 Object.defineProperty(exports, "__esModule", { value: true });
 __webpack_require__(55);
-var angular = __webpack_require__(1);
-var angularjs_1 = __webpack_require__(14);
+var angular = __webpack_require__(0);
+var angularjs_1 = __webpack_require__(8);
 var app_component_1 = __webpack_require__(80);
 var components_module_1 = __webpack_require__(81);
-var common_module_1 = __webpack_require__(121);
+var common_module_1 = __webpack_require__(133);
 var AppModule = angular.module('app', [angularjs_1.default, common_module_1.default.name, components_module_1.default.name]).component('app', app_component_1.default);
 exports.default = AppModule;
 
@@ -54448,7 +54448,7 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(10));
+__export(__webpack_require__(11));
 __export(__webpack_require__(30));
 __export(__webpack_require__(31));
 __export(__webpack_require__(25));
@@ -54481,7 +54481,7 @@ function __export(m) {
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module resolve */ /** for typedoc */
 __export(__webpack_require__(29));
-__export(__webpack_require__(13));
+__export(__webpack_require__(14));
 __export(__webpack_require__(18));
 //# sourceMappingURL=index.js.map
 
@@ -54501,7 +54501,7 @@ __export(__webpack_require__(33));
 __export(__webpack_require__(34));
 __export(__webpack_require__(35));
 __export(__webpack_require__(36));
-__export(__webpack_require__(9));
+__export(__webpack_require__(10));
 //# sourceMappingURL=index.js.map
 
 /***/ }),
@@ -54538,7 +54538,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** */
 var predicates_1 = __webpack_require__(2);
 var coreservices_1 = __webpack_require__(4);
-var targetState_1 = __webpack_require__(9);
+var targetState_1 = __webpack_require__(10);
 /**
  * A [[TransitionHookFn]] that redirects to a different state or params
  *
@@ -54643,7 +54643,7 @@ exports.registerOnEnterHook = function (transitionService) {
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */
 /** for typedoc */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var resolveContext_1 = __webpack_require__(18);
 var hof_1 = __webpack_require__(3);
 /**
@@ -54691,7 +54691,7 @@ exports.registerLazyResolveState = function (transitionService) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 /** @module hooks */ /** for typedoc */
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 var coreservices_1 = __webpack_require__(4);
 /**
  * A [[TransitionHookFn]] which waits for the views to load
@@ -54743,7 +54743,7 @@ exports.registerActivateViews = function (transitionService) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var common_1 = __webpack_require__(0);
+var common_1 = __webpack_require__(1);
 /**
  * A [[TransitionHookFn]] which updates global UI-Router state
  *
@@ -54817,7 +54817,7 @@ exports.registerUpdateUrl = function (transitionService) {
 /** @module hooks */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
 var trace_1 = __webpack_require__(7);
-var rejectFactory_1 = __webpack_require__(11);
+var rejectFactory_1 = __webpack_require__(12);
 /**
  * A [[TransitionHookFn]] that skips a transition if it should be ignored
  *
@@ -54894,12 +54894,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @preferred
  * @module transition
  */ /** for typedoc */
-__export(__webpack_require__(8));
+__export(__webpack_require__(9));
 __export(__webpack_require__(28));
 __export(__webpack_require__(23));
-__export(__webpack_require__(11));
-__export(__webpack_require__(16));
 __export(__webpack_require__(12));
+__export(__webpack_require__(16));
+__export(__webpack_require__(13));
 __export(__webpack_require__(45));
 __export(__webpack_require__(26));
 //# sourceMappingURL=index.js.map
@@ -55058,7 +55058,7 @@ exports.default = AppComponent;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 __webpack_require__(82);
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var home_module_1 = __webpack_require__(83);
 var playground_module_1 = __webpack_require__(88);
 var real_world_module_1 = __webpack_require__(115);
@@ -55080,8 +55080,8 @@ exports.default = ComponentsModule;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 __webpack_require__(84);
-var angular = __webpack_require__(1);
-var angularjs_1 = __webpack_require__(14);
+var angular = __webpack_require__(0);
+var angularjs_1 = __webpack_require__(8);
 var home_component_1 = __webpack_require__(85);
 var HomeModule = angular.module('app.components.home', [angularjs_1.default]).component('home', home_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('home', {
@@ -55146,8 +55146,8 @@ module.exports = "<div class=\"container-fluid home\">\n    <h1 class=\"text-cen
 
 Object.defineProperty(exports, "__esModule", { value: true });
 __webpack_require__(89);
-var angular = __webpack_require__(1);
-var angularjs_1 = __webpack_require__(14);
+var angular = __webpack_require__(0);
+var angularjs_1 = __webpack_require__(8);
 var playground_component_1 = __webpack_require__(90);
 var playground_service_1 = __webpack_require__(93);
 var topics_module_1 = __webpack_require__(94);
@@ -55249,7 +55249,7 @@ exports.default = PlaygroundService;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var advanced_types_module_1 = __webpack_require__(95);
 var basic_types_module_1 = __webpack_require__(96);
 var classes_module_1 = __webpack_require__(97);
@@ -55281,7 +55281,7 @@ exports.default = TopicsModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var AdvancedTypesModule = angular.module('app.components.playground.topics.advanced-types', []);
 exports.default = AdvancedTypesModule;
 
@@ -55293,7 +55293,7 @@ exports.default = AdvancedTypesModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var BasicTypesModule = angular.module('app.components.playground.topics.basic-types', []);
 exports.default = BasicTypesModule;
 
@@ -55305,7 +55305,7 @@ exports.default = BasicTypesModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var ClassesModule = angular.module('app.components.playground.topics.classes', []);
 exports.default = ClassesModule;
 
@@ -55317,7 +55317,7 @@ exports.default = ClassesModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var DeclarationFilesModule = angular.module('app.components.playground.topics.declaration-files', []);
 exports.default = DeclarationFilesModule;
 
@@ -55329,7 +55329,7 @@ exports.default = DeclarationFilesModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var DeclarationMergingModule = angular.module('app.components.playground.topics.declaration-merging', []);
 exports.default = DeclarationMergingModule;
 
@@ -55341,7 +55341,7 @@ exports.default = DeclarationMergingModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var DecoratorsModule = angular.module('app.components.playground.topics.decorators', []);
 exports.default = DecoratorsModule;
 
@@ -55353,7 +55353,7 @@ exports.default = DecoratorsModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var EnumsModule = angular.module('app.components.playground.topics.enums', []);
 exports.default = EnumsModule;
 
@@ -55365,7 +55365,7 @@ exports.default = EnumsModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var FunctionsModule = angular.module('app.components.playground.topics.functions', []);
 exports.default = FunctionsModule;
 
@@ -55377,7 +55377,7 @@ exports.default = FunctionsModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var GenericsModule = angular.module('app.components.playground.topics.generics', []);
 exports.default = GenericsModule;
 
@@ -55389,7 +55389,7 @@ exports.default = GenericsModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var InterfacesModule = angular.module('app.components.playground.topics.interfaces', []);
 exports.default = InterfacesModule;
 
@@ -55401,7 +55401,7 @@ exports.default = InterfacesModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var MixinsModule = angular.module('app.components.playground.topics.mixins', []);
 exports.default = MixinsModule;
 
@@ -55413,7 +55413,7 @@ exports.default = MixinsModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var ModuleResolutionModule = angular.module('app.components.playground.topics.module-resolution', []);
 exports.default = ModuleResolutionModule;
 
@@ -55425,7 +55425,7 @@ exports.default = ModuleResolutionModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var ModulesModule = angular.module('app.components.playground.topics.modules', []);
 exports.default = ModulesModule;
 
@@ -55437,7 +55437,7 @@ exports.default = ModulesModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var NamespacesModule = angular.module('app.components.playground.topics.namespaces', []);
 exports.default = NamespacesModule;
 
@@ -55449,7 +55449,7 @@ exports.default = NamespacesModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var NamespacesAndModulesModule = angular.module('app.components.playground.topics.namespaces-and-modules', []);
 exports.default = NamespacesAndModulesModule;
 
@@ -55461,7 +55461,7 @@ exports.default = NamespacesAndModulesModule;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var Symbols = angular.module('app.components.playground.topics.symbols', []);
 exports.default = Symbols;
 
@@ -55473,7 +55473,7 @@ exports.default = Symbols;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var TripleSlashDirectives = angular.module('app.components.playground.topics.triple-slash-directives', []);
 exports.default = TripleSlashDirectives;
 
@@ -55485,7 +55485,7 @@ exports.default = TripleSlashDirectives;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var TypeCompatibility = angular.module('app.components.playground.topics.type-compatibility', []);
 exports.default = TypeCompatibility;
 
@@ -55497,7 +55497,7 @@ exports.default = TypeCompatibility;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var TypeInference = angular.module('app.components.playground.topics.type-inference', []);
 exports.default = TypeInference;
 
@@ -55509,7 +55509,7 @@ exports.default = TypeInference;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
+var angular = __webpack_require__(0);
 var VariableDeclarations = angular.module('app.components.playground.topics.variable-declarations', []);
 exports.default = VariableDeclarations;
 
@@ -55522,11 +55522,13 @@ exports.default = VariableDeclarations;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 __webpack_require__(116);
-var angular = __webpack_require__(1);
-var angularjs_1 = __webpack_require__(14);
+var angular = __webpack_require__(0);
+var angularjs_1 = __webpack_require__(8);
 var real_world_component_1 = __webpack_require__(117);
 var real_world_service_1 = __webpack_require__(120);
-var RealWorldModule = angular.module('app.components.real-world', [angularjs_1.default]).component('realWorld', real_world_component_1.default).service('RealWorldService', real_world_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
+var todos_module_1 = __webpack_require__(121);
+var rates_module_1 = __webpack_require__(127);
+var RealWorldModule = angular.module('app.components.real-world', [angularjs_1.default, todos_module_1.default.name, rates_module_1.default.name]).component('realWorld', real_world_component_1.default).service('RealWorldService', real_world_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('real-world', {
         component: 'realWorld',
         url: '/real-world'
@@ -55582,7 +55584,7 @@ exports.default = RealWorldController;
 /* 119 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container workshop\">\n    <h1>Real World Topics:</h1>\n\n    <ul class=\"workshop__topics\">\n        <li class=\"topic__item\" ng-repeat=\"topic in $ctrl.topics\">\n            <a href=\"#\">{{ topic.label }}</a>\n        </li>\n    </ul>\n</div>";
+module.exports = "<div class=\"container workshop\">\n    <h1>Real World Topics:</h1>\n\n    <ul class=\"workshop__topics\">\n        <li class=\"topic__item\" ng-repeat=\"topic in $ctrl.topics\">\n            <a ui-sref=\"{{ topic.state }}\">{{ topic.label }}</a>\n        </li>\n    </ul>\n</div>";
 
 /***/ }),
 /* 120 */
@@ -55601,7 +55603,7 @@ var RealWorldService = function () {
     function RealWorldService() {
         _classCallCheck(this, RealWorldService);
 
-        this.topics = [{ label: 'Todo CRUD', state: 'Hello' }, { label: 'Fixer API', state: 'Hello' }];
+        this.topics = [{ label: 'Todo CRUD', state: 'todos' }, { label: 'Fixer API', state: 'rates' }];
     }
 
     _createClass(RealWorldService, [{
@@ -55624,33 +55626,41 @@ exports.default = RealWorldService;
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var angular = __webpack_require__(1);
-var nav_module_1 = __webpack_require__(122);
-var footer_module_1 = __webpack_require__(127);
-var highlighter_module_1 = __webpack_require__(132);
-var logger_module_1 = __webpack_require__(137);
-var CommonModule = angular.module('app.common', [nav_module_1.default.name, footer_module_1.default.name, highlighter_module_1.default.name, logger_module_1.default.name]);
-exports.default = CommonModule;
+__webpack_require__(122);
+var angular = __webpack_require__(0);
+var angularjs_1 = __webpack_require__(8);
+var todos_component_1 = __webpack_require__(123);
+var todos_service_1 = __webpack_require__(126);
+var TodoModule = angular.module('app.components.real-world.todos', [angularjs_1.default]).component('todos', todos_component_1.default).service('TodosService', todos_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
+    $stateProvider.state('todos', {
+        component: 'todos',
+        url: '/real-world/todos'
+    });
+    $urlRouterProvider.otherwise('/');
+});
+exports.default = TodoModule;
 
 /***/ }),
 /* 122 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 123 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(123);
-var angular = __webpack_require__(1);
-var nav_component_1 = __webpack_require__(124);
-var NavModule = angular.module('app.common.nav', []).component('footer', nav_component_1.default);
-exports.default = NavModule;
-
-/***/ }),
-/* 123 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
+var todos_controller_1 = __webpack_require__(124);
+var template = __webpack_require__(125);
+var TodosComponent = {
+    template: template,
+    controller: todos_controller_1.default
+};
+exports.default = TodosComponent;
 
 /***/ }),
 /* 124 */
@@ -55659,9 +55669,177 @@ exports.default = NavModule;
 "use strict";
 
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 Object.defineProperty(exports, "__esModule", { value: true });
-var nav_controller_1 = __webpack_require__(125);
-var template = __webpack_require__(126);
+
+var TodosController = function TodosController(todosService) {
+    _classCallCheck(this, TodosController);
+
+    this.todosService = todosService;
+};
+
+TodosController.$inject = ['TodosService'];
+exports.default = TodosController;
+
+/***/ }),
+/* 125 */
+/***/ (function(module, exports) {
+
+module.exports = "<h1>Todo API</h1>";
+
+/***/ }),
+/* 126 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var TodosService = function TodosService() {
+  _classCallCheck(this, TodosService);
+};
+
+TodosService.$inject = [];
+exports.default = TodosService;
+
+/***/ }),
+/* 127 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(128);
+var angular = __webpack_require__(0);
+var angularjs_1 = __webpack_require__(8);
+var rates_component_1 = __webpack_require__(129);
+var rates_service_1 = __webpack_require__(132);
+var RatesModule = angular.module('app.components.real-world.rates', [angularjs_1.default]).component('rates', rates_component_1.default).service('RatesService', rates_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
+    $stateProvider.state('rates', {
+        component: 'rates',
+        url: '/real-world/rates'
+    });
+    $urlRouterProvider.otherwise('/');
+});
+exports.default = RatesModule;
+
+/***/ }),
+/* 128 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 129 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var rates_controller_1 = __webpack_require__(130);
+var template = __webpack_require__(131);
+var RatesComponent = {
+    template: template,
+    controller: rates_controller_1.default
+};
+exports.default = RatesComponent;
+
+/***/ }),
+/* 130 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var RatesController = function RatesController(ratesService) {
+    _classCallCheck(this, RatesController);
+
+    this.ratesService = ratesService;
+};
+
+RatesController.$inject = ['RatesService'];
+exports.default = RatesController;
+
+/***/ }),
+/* 131 */
+/***/ (function(module, exports) {
+
+module.exports = "<h1>Fixer API</h1>";
+
+/***/ }),
+/* 132 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var RatesService = function RatesService() {
+  _classCallCheck(this, RatesService);
+};
+
+RatesService.$inject = [];
+exports.default = RatesService;
+
+/***/ }),
+/* 133 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var angular = __webpack_require__(0);
+var nav_module_1 = __webpack_require__(134);
+var footer_module_1 = __webpack_require__(139);
+var highlighter_module_1 = __webpack_require__(144);
+var logger_module_1 = __webpack_require__(149);
+var CommonModule = angular.module('app.common', [nav_module_1.default.name, footer_module_1.default.name, highlighter_module_1.default.name, logger_module_1.default.name]);
+exports.default = CommonModule;
+
+/***/ }),
+/* 134 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(135);
+var angular = __webpack_require__(0);
+var nav_component_1 = __webpack_require__(136);
+var NavModule = angular.module('app.common.nav', []).component('footer', nav_component_1.default);
+exports.default = NavModule;
+
+/***/ }),
+/* 135 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 136 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var nav_controller_1 = __webpack_require__(137);
+var template = __webpack_require__(138);
 var NavComponent = {
     template: template,
     controller: nav_controller_1.default
@@ -55669,7 +55847,7 @@ var NavComponent = {
 exports.default = NavComponent;
 
 /***/ }),
-/* 125 */
+/* 137 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55686,41 +55864,41 @@ var NavController = function NavController() {
 exports.default = NavController;
 
 /***/ }),
-/* 126 */
+/* 138 */
 /***/ (function(module, exports) {
 
 module.exports = "";
 
 /***/ }),
-/* 127 */
+/* 139 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(128);
-var angular = __webpack_require__(1);
-var footer_component_1 = __webpack_require__(129);
+__webpack_require__(140);
+var angular = __webpack_require__(0);
+var footer_component_1 = __webpack_require__(141);
 var FooterModule = angular.module('app.common.footer', []).component('footer', footer_component_1.default);
 exports.default = FooterModule;
 
 /***/ }),
-/* 128 */
+/* 140 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 129 */
+/* 141 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var footer_controller_1 = __webpack_require__(130);
-var template = __webpack_require__(131);
+var footer_controller_1 = __webpack_require__(142);
+var template = __webpack_require__(143);
 var FooterComponent = {
     template: template,
     controller: footer_controller_1.default
@@ -55728,7 +55906,7 @@ var FooterComponent = {
 exports.default = FooterComponent;
 
 /***/ }),
-/* 130 */
+/* 142 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55745,41 +55923,41 @@ var FooterController = function FooterController() {
 exports.default = FooterController;
 
 /***/ }),
-/* 131 */
+/* 143 */
 /***/ (function(module, exports) {
 
 module.exports = "";
 
 /***/ }),
-/* 132 */
+/* 144 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(133);
-var angular = __webpack_require__(1);
-var highlighter_component_1 = __webpack_require__(134);
+__webpack_require__(145);
+var angular = __webpack_require__(0);
+var highlighter_component_1 = __webpack_require__(146);
 var HighlighterModule = angular.module('app.common.highlighter', []).component('highlighter', highlighter_component_1.default);
 exports.default = HighlighterModule;
 
 /***/ }),
-/* 133 */
+/* 145 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 134 */
+/* 146 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var highlighter_controller_1 = __webpack_require__(135);
-var template = __webpack_require__(136);
+var highlighter_controller_1 = __webpack_require__(147);
+var template = __webpack_require__(148);
 var HighlighterComponent = {
     template: template,
     controller: highlighter_controller_1.default
@@ -55787,7 +55965,7 @@ var HighlighterComponent = {
 exports.default = HighlighterComponent;
 
 /***/ }),
-/* 135 */
+/* 147 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55804,41 +55982,41 @@ var HighlighterController = function HighlighterController() {
 exports.default = HighlighterController;
 
 /***/ }),
-/* 136 */
+/* 148 */
 /***/ (function(module, exports) {
 
 module.exports = "";
 
 /***/ }),
-/* 137 */
+/* 149 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(138);
-var angular = __webpack_require__(1);
-var logger_component_1 = __webpack_require__(139);
+__webpack_require__(150);
+var angular = __webpack_require__(0);
+var logger_component_1 = __webpack_require__(151);
 var LoggerModule = angular.module('app.common.logger', []).component('logger', logger_component_1.default);
 exports.default = LoggerModule;
 
 /***/ }),
-/* 138 */
+/* 150 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 139 */
+/* 151 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var logger_controller_1 = __webpack_require__(140);
-var template = __webpack_require__(141);
+var logger_controller_1 = __webpack_require__(152);
+var template = __webpack_require__(153);
 var LoggerComponent = {
     template: template,
     controller: logger_controller_1.default
@@ -55846,7 +56024,7 @@ var LoggerComponent = {
 exports.default = LoggerComponent;
 
 /***/ }),
-/* 140 */
+/* 152 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55863,7 +56041,7 @@ var LoggerController = function LoggerController() {
 exports.default = LoggerController;
 
 /***/ }),
-/* 141 */
+/* 153 */
 /***/ (function(module, exports) {
 
 module.exports = "";

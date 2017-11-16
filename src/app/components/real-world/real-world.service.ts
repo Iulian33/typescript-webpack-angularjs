@@ -3,8 +3,8 @@ import IWorkshop from '../IWorkshop';
 
 class RealWorldService implements IWorkshop {
     public topics: ITopic[] = [
-        {label: 'Todo CRUD', state: 'Hello'},
-        {label: 'Fixer API', state: 'Hello'}
+        {label: 'Todo CRUD', state: 'todos'},
+        {label: 'Fixer API', state: 'rates'}
     ];
 
     public getTopics() {
