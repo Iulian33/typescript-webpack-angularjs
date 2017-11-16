@@ -53,8 +53,7 @@ open  `http://localhost:3000` to run the app in the browser
 │  │    │     ├── playground.html
 │  │    │     ├── playground.scss
 │  │    │     └── topics/
-│  │    │       ├── topics.module.ts
-│  │    │       └── topics/
+│  │    │       └──topics.module.ts
 │  │    │           ├── advanced-types/
 │  │    │           │   ├── advanced-types.module.ts
 │  │    │           │   ├── advanced-types.component.ts
@@ -187,7 +186,21 @@ open  `http://localhost:3000` to run the app in the browser
 │  │    │     ├── real-world.controller.ts
 │  │    │     ├── real-world.service.ts
 │  │    │     ├── real-world.html
-│  │    │     └── real-world.scss
+│  │    │     ├── real-world.scss
+│  │    │     ├── rates/
+│  │    │     │   ├── rates.module.ts
+│  │    │     │   ├── rates.component.ts
+│  │    │     │   ├── rates.controller.ts
+│  │    │     │   ├── rates.service.ts
+│  │    │     │   ├── rates.html
+│  │    │     ├── └── rates.scss
+│  │    │     ├── todos/
+│  │    │     │   ├── todos.module.ts
+│  │    │     │   ├── todos.component.ts
+│  │    │     │   ├── todos.controller.ts
+│  │    │     │   ├── todos.service.ts
+│  │    │     │   ├── todos.html
+│  │    │     └── └── todos.scss
 │  │    ├── components.module.ts
 │  │    ├── components.scss
 │  │    ├── ITopic.ts
