@@ -185,6 +185,18 @@ open  `http://localhost:3000` to run the app in the browser
 │  │    │     ├── footer.controller.ts
 │  │    │     ├── footer.html
 │  │    │     └── footer.scss
+│  │    ├── highlighter/
+│  │    │     ├── highlighter.module.ts
+│  │    │     ├── highlighter.component.ts
+│  │    │     ├── highlighter.controller.ts
+│  │    │     ├── highlighter.html
+│  │    │     └── highlighter.scss
+│  │    ├── logger/
+│  │    │     ├── logger.module.ts
+│  │    │     ├── logger.component.ts
+│  │    │     ├── logger.controller.ts
+│  │    │     ├── logger.html
+│  │    │     └── logger.scss
 │  │    └── common.module.ts
 │  ├── app.module.ts
 │  ├── app.component.ts
