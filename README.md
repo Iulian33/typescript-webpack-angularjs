@@ -53,7 +53,7 @@ open  `http://localhost:3000` to run the app in the browser
 │  │    │     ├── playground.html
 │  │    │     ├── playground.scss
 │  │    │     └── topics/
-│  │    │       └──topics.module.ts
+│  │    │           ├── topics.module.ts
 │  │    │           ├── advanced-types/
 │  │    │           │   ├── advanced-types.module.ts
 │  │    │           │   ├── advanced-types.component.ts
