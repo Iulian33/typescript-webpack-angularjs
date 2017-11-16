@@ -91,3 +91,8 @@ module.exports = () => {
         devtool: "source-map"
     };
 };
+
+// Todo: add minification for js output file
+// Todo: add minification for css output file
+// Todo: add minification for html output file
+// Todo: add hashing and cashing of chunks
