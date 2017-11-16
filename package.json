@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run webpack; node server.js",
+    "serve": "npm run webpack-dev-server",
     "webpack": "webpack",
     "webpack-dev-server": "webpack-dev-server",
     "ntsc": "rm -rf ./ntsc && ntsc -p . --listEmittedFiles --outDir ./ntsc -t ES5"

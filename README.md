@@ -17,6 +17,14 @@ If you are using npm package manager:
 4. `$ npm run ntsc` - Run typescript compiler
 
 #### Up and Running:
+Production ready:
+1. `$ yarn start` - if you are using yarn
+2. `$ npm start` - if you are using npm
+
+Development ready:
+1. `$ yarn run serve` - if you are using yarn
+2. `$ npm run serve` - if you are using npm
+
 open  `http://localhost:3000` to run the app in the browser
 
 #### Project Structure
