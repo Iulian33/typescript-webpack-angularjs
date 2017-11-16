@@ -45,49 +45,133 @@ open  `http://localhost:3000` to run the app in the browser
 │  │    │     └── topics/
 │  │    │       ├── topics.module.ts
 │  │    │       └── topics/
-│  │    │           └── advanced-types/
-│  │    │              ├── components.module.ts
-│  │    │           └── basic-types/
-│  │    │              ├── components.module.ts
-│  │    │           └── classes/
-│  │    │              ├── components.module.ts
-│  │    │           └── declaration-files/
-│  │    │              ├── components.module.ts
-│  │    │           └── declaration-merging/
-│  │    │              ├── components.module.ts
-│  │    │           └── decorators/
-│  │    │              ├── components.module.ts
-│  │    │           └── enums/
-│  │    │              ├── components.module.ts
-│  │    │           └── functions/
-│  │    │              ├── components.module.ts
-│  │    │           └── generics/
-│  │    │              ├── components.module.ts
-│  │    │           └── interfaces/
-│  │    │              ├── components.module.ts
-│  │    │           └── iterators/
-│  │    │              ├── components.module.ts
-│  │    │           └── mixins/
-│  │    │              ├── components.module.ts
-│  │    │           └── module-resolution/
-│  │    │              ├── components.module.ts
-│  │    │           └── modules/
-│  │    │              ├── components.module.ts
-│  │    │           └── namespaces/
-│  │    │              ├── components.module.ts
-│  │    │           └── namespaces-and-modules/
-│  │    │              ├── components.module.ts
-│  │    │           └── symbols/
-│  │    │              ├── components.module.ts
-│  │    │           └── triple-slash-directives/
-│  │    │              ├── components.module.ts
-│  │    │           └── type-compatibility/
-│  │    │              ├── components.module.ts
-│  │    │           └── type-inference/
-│  │    │              ├── components.module.ts
-│  │    │           └── variable-declarations/
-│  │    │              ├── components.module.ts
-│  │    ├── components.module.ts
+│  │    │           ├── advanced-types/
+│  │    │           │   ├── advanced-types.module.ts
+│  │    │           │   ├── advanced-types.component.ts
+│  │    │           │   ├── advanced-types.controller.ts
+│  │    │           │   ├── advanced-types.html
+│  │    │           │   └── advanced-types.scss
+│  │    │           ├── basic-types/
+│  │    │           │   ├── basic-types.module.ts
+│  │    │           │   ├── basic-types.component.ts
+│  │    │           │   ├── basic-types.controller.ts
+│  │    │           │   ├── basic-types.html
+│  │    │           │   └── basic-types.scss
+│  │    │           ├── classes/
+│  │    │           │   ├── classes.module.ts
+│  │    │           │   ├── classes.component.ts
+│  │    │           │   ├── classes.controller.ts
+│  │    │           │   ├── classes.html
+│  │    │           │   └── classes.scss
+│  │    │           ├── declaration-files/
+│  │    │           │   ├── declaration-files.module.ts
+│  │    │           │   ├── declaration-files.component.ts
+│  │    │           │   ├── declaration-files.controller.ts
+│  │    │           │   ├── declaration-files.html
+│  │    │           │   └── declaration-files.scss
+│  │    │           ├── declaration-merging/
+│  │    │           │   ├── declaration-merging.module.ts
+│  │    │           │   ├── declaration-merging.component.ts
+│  │    │           │   ├── declaration-merging.controller.ts
+│  │    │           │   ├── declaration-merging.html
+│  │    │           │   └── declaration-merging.scss
+│  │    │           ├── decorators/
+│  │    │           │   ├── decorators.module.ts
+│  │    │           │   ├── decorators.component.ts
+│  │    │           │   ├── decorators.controller.ts
+│  │    │           │   ├── decorators.html
+│  │    │           │   └── decorators.scss
+│  │    │           ├── enums/
+│  │    │           │   ├── enums.module.ts
+│  │    │           │   ├── enums.component.ts
+│  │    │           │   ├── enums.controller.ts
+│  │    │           │   ├── enums.html
+│  │    │           │   └── enums.scss
+│  │    │           ├── functions/
+│  │    │           │   ├── functions.module.ts
+│  │    │           │   ├── functions.component.ts
+│  │    │           │   ├── functions.controller.ts
+│  │    │           │   ├── functions.html
+│  │    │           │   └── functions.scss
+│  │    │           ├── generics/
+│  │    │           │   ├── generics.module.ts
+│  │    │           │   ├── generics.component.ts
+│  │    │           │   ├── generics.controller.ts
+│  │    │           │   ├── generics.html
+│  │    │           │   └── generics.scss
+│  │    │           ├── interfaces/
+│  │    │           │   ├── interfaces.module.ts
+│  │    │           │   ├── interfaces.compoenent.ts
+│  │    │           │   ├── interfaces.controller.ts
+│  │    │           │   ├── interfaces.html
+│  │    │           │   └── interfaces.scss
+│  │    │           ├── iterators/
+│  │    │           │   ├── iterators.module.ts
+│  │    │           │   ├── iterators.component.ts
+│  │    │           │   ├── iterators.controller.ts
+│  │    │           │   ├── iterators.html
+│  │    │           │   └── iterators.scss
+│  │    │           ├── mixins/
+│  │    │           │   ├── mixins.module.ts
+│  │    │           │   ├── mixins.component.ts
+│  │    │           │   ├── mixins.controller.ts
+│  │    │           │   ├── mixins.html
+│  │    │           │   └── mixins.scss
+│  │    │           ├── module-resolution/
+│  │    │           │   ├── module-resolution.module.ts
+│  │    │           │   ├── module-resolution.component.ts
+│  │    │           │   ├── module-resolution.controller.ts
+│  │    │           │   ├── module-resolution.html
+│  │    │           │   └── module-resolution.scss
+│  │    │           ├── modules/
+│  │    │           │   ├── modules.module.ts
+│  │    │           │   ├── modules.component.ts
+│  │    │           │   ├── modules.controller.ts
+│  │    │           │   ├── modules.html
+│  │    │           │   └── modules.scss
+│  │    │           ├── namespaces/
+│  │    │           │   ├── namespaces.module.ts
+│  │    │           │   ├── namespaces.component.ts
+│  │    │           │   ├── namespaces.controller.ts
+│  │    │           │   ├── namespaces.html
+│  │    │           │   └── namespaces.scss
+│  │    │           ├── namespaces-and-modules/
+│  │    │           │   ├── namespaces-and-modules.module.ts
+│  │    │           │   ├── namespaces-and-modules.component.ts
+│  │    │           │   ├── namespaces-and-modules.controller.ts
+│  │    │           │   ├── namespaces-and-modules.html
+│  │    │           │   └── namespaces-and-modules.scss
+│  │    │           ├── symbols/
+│  │    │           │   ├── symbols.module.ts
+│  │    │           │   ├── symbols.component.ts
+│  │    │           │   ├── symbols.controller.ts
+│  │    │           │   ├── symbols.html
+│  │    │           │   └── symbols.scss
+│  │    │           ├── triple-slash-directives/
+│  │    │           │   ├── triple-slash-directives.module.ts
+│  │    │           │   ├── triple-slash-directives.component.ts
+│  │    │           │   ├── triple-slash-directives.controller.ts
+│  │    │           │   ├── triple-slash-directives.html
+│  │    │           │   └── triple-slash-directives.scss
+│  │    │           ├── type-compatibility/
+│  │    │           │   ├── type-compatibility.module.ts
+│  │    │           │   ├── type-compatibility.component.ts
+│  │    │           │   ├── type-compatibility.controller.ts
+│  │    │           │   ├── type-compatibility.html
+│  │    │           │   └── type-compatibility.scss
+│  │    │           ├── type-inference/
+│  │    │           │   ├── type-inference.module.ts
+│  │    │           │   ├── type-inference.component.ts
+│  │    │           │   ├── type-inference.controller.ts
+│  │    │           │   ├── type-inference.html
+│  │    │           │   └── type-inference.scss
+│  │    │           ├── variable-declarations/
+│  │    │           │   ├── variable-declarations.module.ts
+│  │    │           │   ├── variable-declarations.component.ts
+│  │    │           │   ├── variable-declarations.controller.ts
+│  │    │           │   ├── variable-declarations.html
+│  │    │           └── └── variable-declarations.scss
+│  │    └── components.module.ts
 │  ├── common/
 │  │    ├── nav/
 │  │    │     ├── nav.module.ts

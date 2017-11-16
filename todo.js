@@ -1,4 +1,3 @@
-// 1. Add boilerplate component code for each topic in playground topics
 // 2. Create highlighter component
 // 3. Create logger component
 // 4. Add examples and highlights for each individual example in playground topics
