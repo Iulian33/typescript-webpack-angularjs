@@ -14,25 +14,28 @@
     "no-bitwise": true,
     "no-conditional-assignment": true,
     "no-consecutive-blank-lines": false,
-    "no-console": {
-      "severity": "warning",
-      "options": [
-        "debug",
-        "info",
-        "log",
-        "time",
-        "timeEnd",
-        "trace"
-      ]
-    },
+    "no-console": false,
     "quotemark": [true, "single"],
     "ordered-imports": false,
     "eofline": false,
     "trailing-comma": false,
     "object-literal-sort-keys": false,
     "no-var-requires": false,
-    "member-ordering": [true, {"order": "fields-first"}],
-    "no-trailing-whitespace": [true, "ignore-blank-lines"]
+    "member-ordering": [true, {
+      "order": [
+        "public-static-field",
+        "public-instance-field",
+        "private-static-field",
+        "private-instance-field",
+        "public-constructor",
+        "private-constructor",
+        "public-instance-method",
+        "protected-instance-method",
+        "private-instance-method"
+      ]
+    }],
+    "no-trailing-whitespace": [true, "ignore-blank-lines"],
+    "semicolon": [true, "ignore-bound-class-methods"]
   },
   "jsRules": {
     "max-line-length": {

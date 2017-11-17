@@ -298,8 +298,8 @@ hue-6-2: #e6c07b
   border-radius: 0 0 50px 50px;
   position: relative;
   z-index: -1;
-  left: 0%;
-  top: 20%;
+  left: 0;
+  top: 30%;
   overflow: hidden; }
   .loader .loader__head {
     -webkit-backface-visibility: hidden;
@@ -309,14 +309,14 @@ hue-6-2: #e6c07b
     height: 80px;
     background-color: #111111;
     border-radius: 50px;
-    box-shadow: inset -4px 2px 0 0 #eee;
+    box-shadow: inset -4px 5px 0 0 #eee;
     -webkit-animation: node 1.5s infinite alternate;
     -webkit-animation-timing-function: ease-out; }
     .loader .loader__head .loader__eyes {
       width: 20px;
       height: 8px;
       background-color: #eee;
-      border-radius: 0 0 20px 20px;
+      border-radius: 0 0 50px 50px;
       position: relative;
       top: 40px;
       left: 10px;
@@ -324,11 +324,11 @@ hue-6-2: #e6c07b
   .loader .loader__body {
     position: relative;
     margin: 90px auto;
-    width: 140px;
+    width: 150px;
     height: 120px;
     background-color: #111111;
     border-radius: 50px/25px;
-    box-shadow: inset -5px 2px 0 0 #eee;
+    box-shadow: inset -5px 5px 0 0 #eee;
     -webkit-animation: node-two 1.5s infinite alternate;
     -webkit-animation-timing-function: ease-out; }
   .loader .loader__hands {
@@ -357,7 +357,7 @@ hue-6-2: #e6c07b
     font-weight: 400;
     color: #eee;
     left: 10%;
-    top: 5%; }
+    top: 0; }
 
 @-webkit-keyframes node {
   0% {
