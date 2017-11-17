@@ -84,7 +84,8 @@ module.exports = () => {
                 chunks: ['app']
             }),
             new CopyWebpackPlugin([
-                {from: 'img', to: 'img'}
+                {from: 'img', to: 'img'},
+                {from: 'fonts', to: 'fonts'}
             ])
         ],
         devServer: {

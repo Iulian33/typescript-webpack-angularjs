@@ -230,6 +230,12 @@ open  `http://localhost:3000` to run the app in the browser
 │  │    │     ├── logger.controller.ts
 │  │    │     ├── logger.html
 │  │    │     └── logger.scss
+│  │    ├── loader/
+│  │    │     ├── loader.module.ts
+│  │    │     ├── loader.component.ts
+│  │    │     ├── loader.controller.ts
+│  │    │     ├── loader.html
+│  │    │     └── loader.scss
 │  │    └── common.module.ts
 │  ├── app.module.ts
 │  ├── app.component.ts

@@ -277,5 +277,102 @@ hue-6-2: #e6c07b
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px; }
+@font-face {
+  font-family: 'Julius Sans One';
+  src: url("/fonts/julius-sans-one/julius-sans-one.eot");
+  src: url("/fonts/julius-sans-one/julius-sans-one.eot?#iefix") format("embedded-opentype"), url("/fonts/julius-sans-one/julius-sans-one.woff2") format("woff2"), url("/fonts/julius-sans-one/julius-sans-one.woff") format("woff"), url("/fonts/julius-sans-one/julius-sans-one.ttf") format("truetype"); }
+
+.loader__container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #111111;
+  z-index: 999999; }
+
+.loader {
+  -webkit-backface-visibility: hidden;
+  margin: 60px auto;
+  width: 180px;
+  height: 180px;
+  background-color: #111111;
+  border-radius: 0 0 50px 50px;
+  position: relative;
+  z-index: -1;
+  left: 0%;
+  top: 20%;
+  overflow: hidden; }
+  .loader .loader__head {
+    -webkit-backface-visibility: hidden;
+    position: relative;
+    margin: -250px auto;
+    width: 80px;
+    height: 80px;
+    background-color: #111111;
+    border-radius: 50px;
+    box-shadow: inset -4px 2px 0 0 #eee;
+    -webkit-animation: node 1.5s infinite alternate;
+    -webkit-animation-timing-function: ease-out; }
+    .loader .loader__head .loader__eyes {
+      width: 20px;
+      height: 8px;
+      background-color: #eee;
+      border-radius: 0 0 20px 20px;
+      position: relative;
+      top: 40px;
+      left: 10px;
+      box-shadow: 40px 0 0 0 #eee; }
+  .loader .loader__body {
+    position: relative;
+    margin: 90px auto;
+    width: 140px;
+    height: 120px;
+    background-color: #111111;
+    border-radius: 50px/25px;
+    box-shadow: inset -5px 2px 0 0 #eee;
+    -webkit-animation: node-two 1.5s infinite alternate;
+    -webkit-animation-timing-function: ease-out; }
+  .loader .loader__hands {
+    -webkit-backface-visibility: hidden;
+    margin-top: 140px;
+    width: 120px;
+    height: 120px;
+    position: absolute;
+    background-color: #111111;
+    border-radius: 20px;
+    box-shadow: -1px -4px 0 0 #eee;
+    -webkit-transform: rotate(45deg);
+    top: 75%;
+    left: 16%;
+    z-index: 1;
+    -webkit-animation: node-two 1.5s infinite alternate;
+    -webkit-animation-timing-function: ease-out; }
+  .loader .loader__text {
+    position: absolute;
+    width: 100px;
+    height: 20px;
+    margin: -10px auto;
+    -webkit-font-smoothing: antialiased;
+    font-family: 'Julius Sans One', sans-serif;
+    font-size: 30px;
+    font-weight: 400;
+    color: #eee;
+    left: 10%;
+    top: 5%; }
+
+@-webkit-keyframes node {
+  0% {
+    top: 0; }
+  50% {
+    top: 10px; }
+  100% {
+    top: 0; } }
+
+@-webkit-keyframes node-two {
+  0% {
+    top: -5px; }
+  50% {
+    top: 10px; }
+  100% {
+    top: -5px; } }
 
 /*# sourceMappingURL=app.css.map*/

@@ -1,4 +1,3 @@
-import './highlighter.scss';
 import {IComponentOptions} from 'angular';
 import HighlighterController from './highlighter.controller';
 
