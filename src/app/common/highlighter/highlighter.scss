@@ -1,0 +1,12 @@
+@import "../../assets/borders";
+@import "~highlight.js/styles/vs2015.css";
+
+.highlighter {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.highlighter__code {
+  @include border-radius(5px);
+}
