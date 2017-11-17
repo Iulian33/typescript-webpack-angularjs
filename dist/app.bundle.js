@@ -20497,7 +20497,8 @@ var angularjs_1 = __webpack_require__(8);
 var app_component_1 = __webpack_require__(81);
 var components_module_1 = __webpack_require__(82);
 var common_module_1 = __webpack_require__(217);
-var AppModule = angular.module('app', [angularjs_1.default, common_module_1.default.name, components_module_1.default.name]).component('app', app_component_1.default);
+var app_service_1 = __webpack_require__(420);
+var AppModule = angular.module('app', [angularjs_1.default, common_module_1.default.name, components_module_1.default.name]).component('app', app_component_1.default).service('AppService', app_service_1.default);
 exports.default = AppModule;
 
 /***/ }),
@@ -55063,7 +55064,7 @@ exports.UIRouterPluginBase = UIRouterPluginBase;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var AppComponent = {
-    template: "\n        <navigation></navigation>\n        <div class=\"app\" ui-view></div>\n        <copyright></copyright>\n    "
+    template: "\n        <loader></loader>\n        <navigation></navigation>\n        <div class=\"app\" ui-view></div>\n        <copyright></copyright>\n    "
 };
 exports.default = AppComponent;
 
@@ -55153,7 +55154,7 @@ exports.default = HomeController;
 /* 88 */
 /***/ (function(module, exports) {
 
-module.exports = "<loader></loader>\n<div class=\"container-fluid home\">\n    <h1 class=\"text-center home__title\">TypeScript</h1>\n    <img src=\"/img/home/background.png\" class=\"home__background animated pulse\" alt=\"Home Background\">\n    <h2 class=\"text-center\">Application Scale JavaScript Development</h2>\n\n    <ul class=\"home__triggers\">\n        <li class=\"trigger__item\">\n            <a ui-sref=\"playground\">\n                <img src=\"/img/home/play.svg\" class=\"home__play animated bounce\" alt=\"Let's Play\">\n            </a>\n        </li>\n        <li class=\"trigger__item\">\n            <a ui-sref=\"real-world\">\n                <img src=\"/img/home/real.svg\" class=\"home__real animated bounce\" alt=\"Real World Examples\">\n            </a>\n        </li>\n    </ul>\n</div>";
+module.exports = "<div class=\"container-fluid home\">\n    <h1 class=\"text-center home__title\">TypeScript</h1>\n    <img src=\"/img/home/background.png\" class=\"home__background animated pulse\" alt=\"Home Background\">\n    <h2 class=\"text-center\">Application Scale JavaScript Development</h2>\n\n    <ul class=\"home__triggers\">\n        <li class=\"trigger__item\">\n            <a ui-sref=\"playground\">\n                <img src=\"/img/home/play.svg\" class=\"home__play animated bounce\" alt=\"Let's Play\">\n            </a>\n        </li>\n        <li class=\"trigger__item\">\n            <a ui-sref=\"real-world\">\n                <img src=\"/img/home/real.svg\" class=\"home__real animated bounce\" alt=\"Real World Examples\">\n            </a>\n        </li>\n    </ul>\n</div>";
 
 /***/ }),
 /* 89 */
@@ -74767,6 +74768,63 @@ exports.default = LoaderComponent;
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"loader__container\">\n    <div class=\"loader\">\n        <div class=\"loader__text\">Loading...</div>\n        <div class=\"loader__hands\"></div>\n        <div class=\"loader__body\"></div>\n        <div class=\"loader__head\">\n            <div class=\"loader__eyes\"></div>\n        </div>\n    </div>\n</div>";
+
+/***/ }),
+/* 420 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var AppService = function () {
+    function AppService() {
+        _classCallCheck(this, AppService);
+
+        this.counter = 0;
+        this.eventName = 'loader:status';
+    }
+
+    _createClass(AppService, [{
+        key: "request",
+        value: function request(config) {
+            if (++this.counter === 1) {
+                this.$rootScope.$broadcast(this.eventName, { on: true });
+            }
+            return config;
+        }
+    }, {
+        key: "response",
+        value: function response(_response) {
+            if (--this.counter === 0) {
+                this.$rootScope.$broadcast(this.eventName, { on: false });
+            }
+            return _response;
+        }
+    }, {
+        key: "requestError",
+        value: function requestError(rejection) {
+            this.$rootScope.$broadcast(this.eventName, { on: false });
+            return this.$q.reject(rejection);
+        }
+    }, {
+        key: "responseError",
+        value: function responseError(response) {
+            this.$rootScope.$broadcast(this.eventName, { on: false });
+            return this.$q.reject(response);
+        }
+    }]);
+
+    return AppService;
+}();
+
+AppService.$inject = ['$q', '$rootScope'];
+exports.default = AppService;
 
 /***/ })
 /******/ ]);
