@@ -286,7 +286,7 @@ hue-6-2: #e6c07b
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: #111111;
+  background-color: #ffffff;
   z-index: 999999; }
 
 .loader {
@@ -294,7 +294,7 @@ hue-6-2: #e6c07b
   margin: 60px auto;
   width: 180px;
   height: 180px;
-  background-color: #111111;
+  background-color: #ffffff;
   border-radius: 0 0 50px 50px;
   position: relative;
   z-index: -1;
@@ -307,28 +307,28 @@ hue-6-2: #e6c07b
     margin: -250px auto;
     width: 80px;
     height: 80px;
-    background-color: #111111;
+    background-color: #ffffff;
     border-radius: 50px;
-    box-shadow: inset -4px 5px 0 0 #eee;
+    box-shadow: inset -2px 2px 0 3px #111111;
     -webkit-animation: node 1.5s infinite alternate;
     -webkit-animation-timing-function: ease-out; }
     .loader .loader__head .loader__eyes {
       width: 20px;
       height: 8px;
-      background-color: #eee;
+      background-color: #111111;
       border-radius: 0 0 50px 50px;
       position: relative;
       top: 40px;
       left: 10px;
-      box-shadow: 40px 0 0 0 #eee; }
+      box-shadow: 40px 0 0 0 #111111; }
   .loader .loader__body {
     position: relative;
     margin: 90px auto;
     width: 150px;
     height: 120px;
-    background-color: #111111;
+    background-color: #ffffff;
     border-radius: 50px/25px;
-    box-shadow: inset -5px 5px 0 0 #eee;
+    box-shadow: inset -5px 5px 0 0 #111111;
     -webkit-animation: node-two 1.5s infinite alternate;
     -webkit-animation-timing-function: ease-out; }
   .loader .loader__hands {
@@ -337,9 +337,9 @@ hue-6-2: #e6c07b
     width: 120px;
     height: 120px;
     position: absolute;
-    background-color: #111111;
+    background-color: #ffffff;
     border-radius: 20px;
-    box-shadow: -1px -4px 0 0 #eee;
+    box-shadow: -1px -4px 0 0 #111111;
     -webkit-transform: rotate(45deg);
     top: 75%;
     left: 16%;
@@ -355,7 +355,7 @@ hue-6-2: #e6c07b
     font-family: 'Julius Sans One', sans-serif;
     font-size: 30px;
     font-weight: 400;
-    color: #eee;
+    color: #111111;
     left: 10%;
     top: 0; }
 
