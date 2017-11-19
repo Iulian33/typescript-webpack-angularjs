@@ -229,18 +229,18 @@ open  `http://localhost:3000` to run the app in the browser
 │   │   │    ├── ITopic.ts
 │   │   │    └── IWorkshop.ts
 │   │   ├── common/
-│   │   │    ├── nav/
-│   │   │    │     ├── nav.module.ts
-│   │   │    │     ├── nav.component.ts
-│   │   │    │     ├── nav.controller.ts
-│   │   │    │     ├── nav.html
-│   │   │    │     └── nav.scss
-│   │   │    ├── footer/
-│   │   │    │     ├── footer.module.ts
-│   │   │    │     ├── footer.component.ts
-│   │   │    │     ├── footer.controller.ts
-│   │   │    │     ├── footer.html
-│   │   │    │     └── footer.scss
+│   │   │    ├── navigation/
+│   │   │    │     ├── navigation.module.ts
+│   │   │    │     ├── navigation.component.ts
+│   │   │    │     ├── navigation.controller.ts
+│   │   │    │     ├── navigation.html
+│   │   │    │     └── navigation.scss
+│   │   │    ├── copyright/
+│   │   │    │     ├── copyright.module.ts
+│   │   │    │     ├── copyright.component.ts
+│   │   │    │     ├── copyright.controller.ts
+│   │   │    │     ├── copyright.html
+│   │   │    │     └── copyright.scss
 │   │   │    ├── highlighter/
 │   │   │    │     ├── highlighter.module.ts
 │   │   │    │     ├── highlighter.component.ts
