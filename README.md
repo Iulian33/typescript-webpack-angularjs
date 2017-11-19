@@ -1,5 +1,5 @@
 # TypeScript + Webpack + AngularJS + Node.js
-![alt text](https://github.com/steevehook/typescript-webpack-angularjs/blob/master/img/home/background.png)
+![Background Image Missing](https://github.com/steevehook/typescript-webpack-angularjs/blob/master/assets/img/home/background.png)
 
 #### Get Started:
 Make sure you have node installed
