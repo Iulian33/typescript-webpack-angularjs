@@ -31,6 +31,11 @@ Development ready:
 
 open  `http://localhost:3000` to run the app in the browser
 
+---
+> For live version of the app please visit:
+[TypeScript + Webpack + AngularJS - Steve Hook](http://typescript-webpack-angularjs.herokuapp.com/).
+---
+
 #### List of project features:
 - Angular 1.6 `component` based architecture using Typescript
 - Typescript out of the box
