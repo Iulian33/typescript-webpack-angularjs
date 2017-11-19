@@ -11,6 +11,10 @@
     "webpack-dev-server": "webpack-dev-server",
     "ntsc": "rm -rf ./ntsc && ntsc -p . --listEmittedFiles --outDir ./ntsc -t ES5"
   },
+  "engines": {
+    "node": "8.9.1",
+    "npm": "5.5.1"
+  },
   "repository": "https://github.com/steevehook/typescript.git",
   "author": "steevehook <s.cirlig@developmentaid.org>",
   "license": "MIT",
