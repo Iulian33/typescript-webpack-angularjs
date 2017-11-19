@@ -55,6 +55,8 @@ open  `http://localhost:3000` to run the app in the browser
 #### Project Structure
 ```
 ├── src/
+│   ├── index.ts
+│   ├── index.html
 │   ├── app/
 │   │   ├── @types/
 │   │   │    └── require.d.ts
@@ -264,9 +266,7 @@ open  `http://localhost:3000` to run the app in the browser
 │   │   ├── app.service.ts
 │   │   ├── app.config.ts
 │   │   └── app.scss
-│   ├── index.ts
-│   └── index.html
-│
+│   └──
 │
 ├── assets/
 │   ├── fonts
