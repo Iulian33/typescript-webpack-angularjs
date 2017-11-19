@@ -13,7 +13,7 @@ class AppService implements IHttpInterceptor {
 
     public request(config: IRequestConfig): IRequestConfig | IPromise<IRequestConfig> {
         if (++this.counter === 1) {
-            this.$rootScope.$broadcast(this.eventName, {on: true});
+            this.$rootScope.$broadcast(this.eventName, {status: true});
         }
 
         return config;
@@ -21,20 +21,20 @@ class AppService implements IHttpInterceptor {
 
     public response<T>(response: IHttpResponse<T>): IPromise<IHttpResponse<T>> | IHttpResponse<T> {
         if (--this.counter === 0) {
-            this.$rootScope.$broadcast(this.eventName, {on: false});
+            this.$rootScope.$broadcast(this.eventName, {status: false});
         }
 
         return response;
     }
 
     public requestError(rejection: any): IRequestConfig | IPromise<IRequestConfig> {
-        this.$rootScope.$broadcast(this.eventName, {on: false});
+        this.$rootScope.$broadcast(this.eventName, {status: false});
 
         return this.$q.reject(rejection);
     }
 
     public responseError<T>(rejection: any): IPromise<IHttpResponse<T>> | IHttpResponse<T> {
-        this.$rootScope.$broadcast(this.eventName, {on: false});
+        this.$rootScope.$broadcast(this.eventName, {status: false});
 
         return this.$q.reject(rejection);
     }

@@ -15098,7 +15098,7 @@ var AppService = function () {
         key: "request",
         value: function request(config) {
             if (++this.counter === 1) {
-                this.$rootScope.$broadcast(this.eventName, { on: true });
+                this.$rootScope.$broadcast(this.eventName, { status: true });
             }
             return config;
         }
@@ -15106,20 +15106,20 @@ var AppService = function () {
         key: "response",
         value: function response(_response) {
             if (--this.counter === 0) {
-                this.$rootScope.$broadcast(this.eventName, { on: false });
+                this.$rootScope.$broadcast(this.eventName, { status: false });
             }
             return _response;
         }
     }, {
         key: "requestError",
         value: function requestError(rejection) {
-            this.$rootScope.$broadcast(this.eventName, { on: false });
+            this.$rootScope.$broadcast(this.eventName, { status: false });
             return this.$q.reject(rejection);
         }
     }, {
         key: "responseError",
         value: function responseError(rejection) {
-            this.$rootScope.$broadcast(this.eventName, { on: false });
+            this.$rootScope.$broadcast(this.eventName, { status: false });
             return this.$q.reject(rejection);
         }
     }]);
@@ -72167,8 +72167,8 @@ var LoaderController = function LoaderController($scope) {
 
     this.$scope = $scope;
     this.visible = true;
-    $scope.$on('test', function () {
-        _this.visible = false;
+    $scope.$on('loader:status', function (event, data) {
+        _this.visible = data.status;
     });
 };
 
@@ -72179,7 +72179,7 @@ exports.default = LoaderController;
 /* 398 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"loader__container\" ng-if=\"$ctrl.visible\">\n    <div class=\"loader\">\n        <div class=\"loader__text\">Loading...</div>\n        <div class=\"loader__hands\"></div>\n        <div class=\"loader__body\"></div>\n        <div class=\"loader__head\">\n            <div class=\"loader__eyes\"></div>\n        </div>\n    </div>\n</div>";
+module.exports = "<div class=\"loader__container loader--animate\" ng-if=\"$ctrl.visible\">\n    <div class=\"loader\">\n        <div class=\"loader__text\">Loading...</div>\n        <div class=\"loader__hands\"></div>\n        <div class=\"loader__body\"></div>\n        <div class=\"loader__head\">\n            <div class=\"loader__eyes\"></div>\n        </div>\n    </div>\n</div>";
 
 /***/ }),
 /* 399 */
@@ -72196,29 +72196,31 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 var LoaderDirective = function () {
     function LoaderDirective($timeout, $rootScope) {
-        var _this = this;
-
         _classCallCheck(this, LoaderDirective);
 
         this.$timeout = $timeout;
         this.$rootScope = $rootScope;
         this.restrict = 'A';
-        LoaderDirective.prototype.link = function (scope, element, attrs) {
-            element.ready(function () {
-                _this.$timeout(function () {
-                    _this.$rootScope.$broadcast('test', { on: true });
-                }, 1000);
-            });
-        };
     }
 
-    _createClass(LoaderDirective, null, [{
+    _createClass(LoaderDirective, [{
+        key: "link",
+        value: function link(scope, element, attributes) {
+            var _this = this;
+
+            element.ready(function () {
+                _this.$timeout(function () {
+                    _this.$rootScope.$broadcast('loader:status', { status: false });
+                }, 1000);
+            });
+        }
+    }], [{
         key: "factory",
         value: function factory() {
             var directive = function directive($timeout, $rootScope) {
                 return new LoaderDirective($timeout, $rootScope);
             };
-            directive.$inject = ['$timeout', '$rootScope'];
+            directive.$inject = this.$inject;
             return directive;
         }
     }]);
@@ -72226,7 +72228,7 @@ var LoaderDirective = function () {
     return LoaderDirective;
 }();
 
-LoaderDirective.$inject = ['$timeout'];
+LoaderDirective.$inject = ['$timeout', '$rootScope'];
 exports.default = LoaderDirective;
 
 /***/ }),

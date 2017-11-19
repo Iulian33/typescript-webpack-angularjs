@@ -258,6 +258,7 @@ open  `http://localhost:3000` to run the app in the browser
 │   │   │    │     ├── loader.component.ts
 │   │   │    │     ├── loader.controller.ts
 │   │   │    │     ├── loader.directive.ts
+│   │   │    │     ├── ILoaderStatus.ts
 │   │   │    │     ├── loader.html
 │   │   │    │     └── loader.scss
 │   │   │    └── common.module.ts

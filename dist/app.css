@@ -198,7 +198,7 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   z-index: 999999; }
 
 .loader {
@@ -206,7 +206,7 @@
   margin: 60px auto;
   width: 180px;
   height: 180px;
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   border-radius: 0 0 50px 50px;
   position: relative;
   z-index: -1;
@@ -219,7 +219,7 @@
     margin: -250px auto;
     width: 80px;
     height: 80px;
-    background-color: #ffffff;
+    background-color: #FFFFFF;
     border-radius: 50px;
     box-shadow: inset -2px 2px 0 3px #111111;
     -webkit-animation: node 1.5s infinite alternate;
@@ -238,7 +238,7 @@
     margin: 90px auto;
     width: 150px;
     height: 120px;
-    background-color: #ffffff;
+    background-color: #FFFFFF;
     border-radius: 50px/25px;
     box-shadow: inset -5px 5px 0 0 #111111;
     -webkit-animation: node-two 1.5s infinite alternate;
@@ -249,7 +249,7 @@
     width: 120px;
     height: 120px;
     position: absolute;
-    background-color: #ffffff;
+    background-color: #FFFFFF;
     border-radius: 20px;
     box-shadow: -1px -4px 0 0 #111111;
     -webkit-transform: rotate(45deg);
@@ -286,5 +286,16 @@
     top: 10px; }
   100% {
     top: -5px; } }
+
+.loader--animate.ng-enter, .loader--animate.ng-leave {
+  transition: all ease 0.5s; }
+
+.loader--animate.ng-enter,
+.loader--animate.ng-leave.ng-leave-active {
+  opacity: 0; }
+
+.loader--animate.ng-leave,
+.loader--animate.ng-enter.ng-enter-active {
+  opacity: 1; }
 
 /*# sourceMappingURL=app.css.map*/

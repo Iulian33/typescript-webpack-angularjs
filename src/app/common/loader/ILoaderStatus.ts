@@ -1,0 +1,3 @@
+interface ILoaderStatus {
+    status: boolean;
+}

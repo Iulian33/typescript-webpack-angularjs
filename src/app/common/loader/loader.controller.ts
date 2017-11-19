@@ -6,8 +6,8 @@ class LoaderController implements IController {
     public visible: boolean = true;
 
     constructor(private $scope: IScope) {
-        $scope.$on('test', () => {
-            this.visible = false;
+        $scope.$on('loader:status', (event, data: ILoaderStatus) => {
+            this.visible = data.status;
         });
     }
 }
