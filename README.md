@@ -38,25 +38,25 @@ open  `http://localhost:3000` to run the app in the browser
 
 #### List of project features:
 - Angular 1.6 `component` based architecture using Typescript
-- Typescript out of the box
-- Webpack module bundler
-- Node.js express, for serving the app
-- Stateful, stateless and routed components
+- `Typescript` out of the box
+- `Webpack` module bundler
+- Node.js `express`, for serving the app
+- `Stateful`, `stateless` and `routed` components
 - One-way data flow
 - Lifecycle hooks
-- Bootstrap 4 beta
+- `Bootstrap 4 beta`
 - Custom code highlighter component
-- Module ui-router, for routed components
-- Module ngAnimate, for angular application events
-- CSS library animate.css, for handling basics animations
+- Module `ui-router`, for routed components
+- Module `ngAnimate`, for angular application events
+- CSS library `animate.css`, for handling basics animations
 - Built against Todd Motto's component architecture [styleguide](https://github.com/toddmotto/angularjs-styleguide/tree/master/typescript)
 - Proper SCSS architecture to provide maintainable, scalable and well-organized code
 
 #### Project Structure
 ```
 ├── src/
-│   ├── index.ts
 │   ├── index.html
+│   ├── index.ts
 │   ├── app/
 │   │   ├── @types/
 │   │   │    └── require.d.ts
