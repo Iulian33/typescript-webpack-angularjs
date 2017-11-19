@@ -2,6 +2,12 @@
 # yarn lockfile v1
 
 
+"@types/angular-animate@^1.5.9":
+  version "1.5.9"
+  resolved "https://registry.yarnpkg.com/@types/angular-animate/-/angular-animate-1.5.9.tgz#b1df30e85caecd8ed76ab15008aedbc9ee29dee9"
+  dependencies:
+    "@types/angular" "*"
+
 "@types/angular-ui-router@^1.1.40":
   version "1.1.40"
   resolved "https://registry.yarnpkg.com/@types/angular-ui-router/-/angular-ui-router-1.1.40.tgz#d8a10fe4af86a069f8c3302946363f1149e5a6b3"
@@ -104,6 +110,10 @@ alphanum-sort@^1.0.1, alphanum-sort@^1.0.2:
 amdefine@>=0.0.4:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
+
+angular-animate@^1.6.6:
+  version "1.6.6"
+  resolved "https://registry.yarnpkg.com/angular-animate/-/angular-animate-1.6.6.tgz#6925647b141a040d241bf125040f1a150fcd8a70"
 
 angular@^1.6.6:
   version "1.6.6"

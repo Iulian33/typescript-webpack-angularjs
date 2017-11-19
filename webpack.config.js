@@ -33,7 +33,20 @@ module.exports = () => {
                     test: /\.scss$/,
                     use: ExtractTextWebpackPlugin.extract({
                         fallback: 'style-loader',
-                        use: 'css-loader?sourceMap!sass-loader?sourceMap'
+                        use: [
+                            {
+                                loader: 'css-loader',
+                                options: {
+                                    sourceMap: true
+                                }
+                            },
+                            {
+                                loader: 'sass-loader',
+                                options: {
+                                    sourceMap: true
+                                }
+                            }
+                        ]
                     })
                 },
                 {
@@ -84,8 +97,8 @@ module.exports = () => {
                 chunks: ['app']
             }),
             new CopyWebpackPlugin([
-                {from: 'img', to: 'img'},
-                {from: 'fonts', to: 'fonts'}
+                {from: 'assets/img', to: 'assets/img'},
+                {from: 'assets/fonts', to: 'assets/fonts'}
             ])
         ],
         devServer: {
@@ -101,3 +114,4 @@ module.exports = () => {
 // Todo: add minification for css output file
 // Todo: add minification for html output file
 // Todo: add hashing and cashing of chunks
+// Todo: modularize webpack config file

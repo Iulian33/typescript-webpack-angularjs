@@ -1,8 +1,4 @@
-.image-responsive {
-  display: block;
-  width: 100%;
-  height: auto;
-}
+@import "../utils/image-responsive";
 
 @mixin image-responsive--centered($top: 0) {
   @extend .image-responsive;

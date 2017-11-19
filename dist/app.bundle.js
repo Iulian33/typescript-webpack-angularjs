@@ -60,14 +60,14 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 56);
+/******/ 	return __webpack_require__(__webpack_require__.s = 55);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(59);
+__webpack_require__(58);
 module.exports = angular;
 
 
@@ -636,7 +636,7 @@ exports.silentRejection = function (error) {
     return exports.silenceUncaughtInPromise(coreservices_1.services.$q.reject(error));
 };
 //# sourceMappingURL=common.js.map
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(61)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(406)))
 
 /***/ }),
 /* 2 */
@@ -654,7 +654,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 /** */
 var hof_1 = __webpack_require__(3);
-var stateObject_1 = __webpack_require__(21);
+var stateObject_1 = __webpack_require__(20);
 var toStr = Object.prototype.toString;
 var tis = function (t) { return function (x) { return typeof (x) === t; }; };
 exports.isUndefined = tis('undefined');
@@ -972,10 +972,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** @module common */ /** for typedoc */
 __export(__webpack_require__(1));
 __export(__webpack_require__(4));
-__export(__webpack_require__(15));
+__export(__webpack_require__(14));
 __export(__webpack_require__(3));
 __export(__webpack_require__(2));
-__export(__webpack_require__(22));
+__export(__webpack_require__(21));
 __export(__webpack_require__(6));
 __export(__webpack_require__(7));
 //# sourceMappingURL=index.js.map
@@ -995,11 +995,11 @@ __export(__webpack_require__(7));
  */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
 var predicates_1 = __webpack_require__(2);
-var rejectFactory_1 = __webpack_require__(12);
+var rejectFactory_1 = __webpack_require__(11);
 var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
-var transition_1 = __webpack_require__(16);
-var resolvable_1 = __webpack_require__(14);
+var transition_1 = __webpack_require__(15);
+var resolvable_1 = __webpack_require__(13);
 /**
  * Returns a string shortened to a maximum length
  *
@@ -1393,2026 +1393,6 @@ exports.trace = trace;
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/**
- * State-based routing for AngularJS 1.x
- * This bundle requires the ui-router-core.js bundle from the @uirouter/core package.
- * @version v1.0.10
- * @link https://ui-router.github.io
- * @license MIT License, http://www.opensource.org/licenses/MIT
- */
-(function (global, factory) {
-	 true ? factory(exports, __webpack_require__(0), __webpack_require__(60)) :
-	typeof define === 'function' && define.amd ? define(['exports', 'angular', '@uirouter/core'], factory) :
-	(factory((global['@uirouter/angularjs'] = {}),global.angular,global['@uirouter/core']));
-}(this, (function (exports,ng_from_import,core) { 'use strict';
-
-var ng_from_global = angular;
-var ng = (ng_from_import && ng_from_import.module) ? ng_from_import : ng_from_global;
-
-function getNg1ViewConfigFactory() {
-    var templateFactory = null;
-    return function (path, view) {
-        templateFactory = templateFactory || core.services.$injector.get("$templateFactory");
-        return [new Ng1ViewConfig(path, view, templateFactory)];
-    };
-}
-var hasAnyKey = function (keys, obj) {
-    return keys.reduce(function (acc, key) { return acc || core.isDefined(obj[key]); }, false);
-};
-/**
- * This is a [[StateBuilder.builder]] function for angular1 `views`.
- *
- * When the [[StateBuilder]] builds a [[StateObject]] object from a raw [[StateDeclaration]], this builder
- * handles the `views` property with logic specific to @uirouter/angularjs (ng1).
- *
- * If no `views: {}` property exists on the [[StateDeclaration]], then it creates the `views` object
- * and applies the state-level configuration to a view named `$default`.
- */
-function ng1ViewsBuilder(state) {
-    // Do not process root state
-    if (!state.parent)
-        return {};
-    var tplKeys = ['templateProvider', 'templateUrl', 'template', 'notify', 'async'], ctrlKeys = ['controller', 'controllerProvider', 'controllerAs', 'resolveAs'], compKeys = ['component', 'bindings', 'componentProvider'], nonCompKeys = tplKeys.concat(ctrlKeys), allViewKeys = compKeys.concat(nonCompKeys);
-    // Do not allow a state to have both state-level props and also a `views: {}` property.
-    // A state without a `views: {}` property can declare properties for the `$default` view as properties of the state.
-    // However, the `$default` approach should not be mixed with a separate `views: ` block.
-    if (core.isDefined(state.views) && hasAnyKey(allViewKeys, state)) {
-        throw new Error("State '" + state.name + "' has a 'views' object. " +
-            "It cannot also have \"view properties\" at the state level.  " +
-            "Move the following properties into a view (in the 'views' object): " +
-            (" " + allViewKeys.filter(function (key) { return core.isDefined(state[key]); }).join(", ")));
-    }
-    var views = {}, viewsObject = state.views || { "$default": core.pick(state, allViewKeys) };
-    core.forEach(viewsObject, function (config, name) {
-        // Account for views: { "": { template... } }
-        name = name || "$default";
-        // Account for views: { header: "headerComponent" }
-        if (core.isString(config))
-            config = { component: config };
-        // Make a shallow copy of the config object
-        config = core.extend({}, config);
-        // Do not allow a view to mix props for component-style view with props for template/controller-style view
-        if (hasAnyKey(compKeys, config) && hasAnyKey(nonCompKeys, config)) {
-            throw new Error("Cannot combine: " + compKeys.join("|") + " with: " + nonCompKeys.join("|") + " in stateview: '" + name + "@" + state.name + "'");
-        }
-        config.resolveAs = config.resolveAs || '$resolve';
-        config.$type = "ng1";
-        config.$context = state;
-        config.$name = name;
-        var normalized = core.ViewService.normalizeUIViewTarget(config.$context, config.$name);
-        config.$uiViewName = normalized.uiViewName;
-        config.$uiViewContextAnchor = normalized.uiViewContextAnchor;
-        views[name] = config;
-    });
-    return views;
-}
-var id = 0;
-var Ng1ViewConfig = /** @class */ (function () {
-    function Ng1ViewConfig(path, viewDecl, factory) {
-        var _this = this;
-        this.path = path;
-        this.viewDecl = viewDecl;
-        this.factory = factory;
-        this.$id = id++;
-        this.loaded = false;
-        this.getTemplate = function (uiView, context) {
-            return _this.component ? _this.factory.makeComponentTemplate(uiView, context, _this.component, _this.viewDecl.bindings) : _this.template;
-        };
-    }
-    Ng1ViewConfig.prototype.load = function () {
-        var _this = this;
-        var $q = core.services.$q;
-        var context = new core.ResolveContext(this.path);
-        var params = this.path.reduce(function (acc, node) { return core.extend(acc, node.paramValues); }, {});
-        var promises = {
-            template: $q.when(this.factory.fromConfig(this.viewDecl, params, context)),
-            controller: $q.when(this.getController(context))
-        };
-        return $q.all(promises).then(function (results) {
-            core.trace.traceViewServiceEvent("Loaded", _this);
-            _this.controller = results.controller;
-            core.extend(_this, results.template); // Either { template: "tpl" } or { component: "cmpName" }
-            return _this;
-        });
-    };
-    /**
-     * Gets the controller for a view configuration.
-     *
-     * @returns {Function|Promise.<Function>} Returns a controller, or a promise that resolves to a controller.
-     */
-    Ng1ViewConfig.prototype.getController = function (context) {
-        var provider = this.viewDecl.controllerProvider;
-        if (!core.isInjectable(provider))
-            return this.viewDecl.controller;
-        var deps = core.services.$injector.annotate(provider);
-        var providerFn = core.isArray(provider) ? core.tail(provider) : provider;
-        var resolvable = new core.Resolvable("", providerFn, deps);
-        return resolvable.get(context);
-    };
-    return Ng1ViewConfig;
-}());
-
-/** @module view */
-/** for typedoc */
-/**
- * Service which manages loading of templates from a ViewConfig.
- */
-var TemplateFactory = /** @class */ (function () {
-    function TemplateFactory() {
-        var _this = this;
-        /** @hidden */ this._useHttp = ng.version.minor < 3;
-        /** @hidden */ this.$get = ['$http', '$templateCache', '$injector', function ($http, $templateCache, $injector) {
-                _this.$templateRequest = $injector.has && $injector.has('$templateRequest') && $injector.get('$templateRequest');
-                _this.$http = $http;
-                _this.$templateCache = $templateCache;
-                return _this;
-            }];
-    }
-    /** @hidden */
-    TemplateFactory.prototype.useHttpService = function (value) {
-        this._useHttp = value;
-    };
-    
-    /**
-     * Creates a template from a configuration object.
-     *
-     * @param config Configuration object for which to load a template.
-     * The following properties are search in the specified order, and the first one
-     * that is defined is used to create the template:
-     *
-     * @param params  Parameters to pass to the template function.
-     * @param context The resolve context associated with the template's view
-     *
-     * @return {string|object}  The template html as a string, or a promise for
-     * that string,or `null` if no template is configured.
-     */
-    TemplateFactory.prototype.fromConfig = function (config, params, context) {
-        var defaultTemplate = "<ui-view></ui-view>";
-        var asTemplate = function (result) { return core.services.$q.when(result).then(function (str) { return ({ template: str }); }); };
-        var asComponent = function (result) { return core.services.$q.when(result).then(function (str) { return ({ component: str }); }); };
-        return (core.isDefined(config.template) ? asTemplate(this.fromString(config.template, params)) :
-            core.isDefined(config.templateUrl) ? asTemplate(this.fromUrl(config.templateUrl, params)) :
-                core.isDefined(config.templateProvider) ? asTemplate(this.fromProvider(config.templateProvider, params, context)) :
-                    core.isDefined(config.component) ? asComponent(config.component) :
-                        core.isDefined(config.componentProvider) ? asComponent(this.fromComponentProvider(config.componentProvider, params, context)) :
-                            asTemplate(defaultTemplate));
-    };
-    
-    /**
-     * Creates a template from a string or a function returning a string.
-     *
-     * @param template html template as a string or function that returns an html template as a string.
-     * @param params Parameters to pass to the template function.
-     *
-     * @return {string|object} The template html as a string, or a promise for that
-     * string.
-     */
-    TemplateFactory.prototype.fromString = function (template, params) {
-        return core.isFunction(template) ? template(params) : template;
-    };
-    
-    /**
-     * Loads a template from the a URL via `$http` and `$templateCache`.
-     *
-     * @param {string|Function} url url of the template to load, or a function
-     * that returns a url.
-     * @param {Object} params Parameters to pass to the url function.
-     * @return {string|Promise.<string>} The template html as a string, or a promise
-     * for that string.
-     */
-    TemplateFactory.prototype.fromUrl = function (url, params) {
-        if (core.isFunction(url))
-            url = url(params);
-        if (url == null)
-            return null;
-        if (this._useHttp) {
-            return this.$http.get(url, { cache: this.$templateCache, headers: { Accept: 'text/html' } })
-                .then(function (response) {
-                return response.data;
-            });
-        }
-        return this.$templateRequest(url);
-    };
-    
-    /**
-     * Creates a template by invoking an injectable provider function.
-     *
-     * @param provider Function to invoke via `locals`
-     * @param {Function} injectFn a function used to invoke the template provider
-     * @return {string|Promise.<string>} The template html as a string, or a promise
-     * for that string.
-     */
-    TemplateFactory.prototype.fromProvider = function (provider, params, context) {
-        var deps = core.services.$injector.annotate(provider);
-        var providerFn = core.isArray(provider) ? core.tail(provider) : provider;
-        var resolvable = new core.Resolvable("", providerFn, deps);
-        return resolvable.get(context);
-    };
-    
-    /**
-     * Creates a component's template by invoking an injectable provider function.
-     *
-     * @param provider Function to invoke via `locals`
-     * @param {Function} injectFn a function used to invoke the template provider
-     * @return {string} The template html as a string: "<component-name input1='::$resolve.foo'></component-name>".
-     */
-    TemplateFactory.prototype.fromComponentProvider = function (provider, params, context) {
-        var deps = core.services.$injector.annotate(provider);
-        var providerFn = core.isArray(provider) ? core.tail(provider) : provider;
-        var resolvable = new core.Resolvable("", providerFn, deps);
-        return resolvable.get(context);
-    };
-    
-    /**
-     * Creates a template from a component's name
-     *
-     * This implements route-to-component.
-     * It works by retrieving the component (directive) metadata from the injector.
-     * It analyses the component's bindings, then constructs a template that instantiates the component.
-     * The template wires input and output bindings to resolves or from the parent component.
-     *
-     * @param uiView {object} The parent ui-view (for binding outputs to callbacks)
-     * @param context The ResolveContext (for binding outputs to callbacks returned from resolves)
-     * @param component {string} Component's name in camel case.
-     * @param bindings An object defining the component's bindings: {foo: '<'}
-     * @return {string} The template as a string: "<component-name input1='::$resolve.foo'></component-name>".
-     */
-    TemplateFactory.prototype.makeComponentTemplate = function (uiView, context, component, bindings) {
-        bindings = bindings || {};
-        // Bind once prefix
-        var prefix = ng.version.minor >= 3 ? "::" : "";
-        // Convert to kebob name. Add x- prefix if the string starts with `x-` or `data-`
-        var kebob = function (camelCase) {
-            var kebobed = core.kebobString(camelCase);
-            return /^(x|data)-/.exec(kebobed) ? "x-" + kebobed : kebobed;
-        };
-        var attributeTpl = function (input) {
-            var name = input.name, type = input.type;
-            var attrName = kebob(name);
-            // If the ui-view has an attribute which matches a binding on the routed component
-            // then pass that attribute through to the routed component template.
-            // Prefer ui-view wired mappings to resolve data, unless the resolve was explicitly bound using `bindings:`
-            if (uiView.attr(attrName) && !bindings[name])
-                return attrName + "='" + uiView.attr(attrName) + "'";
-            var resolveName = bindings[name] || name;
-            // Pre-evaluate the expression for "@" bindings by enclosing in {{ }}
-            // some-attr="{{ ::$resolve.someResolveName }}"
-            if (type === '@')
-                return attrName + "='{{" + prefix + "$resolve." + resolveName + "}}'";
-            // Wire "&" callbacks to resolves that return a callback function
-            // Get the result of the resolve (should be a function) and annotate it to get its arguments.
-            // some-attr="$resolve.someResolveResultName(foo, bar)"
-            if (type === '&') {
-                var res = context.getResolvable(resolveName);
-                var fn = res && res.data;
-                var args = fn && core.services.$injector.annotate(fn) || [];
-                // account for array style injection, i.e., ['foo', function(foo) {}]
-                var arrayIdxStr = core.isArray(fn) ? "[" + (fn.length - 1) + "]" : '';
-                return attrName + "='$resolve." + resolveName + arrayIdxStr + "(" + args.join(",") + ")'";
-            }
-            // some-attr="::$resolve.someResolveName"
-            return attrName + "='" + prefix + "$resolve." + resolveName + "'";
-        };
-        var attrs = getComponentBindings(component).map(attributeTpl).join(" ");
-        var kebobName = kebob(component);
-        return "<" + kebobName + " " + attrs + "></" + kebobName + ">";
-    };
-    
-    return TemplateFactory;
-}());
-// Gets all the directive(s)' inputs ('@', '=', and '<') and outputs ('&')
-function getComponentBindings(name) {
-    var cmpDefs = core.services.$injector.get(name + "Directive"); // could be multiple
-    if (!cmpDefs || !cmpDefs.length)
-        throw new Error("Unable to find component named '" + name + "'");
-    return cmpDefs.map(getBindings).reduce(core.unnestR, []);
-}
-// Given a directive definition, find its object input attributes
-// Use different properties, depending on the type of directive (component, bindToController, normal)
-var getBindings = function (def) {
-    if (core.isObject(def.bindToController))
-        return scopeBindings(def.bindToController);
-    return scopeBindings(def.scope);
-};
-// for ng 1.2 style, process the scope: { input: "=foo" }
-// for ng 1.3 through ng 1.5, process the component's bindToController: { input: "=foo" } object
-var scopeBindings = function (bindingsObj) { return Object.keys(bindingsObj || {})
-    .map(function (key) { return [key, /^([=<@&])[?]?(.*)/.exec(bindingsObj[key])]; })
-    .filter(function (tuple) { return core.isDefined(tuple) && core.isArray(tuple[1]); })
-    .map(function (tuple) { return ({ name: tuple[1][2] || tuple[0], type: tuple[1][1] }); }); };
-
-/** @module ng1 */ /** for typedoc */
-/**
- * The Angular 1 `StateProvider`
- *
- * The `$stateProvider` works similar to Angular's v1 router, but it focuses purely
- * on state.
- *
- * A state corresponds to a "place" in the application in terms of the overall UI and
- * navigation. A state describes (via the controller / template / view properties) what
- * the UI looks like and does at that place.
- *
- * States often have things in common, and the primary way of factoring out these
- * commonalities in this model is via the state hierarchy, i.e. parent/child states aka
- * nested states.
- *
- * The `$stateProvider` provides interfaces to declare these states for your app.
- */
-var StateProvider = /** @class */ (function () {
-    function StateProvider(stateRegistry, stateService) {
-        this.stateRegistry = stateRegistry;
-        this.stateService = stateService;
-        core.createProxyFunctions(core.val(StateProvider.prototype), this, core.val(this));
-    }
-    /**
-     * Decorates states when they are registered
-     *
-     * Allows you to extend (carefully) or override (at your own peril) the
-     * `stateBuilder` object used internally by [[StateRegistry]].
-     * This can be used to add custom functionality to ui-router,
-     * for example inferring templateUrl based on the state name.
-     *
-     * When passing only a name, it returns the current (original or decorated) builder
-     * function that matches `name`.
-     *
-     * The builder functions that can be decorated are listed below. Though not all
-     * necessarily have a good use case for decoration, that is up to you to decide.
-     *
-     * In addition, users can attach custom decorators, which will generate new
-     * properties within the state's internal definition. There is currently no clear
-     * use-case for this beyond accessing internal states (i.e. $state.$current),
-     * however, expect this to become increasingly relevant as we introduce additional
-     * meta-programming features.
-     *
-     * **Warning**: Decorators should not be interdependent because the order of
-     * execution of the builder functions in non-deterministic. Builder functions
-     * should only be dependent on the state definition object and super function.
-     *
-     *
-     * Existing builder functions and current return values:
-     *
-     * - **parent** `{object}` - returns the parent state object.
-     * - **data** `{object}` - returns state data, including any inherited data that is not
-     *   overridden by own values (if any).
-     * - **url** `{object}` - returns a {@link ui.router.util.type:UrlMatcher UrlMatcher}
-     *   or `null`.
-     * - **navigable** `{object}` - returns closest ancestor state that has a URL (aka is
-     *   navigable).
-     * - **params** `{object}` - returns an array of state params that are ensured to
-     *   be a super-set of parent's params.
-     * - **views** `{object}` - returns a views object where each key is an absolute view
-     *   name (i.e. "viewName@stateName") and each value is the config object
-     *   (template, controller) for the view. Even when you don't use the views object
-     *   explicitly on a state config, one is still created for you internally.
-     *   So by decorating this builder function you have access to decorating template
-     *   and controller properties.
-     * - **ownParams** `{object}` - returns an array of params that belong to the state,
-     *   not including any params defined by ancestor states.
-     * - **path** `{string}` - returns the full path from the root down to this state.
-     *   Needed for state activation.
-     * - **includes** `{object}` - returns an object that includes every state that
-     *   would pass a `$state.includes()` test.
-     *
-     * #### Example:
-     * Override the internal 'views' builder with a function that takes the state
-     * definition, and a reference to the internal function being overridden:
-     * ```js
-     * $stateProvider.decorator('views', function (state, parent) {
-     *   let result = {},
-     *       views = parent(state);
-     *
-     *   angular.forEach(views, function (config, name) {
-     *     let autoName = (state.name + '.' + name).replace('.', '/');
-     *     config.templateUrl = config.templateUrl || '/partials/' + autoName + '.html';
-     *     result[name] = config;
-     *   });
-     *   return result;
-     * });
-     *
-     * $stateProvider.state('home', {
-     *   views: {
-     *     'contact.list': { controller: 'ListController' },
-     *     'contact.item': { controller: 'ItemController' }
-     *   }
-     * });
-     * ```
-     *
-     *
-     * ```js
-     * // Auto-populates list and item views with /partials/home/contact/list.html,
-     * // and /partials/home/contact/item.html, respectively.
-     * $state.go('home');
-     * ```
-     *
-     * @param {string} name The name of the builder function to decorate.
-     * @param {object} func A function that is responsible for decorating the original
-     * builder function. The function receives two parameters:
-     *
-     *   - `{object}` - state - The state config object.
-     *   - `{object}` - super - The original builder function.
-     *
-     * @return {object} $stateProvider - $stateProvider instance
-     */
-    StateProvider.prototype.decorator = function (name, func) {
-        return this.stateRegistry.decorator(name, func) || this;
-    };
-    StateProvider.prototype.state = function (name, definition) {
-        if (core.isObject(name)) {
-            definition = name;
-        }
-        else {
-            definition.name = name;
-        }
-        this.stateRegistry.register(definition);
-        return this;
-    };
-    /**
-     * Registers an invalid state handler
-     *
-     * This is a passthrough to [[StateService.onInvalid]] for ng1.
-     */
-    StateProvider.prototype.onInvalid = function (callback) {
-        return this.stateService.onInvalid(callback);
-    };
-    return StateProvider;
-}());
-
-/** @module ng1 */ /** */
-/**
- * This is a [[StateBuilder.builder]] function for angular1 `onEnter`, `onExit`,
- * `onRetain` callback hooks on a [[Ng1StateDeclaration]].
- *
- * When the [[StateBuilder]] builds a [[StateObject]] object from a raw [[StateDeclaration]], this builder
- * ensures that those hooks are injectable for @uirouter/angularjs (ng1).
- */
-var getStateHookBuilder = function (hookName) {
-    return function stateHookBuilder(state, parentFn) {
-        var hook = state[hookName];
-        var pathname = hookName === 'onExit' ? 'from' : 'to';
-        function decoratedNg1Hook(trans, state) {
-            var resolveContext = new core.ResolveContext(trans.treeChanges(pathname));
-            var locals = core.extend(getLocals(resolveContext), { $state$: state, $transition$: trans });
-            return core.services.$injector.invoke(hook, this, locals);
-        }
-        return hook ? decoratedNg1Hook : undefined;
-    };
-};
-
-/**
- * Implements UI-Router LocationServices and LocationConfig using Angular 1's $location service
- */
-var Ng1LocationServices = /** @class */ (function () {
-    function Ng1LocationServices($locationProvider) {
-        // .onChange() registry
-        this._urlListeners = [];
-        this.$locationProvider = $locationProvider;
-        var _lp = core.val($locationProvider);
-        core.createProxyFunctions(_lp, this, _lp, ['hashPrefix']);
-    }
-    Ng1LocationServices.prototype.dispose = function () { };
-    Ng1LocationServices.prototype.onChange = function (callback) {
-        var _this = this;
-        this._urlListeners.push(callback);
-        return function () { return core.removeFrom(_this._urlListeners)(callback); };
-    };
-    Ng1LocationServices.prototype.html5Mode = function () {
-        var html5Mode = this.$locationProvider.html5Mode();
-        html5Mode = core.isObject(html5Mode) ? html5Mode.enabled : html5Mode;
-        return html5Mode && this.$sniffer.history;
-    };
-    Ng1LocationServices.prototype.url = function (newUrl, replace, state) {
-        if (replace === void 0) { replace = false; }
-        if (newUrl)
-            this.$location.url(newUrl);
-        if (replace)
-            this.$location.replace();
-        if (state)
-            this.$location.state(state);
-        return this.$location.url();
-    };
-    Ng1LocationServices.prototype._runtimeServices = function ($rootScope, $location, $sniffer, $browser) {
-        var _this = this;
-        this.$location = $location;
-        this.$sniffer = $sniffer;
-        // Bind $locationChangeSuccess to the listeners registered in LocationService.onChange
-        $rootScope.$on("$locationChangeSuccess", function (evt) { return _this._urlListeners.forEach(function (fn) { return fn(evt); }); });
-        var _loc = core.val($location);
-        var _browser = core.val($browser);
-        // Bind these LocationService functions to $location
-        core.createProxyFunctions(_loc, this, _loc, ["replace", "path", "search", "hash"]);
-        // Bind these LocationConfig functions to $location
-        core.createProxyFunctions(_loc, this, _loc, ['port', 'protocol', 'host']);
-        // Bind these LocationConfig functions to $browser
-        core.createProxyFunctions(_browser, this, _browser, ['baseHref']);
-    };
-    /**
-     * Applys ng1-specific path parameter encoding
-     *
-     * The Angular 1 `$location` service is a bit weird.
-     * It doesn't allow slashes to be encoded/decoded bi-directionally.
-     *
-     * See the writeup at https://github.com/angular-ui/ui-router/issues/2598
-     *
-     * This code patches the `path` parameter type so it encoded/decodes slashes as ~2F
-     *
-     * @param router
-     */
-    Ng1LocationServices.monkeyPatchPathParameterType = function (router) {
-        var pathType = router.urlMatcherFactory.type('path');
-        pathType.encode = function (val$$1) {
-            return val$$1 != null ? val$$1.toString().replace(/(~|\/)/g, function (m) { return ({ '~': '~~', '/': '~2F' }[m]); }) : val$$1;
-        };
-        pathType.decode = function (val$$1) {
-            return val$$1 != null ? val$$1.toString().replace(/(~~|~2F)/g, function (m) { return ({ '~~': '~', '~2F': '/' }[m]); }) : val$$1;
-        };
-    };
-    return Ng1LocationServices;
-}());
-
-/** @module url */ /** */
-/**
- * Manages rules for client-side URL
- *
- * ### Deprecation warning:
- * This class is now considered to be an internal API
- * Use the [[UrlService]] instead.
- * For configuring URL rules, use the [[UrlRulesApi]] which can be found as [[UrlService.rules]].
- *
- * This class manages the router rules for what to do when the URL changes.
- *
- * This provider remains for backwards compatibility.
- *
- * @deprecated
- */
-var UrlRouterProvider = /** @class */ (function () {
-    /** @hidden */
-    function UrlRouterProvider(router) {
-        this._router = router;
-        this._urlRouter = router.urlRouter;
-    }
-    /** @hidden */
-    UrlRouterProvider.prototype.$get = function () {
-        var urlRouter = this._urlRouter;
-        urlRouter.update(true);
-        if (!urlRouter.interceptDeferred)
-            urlRouter.listen();
-        return urlRouter;
-    };
-    /**
-     * Registers a url handler function.
-     *
-     * Registers a low level url handler (a `rule`).
-     * A rule detects specific URL patterns and returns a redirect, or performs some action.
-     *
-     * If a rule returns a string, the URL is replaced with the string, and all rules are fired again.
-     *
-     * #### Example:
-     * ```js
-     * var app = angular.module('app', ['ui.router.router']);
-     *
-     * app.config(function ($urlRouterProvider) {
-     *   // Here's an example of how you might allow case insensitive urls
-     *   $urlRouterProvider.rule(function ($injector, $location) {
-     *     var path = $location.path(),
-     *         normalized = path.toLowerCase();
-     *
-     *     if (path !== normalized) {
-     *       return normalized;
-     *     }
-     *   });
-     * });
-     * ```
-     *
-     * @param ruleFn
-     * Handler function that takes `$injector` and `$location` services as arguments.
-     * You can use them to detect a url and return a different url as a string.
-     *
-     * @return [[UrlRouterProvider]] (`this`)
-     */
-    UrlRouterProvider.prototype.rule = function (ruleFn) {
-        var _this = this;
-        if (!core.isFunction(ruleFn))
-            throw new Error("'rule' must be a function");
-        var match = function () {
-            return ruleFn(core.services.$injector, _this._router.locationService);
-        };
-        var rule = new core.BaseUrlRule(match, core.identity);
-        this._urlRouter.rule(rule);
-        return this;
-    };
-    
-    /**
-     * Defines the path or behavior to use when no url can be matched.
-     *
-     * #### Example:
-     * ```js
-     * var app = angular.module('app', ['ui.router.router']);
-     *
-     * app.config(function ($urlRouterProvider) {
-     *   // if the path doesn't match any of the urls you configured
-     *   // otherwise will take care of routing the user to the
-     *   // specified url
-     *   $urlRouterProvider.otherwise('/index');
-     *
-     *   // Example of using function rule as param
-     *   $urlRouterProvider.otherwise(function ($injector, $location) {
-     *     return '/a/valid/url';
-     *   });
-     * });
-     * ```
-     *
-     * @param rule
-     * The url path you want to redirect to or a function rule that returns the url path or performs a `$state.go()`.
-     * The function version is passed two params: `$injector` and `$location` services, and should return a url string.
-     *
-     * @return {object} `$urlRouterProvider` - `$urlRouterProvider` instance
-     */
-    UrlRouterProvider.prototype.otherwise = function (rule) {
-        var _this = this;
-        var urlRouter = this._urlRouter;
-        if (core.isString(rule)) {
-            urlRouter.otherwise(rule);
-        }
-        else if (core.isFunction(rule)) {
-            urlRouter.otherwise(function () { return rule(core.services.$injector, _this._router.locationService); });
-        }
-        else {
-            throw new Error("'rule' must be a string or function");
-        }
-        return this;
-    };
-    
-    /**
-     * Registers a handler for a given url matching.
-     *
-     * If the handler is a string, it is
-     * treated as a redirect, and is interpolated according to the syntax of match
-     * (i.e. like `String.replace()` for `RegExp`, or like a `UrlMatcher` pattern otherwise).
-     *
-     * If the handler is a function, it is injectable.
-     * It gets invoked if `$location` matches.
-     * You have the option of inject the match object as `$match`.
-     *
-     * The handler can return
-     *
-     * - **falsy** to indicate that the rule didn't match after all, then `$urlRouter`
-     *   will continue trying to find another one that matches.
-     * - **string** which is treated as a redirect and passed to `$location.url()`
-     * - **void** or any **truthy** value tells `$urlRouter` that the url was handled.
-     *
-     * #### Example:
-     * ```js
-     * var app = angular.module('app', ['ui.router.router']);
-     *
-     * app.config(function ($urlRouterProvider) {
-     *   $urlRouterProvider.when($state.url, function ($match, $stateParams) {
-     *     if ($state.$current.navigable !== state ||
-     *         !equalForKeys($match, $stateParams) {
-     *      $state.transitionTo(state, $match, false);
-     *     }
-     *   });
-     * });
-     * ```
-     *
-     * @param what A pattern string to match, compiled as a [[UrlMatcher]].
-     * @param handler The path (or function that returns a path) that you want to redirect your user to.
-     * @param ruleCallback [optional] A callback that receives the `rule` registered with [[UrlMatcher.rule]]
-     *
-     * Note: the handler may also invoke arbitrary code, such as `$state.go()`
-     */
-    UrlRouterProvider.prototype.when = function (what, handler) {
-        if (core.isArray(handler) || core.isFunction(handler)) {
-            handler = UrlRouterProvider.injectableHandler(this._router, handler);
-        }
-        this._urlRouter.when(what, handler);
-        return this;
-    };
-    
-    UrlRouterProvider.injectableHandler = function (router, handler) {
-        return function (match) {
-            return core.services.$injector.invoke(handler, null, { $match: match, $stateParams: router.globals.params });
-        };
-    };
-    /**
-     * Disables monitoring of the URL.
-     *
-     * Call this method before UI-Router has bootstrapped.
-     * It will stop UI-Router from performing the initial url sync.
-     *
-     * This can be useful to perform some asynchronous initialization before the router starts.
-     * Once the initialization is complete, call [[listen]] to tell UI-Router to start watching and synchronizing the URL.
-     *
-     * #### Example:
-     * ```js
-     * var app = angular.module('app', ['ui.router']);
-     *
-     * app.config(function ($urlRouterProvider) {
-     *   // Prevent $urlRouter from automatically intercepting URL changes;
-     *   $urlRouterProvider.deferIntercept();
-     * })
-     *
-     * app.run(function (MyService, $urlRouter, $http) {
-     *   $http.get("/stuff").then(function(resp) {
-     *     MyService.doStuff(resp.data);
-     *     $urlRouter.listen();
-     *     $urlRouter.sync();
-     *   });
-     * });
-     * ```
-     *
-     * @param defer Indicates whether to defer location change interception.
-     *        Passing no parameter is equivalent to `true`.
-     */
-    UrlRouterProvider.prototype.deferIntercept = function (defer) {
-        this._urlRouter.deferIntercept(defer);
-    };
-    
-    return UrlRouterProvider;
-}());
-
-/**
- * # Angular 1 types
- *
- * UI-Router core provides various Typescript types which you can use for code completion and validating parameter values, etc.
- * The customizations to the core types for Angular UI-Router are documented here.
- *
- * The optional [[$resolve]] service is also documented here.
- *
- * @module ng1
- * @preferred
- */
-/** for typedoc */
-ng.module("ui.router.angular1", []);
-var mod_init = ng.module('ui.router.init', []);
-var mod_util = ng.module('ui.router.util', ['ng', 'ui.router.init']);
-var mod_rtr = ng.module('ui.router.router', ['ui.router.util']);
-var mod_state = ng.module('ui.router.state', ['ui.router.router', 'ui.router.util', 'ui.router.angular1']);
-var mod_main = ng.module('ui.router', ['ui.router.init', 'ui.router.state', 'ui.router.angular1']);
-var mod_cmpt = ng.module('ui.router.compat', ['ui.router']); // tslint:disable-line
-var router = null;
-$uiRouter.$inject = ['$locationProvider'];
-/** This angular 1 provider instantiates a Router and exposes its services via the angular injector */
-function $uiRouter($locationProvider) {
-    // Create a new instance of the Router when the $uiRouterProvider is initialized
-    router = this.router = new core.UIRouter();
-    router.stateProvider = new StateProvider(router.stateRegistry, router.stateService);
-    // Apply ng1 specific StateBuilder code for `views`, `resolve`, and `onExit/Retain/Enter` properties
-    router.stateRegistry.decorator("views", ng1ViewsBuilder);
-    router.stateRegistry.decorator("onExit", getStateHookBuilder("onExit"));
-    router.stateRegistry.decorator("onRetain", getStateHookBuilder("onRetain"));
-    router.stateRegistry.decorator("onEnter", getStateHookBuilder("onEnter"));
-    router.viewService._pluginapi._viewConfigFactory('ng1', getNg1ViewConfigFactory());
-    var ng1LocationService = router.locationService = router.locationConfig = new Ng1LocationServices($locationProvider);
-    Ng1LocationServices.monkeyPatchPathParameterType(router);
-    // backwards compat: also expose router instance as $uiRouterProvider.router
-    router['router'] = router;
-    router['$get'] = $get;
-    $get.$inject = ['$location', '$browser', '$sniffer', '$rootScope', '$http', '$templateCache'];
-    function $get($location, $browser, $sniffer, $rootScope, $http, $templateCache) {
-        ng1LocationService._runtimeServices($rootScope, $location, $sniffer, $browser);
-        delete router['router'];
-        delete router['$get'];
-        return router;
-    }
-    return router;
-}
-var getProviderFor = function (serviceName) { return ['$uiRouterProvider', function ($urp) {
-        var service = $urp.router[serviceName];
-        service["$get"] = function () { return service; };
-        return service;
-    }]; };
-// This effectively calls $get() on `$uiRouterProvider` to trigger init (when ng enters runtime)
-runBlock.$inject = ['$injector', '$q', '$uiRouter'];
-function runBlock($injector, $q, $uiRouter) {
-    core.services.$injector = $injector;
-    core.services.$q = $q;
-    // The $injector is now available.
-    // Find any resolvables that had dependency annotation deferred
-    $uiRouter.stateRegistry.get()
-        .map(function (x) { return x.$$state().resolvables; })
-        .reduce(core.unnestR, [])
-        .filter(function (x) { return x.deps === "deferred"; })
-        .forEach(function (resolvable) { return resolvable.deps = $injector.annotate(resolvable.resolveFn, $injector.strictDi); });
-}
-// $urlRouter service and $urlRouterProvider
-var getUrlRouterProvider = function (uiRouter) {
-    return uiRouter.urlRouterProvider = new UrlRouterProvider(uiRouter);
-};
-// $state service and $stateProvider
-// $urlRouter service and $urlRouterProvider
-var getStateProvider = function () {
-    return core.extend(router.stateProvider, { $get: function () { return router.stateService; } });
-};
-watchDigests.$inject = ['$rootScope'];
-function watchDigests($rootScope) {
-    $rootScope.$watch(function () { core.trace.approximateDigests++; });
-}
-mod_init.provider("$uiRouter", $uiRouter);
-mod_rtr.provider('$urlRouter', ['$uiRouterProvider', getUrlRouterProvider]);
-mod_util.provider('$urlService', getProviderFor('urlService'));
-mod_util.provider('$urlMatcherFactory', ['$uiRouterProvider', function () { return router.urlMatcherFactory; }]);
-mod_util.provider('$templateFactory', function () { return new TemplateFactory(); });
-mod_state.provider('$stateRegistry', getProviderFor('stateRegistry'));
-mod_state.provider('$uiRouterGlobals', getProviderFor('globals'));
-mod_state.provider('$transitions', getProviderFor('transitionService'));
-mod_state.provider('$state', ['$uiRouterProvider', getStateProvider]);
-mod_state.factory('$stateParams', ['$uiRouter', function ($uiRouter) { return $uiRouter.globals.params; }]);
-mod_main.factory('$view', function () { return router.viewService; });
-mod_main.service("$trace", function () { return core.trace; });
-mod_main.run(watchDigests);
-mod_util.run(['$urlMatcherFactory', function ($urlMatcherFactory) { }]);
-mod_state.run(['$state', function ($state) { }]);
-mod_rtr.run(['$urlRouter', function ($urlRouter) { }]);
-mod_init.run(runBlock);
-/** @hidden TODO: find a place to move this */
-var getLocals = function (ctx) {
-    var tokens = ctx.getTokens().filter(core.isString);
-    var tuples = tokens.map(function (key) {
-        var resolvable = ctx.getResolvable(key);
-        var waitPolicy = ctx.getPolicy(resolvable).async;
-        return [key, waitPolicy === 'NOWAIT' ? resolvable.promise : resolvable.data];
-    });
-    return tuples.reduce(core.applyPairs, {});
-};
-
-/**
- * # Angular 1 injectable services
- *
- * This is a list of the objects which can be injected using angular's injector.
- *
- * There are three different kind of injectable objects:
- *
- * ## **Provider** objects
- * #### injectable into a `.config()` block during configtime
- *
- * - [[$uiRouterProvider]]: The UI-Router instance
- * - [[$stateProvider]]: State registration
- * - [[$transitionsProvider]]: Transition hooks
- * - [[$urlServiceProvider]]: All URL related public APIs
- *
- * - [[$uiViewScrollProvider]]: Disable ui-router view scrolling
- * - [[$urlRouterProvider]]: (deprecated) Url matching rules
- * - [[$urlMatcherFactoryProvider]]: (deprecated) Url parsing config
- *
- * ## **Service** objects
- * #### injectable globally during runtime
- *
- * - [[$uiRouter]]: The UI-Router instance
- * - [[$trace]]: Enable transition trace/debug
- * - [[$transitions]]: Transition hooks
- * - [[$state]]: Imperative state related APIs
- * - [[$stateRegistry]]: State registration
- * - [[$urlService]]: All URL related public APIs
- * - [[$uiRouterGlobals]]: Global variables
- * - [[$uiViewScroll]]: Scroll an element into view
- *
- * - [[$stateParams]]: (deprecated) Global state param values
- * - [[$urlRouter]]: (deprecated) URL synchronization
- * - [[$urlMatcherFactory]]: (deprecated) URL parsing config
- *
- * ## **Per-Transition** objects
- *
- * - These kind of objects are injectable into:
- *   - Resolves ([[Ng1StateDeclaration.resolve]]),
- *   - Transition Hooks ([[TransitionService.onStart]], etc),
- *   - Routed Controllers ([[Ng1ViewDeclaration.controller]])
- *
- * #### Different instances are injected based on the [[Transition]]
- *
- * - [[$transition$]]: The current Transition object
- * - [[$stateParams]]: State param values for pending Transition (deprecated)
- * - Any resolve data defined using [[Ng1StateDeclaration.resolve]]
- *
- * @ng1api
- * @preferred
- * @module injectables
- */ /** */
-/**
- * The current (or pending) State Parameters
- *
- * An injectable global **Service Object** which holds the state parameters for the latest **SUCCESSFUL** transition.
- *
- * The values are not updated until *after* a `Transition` successfully completes.
- *
- * **Also:** an injectable **Per-Transition Object** object which holds the pending state parameters for the pending `Transition` currently running.
- *
- * ### Deprecation warning:
- *
- * The value injected for `$stateParams` is different depending on where it is injected.
- *
- * - When injected into an angular service, the object injected is the global **Service Object** with the parameter values for the latest successful `Transition`.
- * - When injected into transition hooks, resolves, or view controllers, the object is the **Per-Transition Object** with the parameter values for the running `Transition`.
- *
- * Because of these confusing details, this service is deprecated.
- *
- * ### Instead of using the global `$stateParams` service object,
- * inject [[$uiRouterGlobals]] and use [[UIRouterGlobals.params]]
- *
- * ```js
- * MyService.$inject = ['$uiRouterGlobals'];
- * function MyService($uiRouterGlobals) {
- *   return {
- *     paramValues: function () {
- *       return $uiRouterGlobals.params;
- *     }
- *   }
- * }
- * ```
- *
- * ### Instead of using the per-transition `$stateParams` object,
- * inject the current `Transition` (as [[$transition$]]) and use [[Transition.params]]
- *
- * ```js
- * MyController.$inject = ['$transition$'];
- * function MyController($transition$) {
- *   var username = $transition$.params().username;
- *   // .. do something with username
- * }
- * ```
- *
- * ---
- *
- * This object can be injected into other services.
- *
- * #### Deprecated Example:
- * ```js
- * SomeService.$inject = ['$http', '$stateParams'];
- * function SomeService($http, $stateParams) {
- *   return {
- *     getUser: function() {
- *       return $http.get('/api/users/' + $stateParams.username);
- *     }
- *   }
- * };
- * angular.service('SomeService', SomeService);
- * ```
- * @deprecated
- */
-
-/**
- * # Angular 1 Directives
- *
- * These are the directives included in UI-Router for Angular 1.
- * These directives are used in templates to create viewports and link/navigate to states.
- *
- * @ng1api
- * @preferred
- * @module directives
- */ /** for typedoc */
-/** @hidden */
-function parseStateRef(ref) {
-    var paramsOnly = ref.match(/^\s*({[^}]*})\s*$/), parsed;
-    if (paramsOnly)
-        ref = '(' + paramsOnly[1] + ')';
-    parsed = ref.replace(/\n/g, " ").match(/^\s*([^(]*?)\s*(\((.*)\))?\s*$/);
-    if (!parsed || parsed.length !== 4)
-        throw new Error("Invalid state ref '" + ref + "'");
-    return { state: parsed[1] || null, paramExpr: parsed[3] || null };
-}
-/** @hidden */
-function stateContext(el) {
-    var $uiView = el.parent().inheritedData('$uiView');
-    var path = core.parse('$cfg.path')($uiView);
-    return path ? core.tail(path).state.name : undefined;
-}
-/** @hidden */
-function processedDef($state, $element, def) {
-    var uiState = def.uiState || $state.current.name;
-    var uiStateOpts = core.extend(defaultOpts($element, $state), def.uiStateOpts || {});
-    var href = $state.href(uiState, def.uiStateParams, uiStateOpts);
-    return { uiState: uiState, uiStateParams: def.uiStateParams, uiStateOpts: uiStateOpts, href: href };
-}
-/** @hidden */
-function getTypeInfo(el) {
-    // SVGAElement does not use the href attribute, but rather the 'xlinkHref' attribute.
-    var isSvg = Object.prototype.toString.call(el.prop('href')) === '[object SVGAnimatedString]';
-    var isForm = el[0].nodeName === "FORM";
-    return {
-        attr: isForm ? "action" : (isSvg ? 'xlink:href' : 'href'),
-        isAnchor: el.prop("tagName").toUpperCase() === "A",
-        clickable: !isForm
-    };
-}
-/** @hidden */
-function clickHook(el, $state, $timeout, type, getDef) {
-    return function (e) {
-        var button = e.which || e.button, target = getDef();
-        if (!(button > 1 || e.ctrlKey || e.metaKey || e.shiftKey || el.attr('target'))) {
-            // HACK: This is to allow ng-clicks to be processed before the transition is initiated:
-            var transition = $timeout(function () {
-                $state.go(target.uiState, target.uiStateParams, target.uiStateOpts);
-            });
-            e.preventDefault();
-            // if the state has no URL, ignore one preventDefault from the <a> directive.
-            var ignorePreventDefaultCount = type.isAnchor && !target.href ? 1 : 0;
-            e.preventDefault = function () {
-                if (ignorePreventDefaultCount-- <= 0)
-                    $timeout.cancel(transition);
-            };
-        }
-    };
-}
-/** @hidden */
-function defaultOpts(el, $state) {
-    return {
-        relative: stateContext(el) || $state.$current,
-        inherit: true,
-        source: "sref"
-    };
-}
-/** @hidden */
-function bindEvents(element, scope, hookFn, uiStateOpts) {
-    var events;
-    if (uiStateOpts) {
-        events = uiStateOpts.events;
-    }
-    if (!core.isArray(events)) {
-        events = ['click'];
-    }
-    var on = element.on ? 'on' : 'bind';
-    for (var _i = 0, events_1 = events; _i < events_1.length; _i++) {
-        var event_1 = events_1[_i];
-        element[on](event_1, hookFn);
-    }
-    scope.$on('$destroy', function () {
-        var off = element.off ? 'off' : 'unbind';
-        for (var _i = 0, events_2 = events; _i < events_2.length; _i++) {
-            var event_2 = events_2[_i];
-            element[off](event_2, hookFn);
-        }
-    });
-}
-/**
- * `ui-sref`: A directive for linking to a state
- *
- * A directive which links to a state (and optionally, parameters).
- * When clicked, this directive activates the linked state with the supplied parameter values.
- *
- * ### Linked State
- * The attribute value of the `ui-sref` is the name of the state to link to.
- *
- * #### Example:
- * This will activate the `home` state when the link is clicked.
- * ```html
- * <a ui-sref="home">Home</a>
- * ```
- *
- * ### Relative Links
- * You can also use relative state paths within `ui-sref`, just like a relative path passed to `$state.go()` ([[StateService.go]]).
- * You just need to be aware that the path is relative to the state that *created* the link.
- * This allows a state to create a relative `ui-sref` which always targets the same destination.
- *
- * #### Example:
- * Both these links are relative to the parent state, even when a child state is currently active.
- * ```html
- * <a ui-sref=".child1">child 1 state</a>
- * <a ui-sref=".child2">child 2 state</a>
- * ```
- *
- * This link activates the parent state.
- * ```html
- * <a ui-sref="^">Return</a>
- * ```
- *
- * ### hrefs
- * If the linked state has a URL, the directive will automatically generate and
- * update the `href` attribute (using the [[StateService.href]]  method).
- *
- * #### Example:
- * Assuming the `users` state has a url of `/users/`
- * ```html
- * <a ui-sref="users" href="/users/">Users</a>
- * ```
- *
- * ### Parameter Values
- * In addition to the state name, a `ui-sref` can include parameter values which are applied when activating the state.
- * Param values can be provided in the `ui-sref` value after the state name, enclosed by parentheses.
- * The content inside the parentheses is an expression, evaluated to the parameter values.
- *
- * #### Example:
- * This example renders a list of links to users.
- * The state's `userId` parameter value comes from each user's `user.id` property.
- * ```html
- * <li ng-repeat="user in users">
- *   <a ui-sref="users.detail({ userId: user.id })">{{ user.displayName }}</a>
- * </li>
- * ```
- *
- * Note:
- * The parameter values expression is `$watch`ed for updates.
- *
- * ### Transition Options
- * You can specify [[TransitionOptions]] to pass to [[StateService.go]] by using the `ui-sref-opts` attribute.
- * Options are restricted to `location`, `inherit`, and `reload`.
- *
- * #### Example:
- * ```html
- * <a ui-sref="home" ui-sref-opts="{ reload: true }">Home</a>
- * ```
- *
- * ### Other DOM Events
- *
- * You can also customize which DOM events to respond to (instead of `click`) by
- * providing an `events` array in the `ui-sref-opts` attribute.
- *
- * #### Example:
- * ```html
- * <input type="text" ui-sref="contacts" ui-sref-opts="{ events: ['change', 'blur'] }">
- * ```
- *
- * ### Highlighting the active link
- * This directive can be used in conjunction with [[uiSrefActive]] to highlight the active link.
- *
- * ### Examples
- * If you have the following template:
- *
- * ```html
- * <a ui-sref="home">Home</a>
- * <a ui-sref="about">About</a>
- * <a ui-sref="{page: 2}">Next page</a>
- *
- * <ul>
- *     <li ng-repeat="contact in contacts">
- *         <a ui-sref="contacts.detail({ id: contact.id })">{{ contact.name }}</a>
- *     </li>
- * </ul>
- * ```
- *
- * Then (assuming the current state is `contacts`) the rendered html including hrefs would be:
- *
- * ```html
- * <a href="#/home" ui-sref="home">Home</a>
- * <a href="#/about" ui-sref="about">About</a>
- * <a href="#/contacts?page=2" ui-sref="{page: 2}">Next page</a>
- *
- * <ul>
- *     <li ng-repeat="contact in contacts">
- *         <a href="#/contacts/1" ui-sref="contacts.detail({ id: contact.id })">Joe</a>
- *     </li>
- *     <li ng-repeat="contact in contacts">
- *         <a href="#/contacts/2" ui-sref="contacts.detail({ id: contact.id })">Alice</a>
- *     </li>
- *     <li ng-repeat="contact in contacts">
- *         <a href="#/contacts/3" ui-sref="contacts.detail({ id: contact.id })">Bob</a>
- *     </li>
- * </ul>
- *
- * <a href="#/home" ui-sref="home" ui-sref-opts="{reload: true}">Home</a>
- * ```
- *
- * ### Notes
- *
- * - You can use `ui-sref` to change **only the parameter values** by omitting the state name and parentheses.
- * #### Example:
- * Sets the `lang` parameter to `en` and remains on the same state.
- *
- * ```html
- * <a ui-sref="{ lang: 'en' }">English</a>
- * ```
- *
- * - A middle-click, right-click, or ctrl-click is handled (natively) by the browser to open the href in a new window, for example.
- *
- * - Unlike the parameter values expression, the state name is not `$watch`ed (for performance reasons).
- * If you need to dynamically update the state being linked to, use the fully dynamic [[uiState]] directive.
- */
-var uiSref;
-uiSref = ['$uiRouter', '$timeout',
-    function $StateRefDirective($uiRouter, $timeout) {
-        var $state = $uiRouter.stateService;
-        return {
-            restrict: 'A',
-            require: ['?^uiSrefActive', '?^uiSrefActiveEq'],
-            link: function (scope, element, attrs, uiSrefActive) {
-                var type = getTypeInfo(element);
-                var active = uiSrefActive[1] || uiSrefActive[0];
-                var unlinkInfoFn = null;
-                var hookFn;
-                var rawDef = {};
-                var getDef = function () { return processedDef($state, element, rawDef); };
-                var ref = parseStateRef(attrs.uiSref);
-                rawDef.uiState = ref.state;
-                rawDef.uiStateOpts = attrs.uiSrefOpts ? scope.$eval(attrs.uiSrefOpts) : {};
-                function update() {
-                    var def = getDef();
-                    if (unlinkInfoFn)
-                        unlinkInfoFn();
-                    if (active)
-                        unlinkInfoFn = active.$$addStateInfo(def.uiState, def.uiStateParams);
-                    if (def.href != null)
-                        attrs.$set(type.attr, def.href);
-                }
-                if (ref.paramExpr) {
-                    scope.$watch(ref.paramExpr, function (val$$1) {
-                        rawDef.uiStateParams = core.extend({}, val$$1);
-                        update();
-                    }, true);
-                    rawDef.uiStateParams = core.extend({}, scope.$eval(ref.paramExpr));
-                }
-                update();
-                scope.$on('$destroy', $uiRouter.stateRegistry.onStatesChanged(update));
-                scope.$on('$destroy', $uiRouter.transitionService.onSuccess({}, update));
-                if (!type.clickable)
-                    return;
-                hookFn = clickHook(element, $state, $timeout, type, getDef);
-                bindEvents(element, scope, hookFn, rawDef.uiStateOpts);
-            }
-        };
-    }];
-/**
- * `ui-state`: A fully dynamic directive for linking to a state
- *
- * A directive which links to a state (and optionally, parameters).
- * When clicked, this directive activates the linked state with the supplied parameter values.
- *
- * **This directive is very similar to [[uiSref]], but it `$observe`s and `$watch`es/evaluates all its inputs.**
- *
- * A directive which links to a state (and optionally, parameters).
- * When clicked, this directive activates the linked state with the supplied parameter values.
- *
- * ### Linked State
- * The attribute value of `ui-state` is an expression which is `$watch`ed and evaluated as the state to link to.
- * **This is in contrast with `ui-sref`, which takes a state name as a string literal.**
- *
- * #### Example:
- * Create a list of links.
- * ```html
- * <li ng-repeat="link in navlinks">
- *   <a ui-state="link.state">{{ link.displayName }}</a>
- * </li>
- * ```
- *
- * ### Relative Links
- * If the expression evaluates to a relative path, it is processed like [[uiSref]].
- * You just need to be aware that the path is relative to the state that *created* the link.
- * This allows a state to create relative `ui-state` which always targets the same destination.
- *
- * ### hrefs
- * If the linked state has a URL, the directive will automatically generate and
- * update the `href` attribute (using the [[StateService.href]]  method).
- *
- * ### Parameter Values
- * In addition to the state name expression, a `ui-state` can include parameter values which are applied when activating the state.
- * Param values should be provided using the `ui-state-params` attribute.
- * The `ui-state-params` attribute value is `$watch`ed and evaluated as an expression.
- *
- * #### Example:
- * This example renders a list of links with param values.
- * The state's `userId` parameter value comes from each user's `user.id` property.
- * ```html
- * <li ng-repeat="link in navlinks">
- *   <a ui-state="link.state" ui-state-params="link.params">{{ link.displayName }}</a>
- * </li>
- * ```
- *
- * ### Transition Options
- * You can specify [[TransitionOptions]] to pass to [[StateService.go]] by using the `ui-state-opts` attribute.
- * Options are restricted to `location`, `inherit`, and `reload`.
- * The value of the `ui-state-opts` is `$watch`ed and evaluated as an expression.
- *
- * #### Example:
- * ```html
- * <a ui-state="returnto.state" ui-state-opts="{ reload: true }">Home</a>
- * ```
- *
- * ### Other DOM Events
- *
- * You can also customize which DOM events to respond to (instead of `click`) by
- * providing an `events` array in the `ui-state-opts` attribute.
- *
- * #### Example:
- * ```html
- * <input type="text" ui-state="contacts" ui-state-opts="{ events: ['change', 'blur'] }">
- * ```
- *
- * ### Highlighting the active link
- * This directive can be used in conjunction with [[uiSrefActive]] to highlight the active link.
- *
- * ### Notes
- *
- * - You can use `ui-params` to change **only the parameter values** by omitting the state name and supplying only `ui-state-params`.
- *   However, it might be simpler to use [[uiSref]] parameter-only links.
- *
- * #### Example:
- * Sets the `lang` parameter to `en` and remains on the same state.
- *
- * ```html
- * <a ui-state="" ui-state-params="{ lang: 'en' }">English</a>
- * ```
- *
- * - A middle-click, right-click, or ctrl-click is handled (natively) by the browser to open the href in a new window, for example.
- * ```
- */
-var uiState;
-uiState = ['$uiRouter', '$timeout',
-    function $StateRefDynamicDirective($uiRouter, $timeout) {
-        var $state = $uiRouter.stateService;
-        return {
-            restrict: 'A',
-            require: ['?^uiSrefActive', '?^uiSrefActiveEq'],
-            link: function (scope, element, attrs, uiSrefActive) {
-                var type = getTypeInfo(element);
-                var active = uiSrefActive[1] || uiSrefActive[0];
-                var unlinkInfoFn = null;
-                var hookFn;
-                var rawDef = {};
-                var getDef = function () { return processedDef($state, element, rawDef); };
-                var inputAttrs = ['uiState', 'uiStateParams', 'uiStateOpts'];
-                var watchDeregFns = inputAttrs.reduce(function (acc, attr) { return (acc[attr] = core.noop, acc); }, {});
-                function update() {
-                    var def = getDef();
-                    if (unlinkInfoFn)
-                        unlinkInfoFn();
-                    if (active)
-                        unlinkInfoFn = active.$$addStateInfo(def.uiState, def.uiStateParams);
-                    if (def.href != null)
-                        attrs.$set(type.attr, def.href);
-                }
-                inputAttrs.forEach(function (field) {
-                    rawDef[field] = attrs[field] ? scope.$eval(attrs[field]) : null;
-                    attrs.$observe(field, function (expr) {
-                        watchDeregFns[field]();
-                        watchDeregFns[field] = scope.$watch(expr, function (newval) {
-                            rawDef[field] = newval;
-                            update();
-                        }, true);
-                    });
-                });
-                update();
-                scope.$on('$destroy', $uiRouter.stateRegistry.onStatesChanged(update));
-                scope.$on('$destroy', $uiRouter.transitionService.onSuccess({}, update));
-                if (!type.clickable)
-                    return;
-                hookFn = clickHook(element, $state, $timeout, type, getDef);
-                bindEvents(element, scope, hookFn, rawDef.uiStateOpts);
-            }
-        };
-    }];
-/**
- * `ui-sref-active` and `ui-sref-active-eq`: A directive that adds a CSS class when a `ui-sref` is active
- *
- * A directive working alongside [[uiSref]] and [[uiState]] to add classes to an element when the
- * related directive's state is active (and remove them when it is inactive).
- *
- * The primary use-case is to highlight the active link in navigation menus,
- * distinguishing it from the inactive menu items.
- *
- * ### Linking to a `ui-sref` or `ui-state`
- * `ui-sref-active` can live on the same element as `ui-sref`/`ui-state`, or it can be on a parent element.
- * If a `ui-sref-active` is a parent to more than one `ui-sref`/`ui-state`, it will apply the CSS class when **any of the links are active**.
- *
- * ### Matching
- *
- * The `ui-sref-active` directive applies the CSS class when the `ui-sref`/`ui-state`'s target state **or any child state is active**.
- * This is a "fuzzy match" which uses [[StateService.includes]].
- *
- * The `ui-sref-active-eq` directive applies the CSS class when the `ui-sref`/`ui-state`'s target state is directly active (not when child states are active).
- * This is an "exact match" which uses [[StateService.is]].
- *
- * ### Parameter values
- * If the `ui-sref`/`ui-state` includes parameter values, the current parameter values must match the link's values for the link to be highlighted.
- * This allows a list of links to the same state with different parameters to be rendered, and the correct one highlighted.
- *
- * #### Example:
- * ```html
- * <li ng-repeat="user in users" ui-sref-active="active">
- *   <a ui-sref="user.details({ userId: user.id })">{{ user.lastName }}</a>
- * </li>
- * ```
- *
- * ### Examples
- *
- * Given the following template:
- * #### Example:
- * ```html
- * <ul>
- *   <li ui-sref-active="active" class="item">
- *     <a href ui-sref="app.user({user: 'bilbobaggins'})">@bilbobaggins</a>
- *   </li>
- * </ul>
- * ```
- *
- * When the app state is `app.user` (or any child state),
- * and contains the state parameter "user" with value "bilbobaggins",
- * the resulting HTML will appear as (note the 'active' class):
- *
- * ```html
- * <ul>
- *   <li ui-sref-active="active" class="item active">
- *     <a ui-sref="app.user({user: 'bilbobaggins'})" href="/users/bilbobaggins">@bilbobaggins</a>
- *   </li>
- * </ul>
- * ```
- *
- * ### Glob mode
- *
- * It is possible to pass `ui-sref-active` an expression that evaluates to an object.
- * The objects keys represent active class names and values represent the respective state names/globs.
- * `ui-sref-active` will match if the current active state **includes** any of
- * the specified state names/globs, even the abstract ones.
- *
- * #### Example:
- * Given the following template, with "admin" being an abstract state:
- * ```html
- * <div ui-sref-active="{'active': 'admin.**'}">
- *   <a ui-sref-active="active" ui-sref="admin.roles">Roles</a>
- * </div>
- * ```
- *
- * When the current state is "admin.roles" the "active" class will be applied to both the <div> and <a> elements.
- * It is important to note that the state names/globs passed to `ui-sref-active` override any state provided by a linked `ui-sref`.
- *
- * ### Notes:
- *
- * - The class name is interpolated **once** during the directives link time (any further changes to the
- * interpolated value are ignored).
- *
- * - Multiple classes may be specified in a space-separated format: `ui-sref-active='class1 class2 class3'`
- */
-var uiSrefActive;
-uiSrefActive = ['$state', '$stateParams', '$interpolate', '$uiRouter',
-    function $StateRefActiveDirective($state, $stateParams, $interpolate, $uiRouter) {
-        return {
-            restrict: "A",
-            controller: ['$scope', '$element', '$attrs',
-                function ($scope, $element, $attrs) {
-                    var states = [], activeEqClass, uiSrefActive;
-                    // There probably isn't much point in $observing this
-                    // uiSrefActive and uiSrefActiveEq share the same directive object with some
-                    // slight difference in logic routing
-                    activeEqClass = $interpolate($attrs.uiSrefActiveEq || '', false)($scope);
-                    try {
-                        uiSrefActive = $scope.$eval($attrs.uiSrefActive);
-                    }
-                    catch (e) {
-                        // Do nothing. uiSrefActive is not a valid expression.
-                        // Fall back to using $interpolate below
-                    }
-                    uiSrefActive = uiSrefActive || $interpolate($attrs.uiSrefActive || '', false)($scope);
-                    if (core.isObject(uiSrefActive)) {
-                        core.forEach(uiSrefActive, function (stateOrName, activeClass) {
-                            if (core.isString(stateOrName)) {
-                                var ref = parseStateRef(stateOrName);
-                                addState(ref.state, $scope.$eval(ref.paramExpr), activeClass);
-                            }
-                        });
-                    }
-                    // Allow uiSref to communicate with uiSrefActive[Equals]
-                    this.$$addStateInfo = function (newState, newParams) {
-                        // we already got an explicit state provided by ui-sref-active, so we
-                        // shadow the one that comes from ui-sref
-                        if (core.isObject(uiSrefActive) && states.length > 0) {
-                            return;
-                        }
-                        var deregister = addState(newState, newParams, uiSrefActive);
-                        update();
-                        return deregister;
-                    };
-                    function updateAfterTransition(trans) {
-                        trans.promise.then(update, core.noop);
-                    }
-                    $scope.$on('$stateChangeSuccess', update);
-                    $scope.$on('$destroy', $uiRouter.transitionService.onStart({}, updateAfterTransition));
-                    if ($uiRouter.globals.transition) {
-                        updateAfterTransition($uiRouter.globals.transition);
-                    }
-                    function addState(stateName, stateParams, activeClass) {
-                        var state = $state.get(stateName, stateContext($element));
-                        var stateInfo = {
-                            state: state || { name: stateName },
-                            params: stateParams,
-                            activeClass: activeClass
-                        };
-                        states.push(stateInfo);
-                        return function removeState() {
-                            core.removeFrom(states)(stateInfo);
-                        };
-                    }
-                    // Update route state
-                    function update() {
-                        var splitClasses = function (str) {
-                            return str.split(/\s/).filter(core.identity);
-                        };
-                        var getClasses = function (stateList) {
-                            return stateList.map(function (x) { return x.activeClass; }).map(splitClasses).reduce(core.unnestR, []);
-                        };
-                        var allClasses = getClasses(states).concat(splitClasses(activeEqClass)).reduce(core.uniqR, []);
-                        var fuzzyClasses = getClasses(states.filter(function (x) { return $state.includes(x.state.name, x.params); }));
-                        var exactlyMatchesAny = !!states.filter(function (x) { return $state.is(x.state.name, x.params); }).length;
-                        var exactClasses = exactlyMatchesAny ? splitClasses(activeEqClass) : [];
-                        var addClasses = fuzzyClasses.concat(exactClasses).reduce(core.uniqR, []);
-                        var removeClasses = allClasses.filter(function (cls) { return !core.inArray(addClasses, cls); });
-                        $scope.$evalAsync(function () {
-                            addClasses.forEach(function (className) { return $element.addClass(className); });
-                            removeClasses.forEach(function (className) { return $element.removeClass(className); });
-                        });
-                    }
-                    update();
-                }]
-        };
-    }];
-ng.module('ui.router.state')
-    .directive('uiSref', uiSref)
-    .directive('uiSrefActive', uiSrefActive)
-    .directive('uiSrefActiveEq', uiSrefActive)
-    .directive('uiState', uiState);
-
-/** @module ng1 */ /** for typedoc */
-/**
- * `isState` Filter: truthy if the current state is the parameter
- *
- * Translates to [[StateService.is]] `$state.is("stateName")`.
- *
- * #### Example:
- * ```html
- * <div ng-if="'stateName' | isState">show if state is 'stateName'</div>
- * ```
- */
-$IsStateFilter.$inject = ['$state'];
-function $IsStateFilter($state) {
-    var isFilter = function (state, params, options) {
-        return $state.is(state, params, options);
-    };
-    isFilter.$stateful = true;
-    return isFilter;
-}
-/**
- * `includedByState` Filter: truthy if the current state includes the parameter
- *
- * Translates to [[StateService.includes]]` $state.is("fullOrPartialStateName")`.
- *
- * #### Example:
- * ```html
- * <div ng-if="'fullOrPartialStateName' | includedByState">show if state includes 'fullOrPartialStateName'</div>
- * ```
- */
-$IncludedByStateFilter.$inject = ['$state'];
-function $IncludedByStateFilter($state) {
-    var includesFilter = function (state, params, options) {
-        return $state.includes(state, params, options);
-    };
-    includesFilter.$stateful = true;
-    return includesFilter;
-}
-ng.module('ui.router.state')
-    .filter('isState', $IsStateFilter)
-    .filter('includedByState', $IncludedByStateFilter);
-
-/**
- * @ng1api
- * @module directives
- */ /** for typedoc */
-/**
- * `ui-view`: A viewport directive which is filled in by a view from the active state.
- *
- * ### Attributes
- *
- * - `name`: (Optional) A view name.
- *   The name should be unique amongst the other views in the same state.
- *   You can have views of the same name that live in different states.
- *   The ui-view can be targeted in a View using the name ([[Ng1StateDeclaration.views]]).
- *
- * - `autoscroll`: an expression. When it evaluates to true, the `ui-view` will be scrolled into view when it is activated.
- *   Uses [[$uiViewScroll]] to do the scrolling.
- *
- * - `onload`: Expression to evaluate whenever the view updates.
- *
- * #### Example:
- * A view can be unnamed or named.
- * ```html
- * <!-- Unnamed -->
- * <div ui-view></div>
- *
- * <!-- Named -->
- * <div ui-view="viewName"></div>
- *
- * <!-- Named (different style) -->
- * <ui-view name="viewName"></ui-view>
- * ```
- *
- * You can only have one unnamed view within any template (or root html). If you are only using a
- * single view and it is unnamed then you can populate it like so:
- *
- * ```html
- * <div ui-view></div>
- * $stateProvider.state("home", {
- *   template: "<h1>HELLO!</h1>"
- * })
- * ```
- *
- * The above is a convenient shortcut equivalent to specifying your view explicitly with the
- * [[Ng1StateDeclaration.views]] config property, by name, in this case an empty name:
- *
- * ```js
- * $stateProvider.state("home", {
- *   views: {
- *     "": {
- *       template: "<h1>HELLO!</h1>"
- *     }
- *   }
- * })
- * ```
- *
- * But typically you'll only use the views property if you name your view or have more than one view
- * in the same template. There's not really a compelling reason to name a view if its the only one,
- * but you could if you wanted, like so:
- *
- * ```html
- * <div ui-view="main"></div>
- * ```
- *
- * ```js
- * $stateProvider.state("home", {
- *   views: {
- *     "main": {
- *       template: "<h1>HELLO!</h1>"
- *     }
- *   }
- * })
- * ```
- *
- * Really though, you'll use views to set up multiple views:
- *
- * ```html
- * <div ui-view></div>
- * <div ui-view="chart"></div>
- * <div ui-view="data"></div>
- * ```
- *
- * ```js
- * $stateProvider.state("home", {
- *   views: {
- *     "": {
- *       template: "<h1>HELLO!</h1>"
- *     },
- *     "chart": {
- *       template: "<chart_thing/>"
- *     },
- *     "data": {
- *       template: "<data_thing/>"
- *     }
- *   }
- * })
- * ```
- *
- * #### Examples for `autoscroll`:
- * ```html
- * <!-- If autoscroll present with no expression,
- *      then scroll ui-view into view -->
- * <ui-view autoscroll/>
- *
- * <!-- If autoscroll present with valid expression,
- *      then scroll ui-view into view if expression evaluates to true -->
- * <ui-view autoscroll='true'/>
- * <ui-view autoscroll='false'/>
- * <ui-view autoscroll='scopeVariable'/>
- * ```
- *
- * Resolve data:
- *
- * The resolved data from the state's `resolve` block is placed on the scope as `$resolve` (this
- * can be customized using [[Ng1ViewDeclaration.resolveAs]]).  This can be then accessed from the template.
- *
- * Note that when `controllerAs` is being used, `$resolve` is set on the controller instance *after* the
- * controller is instantiated.  The `$onInit()` hook can be used to perform initialization code which
- * depends on `$resolve` data.
- *
- * #### Example:
- * ```js
- * $stateProvider.state('home', {
- *   template: '<my-component user="$resolve.user"></my-component>',
- *   resolve: {
- *     user: function(UserService) { return UserService.fetchUser(); }
- *   }
- * });
- * ```
- */
-var uiView;
-uiView = ['$view', '$animate', '$uiViewScroll', '$interpolate', '$q',
-    function $ViewDirective($view, $animate, $uiViewScroll, $interpolate, $q) {
-        function getRenderer(attrs, scope) {
-            return {
-                enter: function (element, target, cb) {
-                    if (ng.version.minor > 2) {
-                        $animate.enter(element, null, target).then(cb);
-                    }
-                    else {
-                        $animate.enter(element, null, target, cb);
-                    }
-                },
-                leave: function (element, cb) {
-                    if (ng.version.minor > 2) {
-                        $animate.leave(element).then(cb);
-                    }
-                    else {
-                        $animate.leave(element, cb);
-                    }
-                }
-            };
-        }
-        function configsEqual(config1, config2) {
-            return config1 === config2;
-        }
-        var rootData = {
-            $cfg: { viewDecl: { $context: $view._pluginapi._rootViewContext() } },
-            $uiView: {}
-        };
-        var directive = {
-            count: 0,
-            restrict: 'ECA',
-            terminal: true,
-            priority: 400,
-            transclude: 'element',
-            compile: function (tElement, tAttrs, $transclude) {
-                return function (scope, $element, attrs) {
-                    var previousEl, currentEl, currentScope, unregister, onloadExp = attrs['onload'] || '', autoScrollExp = attrs['autoscroll'], renderer = getRenderer(attrs, scope), viewConfig = undefined, inherited = $element.inheritedData('$uiView') || rootData, name = $interpolate(attrs['uiView'] || attrs['name'] || '')(scope) || '$default';
-                    var activeUIView = {
-                        $type: 'ng1',
-                        id: directive.count++,
-                        name: name,
-                        fqn: inherited.$uiView.fqn ? inherited.$uiView.fqn + "." + name : name,
-                        config: null,
-                        configUpdated: configUpdatedCallback,
-                        get creationContext() {
-                            var fromParentTagConfig = core.parse('$cfg.viewDecl.$context')(inherited);
-                            // Allow <ui-view name="foo"><ui-view name="bar"></ui-view></ui-view>
-                            // See https://github.com/angular-ui/ui-router/issues/3355
-                            var fromParentTag = core.parse('$uiView.creationContext')(inherited);
-                            return fromParentTagConfig || fromParentTag;
-                        }
-                    };
-                    core.trace.traceUIViewEvent("Linking", activeUIView);
-                    function configUpdatedCallback(config) {
-                        if (config && !(config instanceof Ng1ViewConfig))
-                            return;
-                        if (configsEqual(viewConfig, config))
-                            return;
-                        core.trace.traceUIViewConfigUpdated(activeUIView, config && config.viewDecl && config.viewDecl.$context);
-                        viewConfig = config;
-                        updateView(config);
-                    }
-                    $element.data('$uiView', { $uiView: activeUIView });
-                    updateView();
-                    unregister = $view.registerUIView(activeUIView);
-                    scope.$on("$destroy", function () {
-                        core.trace.traceUIViewEvent("Destroying/Unregistering", activeUIView);
-                        unregister();
-                    });
-                    function cleanupLastView() {
-                        if (previousEl) {
-                            core.trace.traceUIViewEvent("Removing (previous) el", previousEl.data('$uiView'));
-                            previousEl.remove();
-                            previousEl = null;
-                        }
-                        if (currentScope) {
-                            core.trace.traceUIViewEvent("Destroying scope", activeUIView);
-                            currentScope.$destroy();
-                            currentScope = null;
-                        }
-                        if (currentEl) {
-                            var _viewData_1 = currentEl.data('$uiViewAnim');
-                            core.trace.traceUIViewEvent("Animate out", _viewData_1);
-                            renderer.leave(currentEl, function () {
-                                _viewData_1.$$animLeave.resolve();
-                                previousEl = null;
-                            });
-                            previousEl = currentEl;
-                            currentEl = null;
-                        }
-                    }
-                    function updateView(config) {
-                        var newScope = scope.$new();
-                        var animEnter = $q.defer(), animLeave = $q.defer();
-                        var $uiViewData = {
-                            $cfg: config,
-                            $uiView: activeUIView,
-                        };
-                        var $uiViewAnim = {
-                            $animEnter: animEnter.promise,
-                            $animLeave: animLeave.promise,
-                            $$animLeave: animLeave
-                        };
-                        /**
-                         * @ngdoc event
-                         * @name ui.router.state.directive:ui-view#$viewContentLoading
-                         * @eventOf ui.router.state.directive:ui-view
-                         * @eventType emits on ui-view directive scope
-                         * @description
-                         *
-                         * Fired once the view **begins loading**, *before* the DOM is rendered.
-                         *
-                         * @param {Object} event Event object.
-                         * @param {string} viewName Name of the view.
-                         */
-                        newScope.$emit('$viewContentLoading', name);
-                        var cloned = $transclude(newScope, function (clone) {
-                            clone.data('$uiViewAnim', $uiViewAnim);
-                            clone.data('$uiView', $uiViewData);
-                            renderer.enter(clone, $element, function onUIViewEnter() {
-                                animEnter.resolve();
-                                if (currentScope)
-                                    currentScope.$emit('$viewContentAnimationEnded');
-                                if (core.isDefined(autoScrollExp) && !autoScrollExp || scope.$eval(autoScrollExp)) {
-                                    $uiViewScroll(clone);
-                                }
-                            });
-                            cleanupLastView();
-                        });
-                        currentEl = cloned;
-                        currentScope = newScope;
-                        /**
-                         * @ngdoc event
-                         * @name ui.router.state.directive:ui-view#$viewContentLoaded
-                         * @eventOf ui.router.state.directive:ui-view
-                         * @eventType emits on ui-view directive scope
-                         * @description           *
-                         * Fired once the view is **loaded**, *after* the DOM is rendered.
-                         *
-                         * @param {Object} event Event object.
-                         */
-                        currentScope.$emit('$viewContentLoaded', config || viewConfig);
-                        currentScope.$eval(onloadExp);
-                    }
-                };
-            }
-        };
-        return directive;
-    }];
-$ViewDirectiveFill.$inject = ['$compile', '$controller', '$transitions', '$view', '$q', '$timeout'];
-/** @hidden */
-function $ViewDirectiveFill($compile, $controller, $transitions, $view, $q, $timeout) {
-    var getControllerAs = core.parse('viewDecl.controllerAs');
-    var getResolveAs = core.parse('viewDecl.resolveAs');
-    return {
-        restrict: 'ECA',
-        priority: -400,
-        compile: function (tElement) {
-            var initial = tElement.html();
-            tElement.empty();
-            return function (scope, $element) {
-                var data = $element.data('$uiView');
-                if (!data) {
-                    $element.html(initial);
-                    $compile($element.contents())(scope);
-                    return;
-                }
-                var cfg = data.$cfg || { viewDecl: {}, getTemplate: ng_from_import.noop };
-                var resolveCtx = cfg.path && new core.ResolveContext(cfg.path);
-                $element.html(cfg.getTemplate($element, resolveCtx) || initial);
-                core.trace.traceUIViewFill(data.$uiView, $element.html());
-                var link = $compile($element.contents());
-                var controller = cfg.controller;
-                var controllerAs = getControllerAs(cfg);
-                var resolveAs = getResolveAs(cfg);
-                var locals = resolveCtx && getLocals(resolveCtx);
-                scope[resolveAs] = locals;
-                if (controller) {
-                    var controllerInstance = $controller(controller, core.extend({}, locals, { $scope: scope, $element: $element }));
-                    if (controllerAs) {
-                        scope[controllerAs] = controllerInstance;
-                        scope[controllerAs][resolveAs] = locals;
-                    }
-                    // TODO: Use $view service as a central point for registering component-level hooks
-                    // Then, when a component is created, tell the $view service, so it can invoke hooks
-                    // $view.componentLoaded(controllerInstance, { $scope: scope, $element: $element });
-                    // scope.$on('$destroy', () => $view.componentUnloaded(controllerInstance, { $scope: scope, $element: $element }));
-                    $element.data('$ngControllerController', controllerInstance);
-                    $element.children().data('$ngControllerController', controllerInstance);
-                    registerControllerCallbacks($q, $transitions, controllerInstance, scope, cfg);
-                }
-                // Wait for the component to appear in the DOM
-                if (core.isString(cfg.viewDecl.component)) {
-                    var cmp_1 = cfg.viewDecl.component;
-                    var kebobName = core.kebobString(cmp_1);
-                    var tagRegexp_1 = new RegExp("^(x-|data-)?" + kebobName + "$", "i");
-                    var getComponentController = function () {
-                        var directiveEl = [].slice.call($element[0].children)
-                            .filter(function (el) { return el && el.tagName && tagRegexp_1.exec(el.tagName); });
-                        return directiveEl && ng.element(directiveEl).data("$" + cmp_1 + "Controller");
-                    };
-                    var deregisterWatch_1 = scope.$watch(getComponentController, function (ctrlInstance) {
-                        if (!ctrlInstance)
-                            return;
-                        registerControllerCallbacks($q, $transitions, ctrlInstance, scope, cfg);
-                        deregisterWatch_1();
-                    });
-                }
-                link(scope);
-            };
-        }
-    };
-}
-/** @hidden */
-var hasComponentImpl = typeof ng.module('ui.router')['component'] === 'function';
-/** @hidden incrementing id */
-var _uiCanExitId = 0;
-/** @hidden TODO: move these callbacks to $view and/or `/hooks/components.ts` or something */
-function registerControllerCallbacks($q, $transitions, controllerInstance, $scope, cfg) {
-    // Call $onInit() ASAP
-    if (core.isFunction(controllerInstance.$onInit) && !(cfg.viewDecl.component && hasComponentImpl)) {
-        controllerInstance.$onInit();
-    }
-    var viewState = core.tail(cfg.path).state.self;
-    var hookOptions = { bind: controllerInstance };
-    // Add component-level hook for onParamsChange
-    if (core.isFunction(controllerInstance.uiOnParamsChanged)) {
-        var resolveContext = new core.ResolveContext(cfg.path);
-        var viewCreationTrans_1 = resolveContext.getResolvable('$transition$').data;
-        // Fire callback on any successful transition
-        var paramsUpdated = function ($transition$) {
-            // Exit early if the $transition$ is the same as the view was created within.
-            // Exit early if the $transition$ will exit the state the view is for.
-            if ($transition$ === viewCreationTrans_1 || $transition$.exiting().indexOf(viewState) !== -1)
-                return;
-            var toParams = $transition$.params("to");
-            var fromParams = $transition$.params("from");
-            var toSchema = $transition$.treeChanges().to.map(function (node) { return node.paramSchema; }).reduce(core.unnestR, []);
-            var fromSchema = $transition$.treeChanges().from.map(function (node) { return node.paramSchema; }).reduce(core.unnestR, []);
-            // Find the to params that have different values than the from params
-            var changedToParams = toSchema.filter(function (param) {
-                var idx = fromSchema.indexOf(param);
-                return idx === -1 || !fromSchema[idx].type.equals(toParams[param.id], fromParams[param.id]);
-            });
-            // Only trigger callback if a to param has changed or is new
-            if (changedToParams.length) {
-                var changedKeys_1 = changedToParams.map(function (x) { return x.id; });
-                // Filter the params to only changed/new to params.  `$transition$.params()` may be used to get all params.
-                var newValues = core.filter(toParams, function (val$$1, key) { return changedKeys_1.indexOf(key) !== -1; });
-                controllerInstance.uiOnParamsChanged(newValues, $transition$);
-            }
-        };
-        $scope.$on('$destroy', $transitions.onSuccess({}, paramsUpdated, hookOptions));
-    }
-    // Add component-level hook for uiCanExit
-    if (core.isFunction(controllerInstance.uiCanExit)) {
-        var id_1 = _uiCanExitId++;
-        var cacheProp_1 = '_uiCanExitIds';
-        // Returns true if a redirect transition already answered truthy
-        var prevTruthyAnswer_1 = function (trans) {
-            return !!trans && (trans[cacheProp_1] && trans[cacheProp_1][id_1] === true || prevTruthyAnswer_1(trans.redirectedFrom()));
-        };
-        // If a user answered yes, but the transition was later redirected, don't also ask for the new redirect transition
-        var wrappedHook = function (trans) {
-            var promise, ids = trans[cacheProp_1] = trans[cacheProp_1] || {};
-            if (!prevTruthyAnswer_1(trans)) {
-                promise = $q.when(controllerInstance.uiCanExit(trans));
-                promise.then(function (val$$1) { return ids[id_1] = (val$$1 !== false); });
-            }
-            return promise;
-        };
-        var criteria = { exiting: viewState.name };
-        $scope.$on('$destroy', $transitions.onBefore(criteria, wrappedHook, hookOptions));
-    }
-}
-ng.module('ui.router.state').directive('uiView', uiView);
-ng.module('ui.router.state').directive('uiView', $ViewDirectiveFill);
-
-/** @module ng1 */ /** */
-/** @hidden */
-function $ViewScrollProvider() {
-    var useAnchorScroll = false;
-    this.useAnchorScroll = function () {
-        useAnchorScroll = true;
-    };
-    this.$get = ['$anchorScroll', '$timeout', function ($anchorScroll, $timeout) {
-            if (useAnchorScroll) {
-                return $anchorScroll;
-            }
-            return function ($element) {
-                return $timeout(function () {
-                    $element[0].scrollIntoView();
-                }, 0, false);
-            };
-        }];
-}
-ng.module('ui.router.state').provider('$uiViewScroll', $ViewScrollProvider);
-
-/**
- * Main entry point for angular 1.x build
- * @module ng1
- */ /** */
-var index = "ui.router";
-
-exports['default'] = index;
-exports.core = core;
-exports.watchDigests = watchDigests;
-exports.getLocals = getLocals;
-exports.getNg1ViewConfigFactory = getNg1ViewConfigFactory;
-exports.ng1ViewsBuilder = ng1ViewsBuilder;
-exports.Ng1ViewConfig = Ng1ViewConfig;
-exports.StateProvider = StateProvider;
-exports.UrlRouterProvider = UrlRouterProvider;
-Object.keys(core).forEach(function (key) { exports[key] = core[key]; });
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
-//# sourceMappingURL=ui-router-angularjs.js.map
-
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -3432,7 +1412,7 @@ var TransitionHookScope;
 //# sourceMappingURL=interface.js.map
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3587,7 +1567,7 @@ exports.TargetState = TargetState;
 //# sourceMappingURL=targetState.js.map
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3601,7 +1581,7 @@ var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
 var predicates_1 = __webpack_require__(2);
 var coreservices_1 = __webpack_require__(4);
-var paramType_1 = __webpack_require__(25);
+var paramType_1 = __webpack_require__(24);
 /** @hidden */ var hasOwn = Object.prototype.hasOwnProperty;
 /** @hidden */ var isShorthand = function (cfg) {
     return ["value", "type", "squash", "array", "dynamic"].filter(hasOwn.bind(cfg || {})).length === 0;
@@ -3791,7 +1771,7 @@ exports.Param = Param;
 //# sourceMappingURL=param.js.map
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3886,7 +1866,7 @@ exports.Rejection = Rejection;
 //# sourceMappingURL=rejectFactory.js.map
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3897,15 +1877,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @module transition
  */
 /** for typedoc */
-var interface_1 = __webpack_require__(9);
+var interface_1 = __webpack_require__(8);
 var common_1 = __webpack_require__(1);
 var strings_1 = __webpack_require__(6);
 var predicates_1 = __webpack_require__(2);
 var hof_1 = __webpack_require__(3);
 var trace_1 = __webpack_require__(7);
 var coreservices_1 = __webpack_require__(4);
-var rejectFactory_1 = __webpack_require__(12);
-var targetState_1 = __webpack_require__(10);
+var rejectFactory_1 = __webpack_require__(11);
+var targetState_1 = __webpack_require__(9);
 var defaultOptions = {
     current: common_1.noop,
     transition: null,
@@ -4117,7 +2097,7 @@ exports.TransitionHook = TransitionHook;
 //# sourceMappingURL=transitionHook.js.map
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4257,7 +2237,7 @@ exports.Resolvable = Resolvable;
 //# sourceMappingURL=resolvable.js.map
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4346,7 +2326,7 @@ exports.Glob = Glob;
 //# sourceMappingURL=glob.js.map
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4363,14 +2343,14 @@ var strings_1 = __webpack_require__(6);
 var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
 var hof_1 = __webpack_require__(3);
-var interface_1 = __webpack_require__(9); // has or is using
-var transitionHook_1 = __webpack_require__(13);
-var hookRegistry_1 = __webpack_require__(23);
-var hookBuilder_1 = __webpack_require__(29);
-var pathFactory_1 = __webpack_require__(17);
-var param_1 = __webpack_require__(11);
-var resolvable_1 = __webpack_require__(14);
-var resolveContext_1 = __webpack_require__(18);
+var interface_1 = __webpack_require__(8); // has or is using
+var transitionHook_1 = __webpack_require__(12);
+var hookRegistry_1 = __webpack_require__(22);
+var hookBuilder_1 = __webpack_require__(30);
+var pathFactory_1 = __webpack_require__(16);
+var param_1 = __webpack_require__(10);
+var resolvable_1 = __webpack_require__(13);
+var resolveContext_1 = __webpack_require__(17);
 /** @hidden */
 var stateSelf = hof_1.prop("self");
 /**
@@ -4982,7 +2962,7 @@ exports.Transition = Transition;
 //# sourceMappingURL=transition.js.map
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4991,8 +2971,8 @@ exports.Transition = Transition;
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
-var targetState_1 = __webpack_require__(10);
-var pathNode_1 = __webpack_require__(24);
+var targetState_1 = __webpack_require__(9);
+var pathNode_1 = __webpack_require__(23);
 /**
  * This class contains functions which convert TargetStates, Nodes and paths from one type to another.
  */
@@ -5161,7 +3141,7 @@ exports.PathUtils = PathUtils;
 //# sourceMappingURL=pathFactory.js.map
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5173,9 +3153,9 @@ var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
 var trace_1 = __webpack_require__(7);
 var coreservices_1 = __webpack_require__(4);
-var interface_1 = __webpack_require__(30);
-var resolvable_1 = __webpack_require__(14);
-var pathFactory_1 = __webpack_require__(17);
+var interface_1 = __webpack_require__(31);
+var resolvable_1 = __webpack_require__(13);
+var pathFactory_1 = __webpack_require__(16);
 var strings_1 = __webpack_require__(6);
 var common_2 = __webpack_require__(5);
 var whens = interface_1.resolvePolicies.when;
@@ -5368,7 +3348,7 @@ var UIInjectorImpl = /** @class */ (function () {
 //# sourceMappingURL=resolveContext.js.map
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5382,7 +3362,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
 var predicates_1 = __webpack_require__(2);
-var param_1 = __webpack_require__(11);
+var param_1 = __webpack_require__(10);
 var strings_1 = __webpack_require__(6);
 /** @hidden */
 function quoteRegExp(string, param) {
@@ -5889,7 +3869,7 @@ exports.UrlMatcher = UrlMatcher;
 //# sourceMappingURL=urlMatcher.js.map
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5900,7 +3880,7 @@ exports.UrlMatcher = UrlMatcher;
  */ /** */
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = __webpack_require__(5);
-var utils_1 = __webpack_require__(27);
+var utils_1 = __webpack_require__(26);
 /** A base `LocationServices` */
 var BaseLocationServices = /** @class */ (function () {
     function BaseLocationServices(router, fireAfterUpdate) {
@@ -5938,7 +3918,7 @@ exports.BaseLocationServices = BaseLocationServices;
 //# sourceMappingURL=baseLocationService.js.map
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5946,7 +3926,7 @@ exports.BaseLocationServices = BaseLocationServices;
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
-var glob_1 = __webpack_require__(15);
+var glob_1 = __webpack_require__(14);
 var predicates_1 = __webpack_require__(2);
 /**
  * Internal representation of a UI-Router state.
@@ -6058,7 +4038,7 @@ exports.StateObject = StateObject;
 //# sourceMappingURL=stateObject.js.map
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6110,7 +4090,7 @@ exports.Queue = Queue;
 //# sourceMappingURL=queue.js.map
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6122,8 +4102,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */ /** for typedoc */
 var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
-var interface_1 = __webpack_require__(9); // has or is using
-var glob_1 = __webpack_require__(15);
+var interface_1 = __webpack_require__(8); // has or is using
+var glob_1 = __webpack_require__(14);
 /**
  * Determines if the given state matches the matchCriteria
  *
@@ -6277,7 +4257,7 @@ exports.makeEvent = makeEvent;
 //# sourceMappingURL=hookRegistry.js.map
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6286,7 +4266,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** @module path */ /** for typedoc */
 var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
-var param_1 = __webpack_require__(11);
+var param_1 = __webpack_require__(10);
 /**
  * @internalapi
  *
@@ -6360,7 +4340,7 @@ exports.PathNode = PathNode;
 //# sourceMappingURL=pathNode.js.map
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6508,7 +4488,7 @@ function ArrayType(type, mode) {
 //# sourceMappingURL=paramType.js.map
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6519,24 +4499,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @module transition
  */
 /** for typedoc */
-var interface_1 = __webpack_require__(9);
-var transition_1 = __webpack_require__(16);
-var hookRegistry_1 = __webpack_require__(23);
-var coreResolvables_1 = __webpack_require__(66);
-var redirectTo_1 = __webpack_require__(67);
-var onEnterExitRetain_1 = __webpack_require__(68);
-var resolve_1 = __webpack_require__(69);
-var views_1 = __webpack_require__(70);
-var updateGlobals_1 = __webpack_require__(71);
-var url_1 = __webpack_require__(72);
-var lazyLoad_1 = __webpack_require__(45);
-var transitionEventType_1 = __webpack_require__(46);
-var transitionHook_1 = __webpack_require__(13);
+var interface_1 = __webpack_require__(8);
+var transition_1 = __webpack_require__(15);
+var hookRegistry_1 = __webpack_require__(22);
+var coreResolvables_1 = __webpack_require__(411);
+var redirectTo_1 = __webpack_require__(412);
+var onEnterExitRetain_1 = __webpack_require__(413);
+var resolve_1 = __webpack_require__(414);
+var views_1 = __webpack_require__(415);
+var updateGlobals_1 = __webpack_require__(416);
+var url_1 = __webpack_require__(417);
+var lazyLoad_1 = __webpack_require__(46);
+var transitionEventType_1 = __webpack_require__(47);
+var transitionHook_1 = __webpack_require__(12);
 var predicates_1 = __webpack_require__(2);
 var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
-var ignoredTransition_1 = __webpack_require__(73);
-var invalidTransition_1 = __webpack_require__(74);
+var ignoredTransition_1 = __webpack_require__(418);
+var invalidTransition_1 = __webpack_require__(419);
 /**
  * The default [[Transition]] options.
  *
@@ -6753,7 +4733,7 @@ exports.TransitionService = TransitionService;
 //# sourceMappingURL=transitionService.js.map
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6814,7 +4794,7 @@ exports.locationPluginFactory = locationPluginFactory;
 //# sourceMappingURL=utils.js.map
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -17074,7 +15054,84 @@ return jQuery;
 
 
 /***/ }),
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var DeclarationFilesController = function DeclarationFilesController() {
+    _classCallCheck(this, DeclarationFilesController);
+};
+
+DeclarationFilesController.$inject = [];
+exports.default = DeclarationFilesController;
+
+/***/ }),
 /* 29 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var AppService = function () {
+    function AppService($q, $rootScope) {
+        _classCallCheck(this, AppService);
+
+        this.$q = $q;
+        this.$rootScope = $rootScope;
+        this.counter = 0;
+        this.eventName = 'loader:status';
+    }
+
+    _createClass(AppService, [{
+        key: "request",
+        value: function request(config) {
+            if (++this.counter === 1) {
+                this.$rootScope.$broadcast(this.eventName, { on: true });
+            }
+            return config;
+        }
+    }, {
+        key: "response",
+        value: function response(_response) {
+            if (--this.counter === 0) {
+                this.$rootScope.$broadcast(this.eventName, { on: false });
+            }
+            return _response;
+        }
+    }, {
+        key: "requestError",
+        value: function requestError(rejection) {
+            this.$rootScope.$broadcast(this.eventName, { on: false });
+            return this.$q.reject(rejection);
+        }
+    }, {
+        key: "responseError",
+        value: function responseError(rejection) {
+            this.$rootScope.$broadcast(this.eventName, { on: false });
+            return this.$q.reject(rejection);
+        }
+    }]);
+
+    return AppService;
+}();
+
+AppService.$inject = ['$q', '$rootScope'];
+exports.default = AppService;
+
+/***/ }),
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17086,8 +15143,8 @@ return jQuery;
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
-var interface_1 = __webpack_require__(9);
-var transitionHook_1 = __webpack_require__(13);
+var interface_1 = __webpack_require__(8);
+var transitionHook_1 = __webpack_require__(12);
 /**
  * This class returns applicable TransitionHooks for a specific Transition instance.
  *
@@ -17199,7 +15256,7 @@ function tupleSort(reverseDepthSort) {
 //# sourceMappingURL=hookBuilder.js.map
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17220,7 +15277,7 @@ exports.resolvePolicies = {
 //# sourceMappingURL=interface.js.map
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17235,7 +15292,7 @@ var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
 var hof_1 = __webpack_require__(3);
 var coreservices_1 = __webpack_require__(4);
-var paramType_1 = __webpack_require__(25);
+var paramType_1 = __webpack_require__(24);
 /**
  * A registry for parameter types.
  *
@@ -17382,7 +15439,7 @@ initDefaultTypes();
 //# sourceMappingURL=paramTypes.js.map
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17432,7 +15489,7 @@ exports.StateParams = StateParams;
 //# sourceMappingURL=stateParams.js.map
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17443,7 +15500,7 @@ var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
 var strings_1 = __webpack_require__(6);
 var hof_1 = __webpack_require__(3);
-var resolvable_1 = __webpack_require__(14);
+var resolvable_1 = __webpack_require__(13);
 var coreservices_1 = __webpack_require__(4);
 var parseUrl = function (url) {
     if (!predicates_1.isString(url))
@@ -17718,7 +15775,7 @@ exports.StateBuilder = StateBuilder;
 //# sourceMappingURL=stateBuilder.js.map
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17787,7 +15844,7 @@ exports.StateMatcher = StateMatcher;
 //# sourceMappingURL=stateMatcher.js.map
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17796,7 +15853,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** @module state */ /** for typedoc */
 var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
-var stateObject_1 = __webpack_require__(21);
+var stateObject_1 = __webpack_require__(20);
 var hof_1 = __webpack_require__(3);
 /** @internalapi */
 var StateQueueManager = /** @class */ (function () {
@@ -17885,7 +15942,7 @@ exports.StateQueueManager = StateQueueManager;
 //# sourceMappingURL=stateQueueManager.js.map
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17895,9 +15952,9 @@ exports.StateQueueManager = StateQueueManager;
  * @module state
  */ /** for typedoc */
 Object.defineProperty(exports, "__esModule", { value: true });
-var stateMatcher_1 = __webpack_require__(34);
-var stateBuilder_1 = __webpack_require__(33);
-var stateQueueManager_1 = __webpack_require__(35);
+var stateMatcher_1 = __webpack_require__(35);
+var stateBuilder_1 = __webpack_require__(34);
+var stateQueueManager_1 = __webpack_require__(36);
 var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
 var StateRegistry = /** @class */ (function () {
@@ -18047,7 +16104,7 @@ exports.StateRegistry = StateRegistry;
 //# sourceMappingURL=stateRegistry.js.map
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18060,17 +16117,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** */
 var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
-var queue_1 = __webpack_require__(22);
+var queue_1 = __webpack_require__(21);
 var coreservices_1 = __webpack_require__(4);
-var pathFactory_1 = __webpack_require__(17);
-var pathNode_1 = __webpack_require__(24);
-var transitionService_1 = __webpack_require__(26);
-var rejectFactory_1 = __webpack_require__(12);
-var targetState_1 = __webpack_require__(10);
-var param_1 = __webpack_require__(11);
-var glob_1 = __webpack_require__(15);
-var resolveContext_1 = __webpack_require__(18);
-var lazyLoad_1 = __webpack_require__(45);
+var pathFactory_1 = __webpack_require__(16);
+var pathNode_1 = __webpack_require__(23);
+var transitionService_1 = __webpack_require__(25);
+var rejectFactory_1 = __webpack_require__(11);
+var targetState_1 = __webpack_require__(9);
+var param_1 = __webpack_require__(10);
+var glob_1 = __webpack_require__(14);
+var resolveContext_1 = __webpack_require__(17);
+var lazyLoad_1 = __webpack_require__(46);
 var hof_1 = __webpack_require__(3);
 /**
  * Provides state related service functions
@@ -18625,7 +16682,7 @@ exports.StateService = StateService;
 //# sourceMappingURL=stateService.js.map
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18635,16 +16692,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @coreapi
  * @module core
  */ /** */
-var urlMatcherFactory_1 = __webpack_require__(39);
-var urlRouter_1 = __webpack_require__(40);
-var transitionService_1 = __webpack_require__(26);
-var view_1 = __webpack_require__(42);
-var stateRegistry_1 = __webpack_require__(36);
-var stateService_1 = __webpack_require__(37);
-var globals_1 = __webpack_require__(43);
+var urlMatcherFactory_1 = __webpack_require__(40);
+var urlRouter_1 = __webpack_require__(41);
+var transitionService_1 = __webpack_require__(25);
+var view_1 = __webpack_require__(43);
+var stateRegistry_1 = __webpack_require__(37);
+var stateService_1 = __webpack_require__(38);
+var globals_1 = __webpack_require__(44);
 var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
-var urlService_1 = __webpack_require__(44);
+var urlService_1 = __webpack_require__(45);
 var trace_1 = __webpack_require__(7);
 /** @hidden */
 var _routerInstance = 0;
@@ -18815,7 +16872,7 @@ exports.UIRouter = UIRouter;
 //# sourceMappingURL=router.js.map
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18827,9 +16884,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */ /** for typedoc */
 var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
-var urlMatcher_1 = __webpack_require__(19);
-var param_1 = __webpack_require__(11);
-var paramTypes_1 = __webpack_require__(31);
+var urlMatcher_1 = __webpack_require__(18);
+var param_1 = __webpack_require__(10);
+var paramTypes_1 = __webpack_require__(32);
 /**
  * Factory for [[UrlMatcher]] instances.
  *
@@ -18948,7 +17005,7 @@ exports.UrlMatcherFactory = UrlMatcherFactory;
 //# sourceMappingURL=urlMatcherFactory.js.map
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18961,10 +17018,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /** for typedoc */
 var common_1 = __webpack_require__(1);
 var predicates_1 = __webpack_require__(2);
-var urlMatcher_1 = __webpack_require__(19);
+var urlMatcher_1 = __webpack_require__(18);
 var hof_1 = __webpack_require__(3);
-var urlRule_1 = __webpack_require__(41);
-var targetState_1 = __webpack_require__(10);
+var urlRule_1 = __webpack_require__(42);
+var targetState_1 = __webpack_require__(9);
 var common_2 = __webpack_require__(5);
 /** @hidden */
 function appendBasePath(url, isHtml5, absolute, baseHref) {
@@ -19269,7 +17326,7 @@ function getHandlerFn(handler) {
 //# sourceMappingURL=urlRouter.js.map
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19279,7 +17336,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @coreapi
  * @module url
  */ /** */
-var urlMatcher_1 = __webpack_require__(19);
+var urlMatcher_1 = __webpack_require__(18);
 var predicates_1 = __webpack_require__(2);
 var common_1 = __webpack_require__(1);
 var hof_1 = __webpack_require__(3);
@@ -19484,7 +17541,7 @@ exports.BaseUrlRule = BaseUrlRule;
 //# sourceMappingURL=urlRule.js.map
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19775,7 +17832,7 @@ exports.ViewService = ViewService;
 //# sourceMappingURL=view.js.map
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19785,8 +17842,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @coreapi
  * @module core
  */ /** */
-var stateParams_1 = __webpack_require__(32);
-var queue_1 = __webpack_require__(22);
+var stateParams_1 = __webpack_require__(33);
+var queue_1 = __webpack_require__(21);
 /**
  * Global router state
  *
@@ -19819,7 +17876,7 @@ exports.UIRouterGlobals = UIRouterGlobals;
 //# sourceMappingURL=globals.js.map
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19905,7 +17962,7 @@ exports.UrlService = UrlService;
 //# sourceMappingURL=urlService.js.map
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20008,13 +18065,13 @@ exports.lazyLoadState = lazyLoadState;
 //# sourceMappingURL=lazyLoad.js.map
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var transitionHook_1 = __webpack_require__(13);
+var transitionHook_1 = __webpack_require__(12);
 /**
  * This class defines a type of hook, such as `onBefore` or `onEnter`.
  * Plugins can define custom hook types, such as sticky states does for `onInactive`.
@@ -20042,7 +18099,7 @@ exports.TransitionEventType = TransitionEventType;
 //# sourceMappingURL=transitionEventType.js.map
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20103,7 +18160,7 @@ exports.$q = {
 //# sourceMappingURL=q.js.map
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20209,7 +18266,7 @@ exports.$injector = {
 //# sourceMappingURL=injector.js.map
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20231,7 +18288,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 /** */
 var common_1 = __webpack_require__(5);
-var baseLocationService_1 = __webpack_require__(20);
+var baseLocationService_1 = __webpack_require__(19);
 /** A `LocationServices` that uses the browser hash "#" to get/set the current location */
 var HashLocationService = /** @class */ (function (_super) {
     __extends(HashLocationService, _super);
@@ -20256,7 +18313,7 @@ exports.HashLocationService = HashLocationService;
 //# sourceMappingURL=hashLocationService.js.map
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20277,7 +18334,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @module vanilla
  */
 /** */
-var baseLocationService_1 = __webpack_require__(20);
+var baseLocationService_1 = __webpack_require__(19);
 /** A `LocationServices` that gets/sets the current location from an in-memory object */
 var MemoryLocationService = /** @class */ (function (_super) {
     __extends(MemoryLocationService, _super);
@@ -20296,7 +18353,7 @@ exports.MemoryLocationService = MemoryLocationService;
 //# sourceMappingURL=memoryLocationService.js.map
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20312,7 +18369,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var baseLocationService_1 = __webpack_require__(20);
+var baseLocationService_1 = __webpack_require__(19);
 var common_1 = __webpack_require__(5);
 /**
  * A `LocationServices` that gets/sets the current location using the browser's `location` and `history` apis
@@ -20371,7 +18428,7 @@ exports.PushStateLocationService = PushStateLocationService;
 //# sourceMappingURL=pushStateLocationService.js.map
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20402,7 +18459,7 @@ exports.MemoryLocationConfig = MemoryLocationConfig;
 //# sourceMappingURL=memoryLocationConfig.js.map
 
 /***/ }),
-/* 53 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20456,81 +18513,14 @@ exports.BrowserLocationConfig = BrowserLocationConfig;
 //# sourceMappingURL=browserLocationConfig.js.map
 
 /***/ }),
-/* 54 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-
-var DeclarationFilesController = function DeclarationFilesController() {
-    _classCallCheck(this, DeclarationFilesController);
-};
-
-DeclarationFilesController.$inject = [];
-exports.default = DeclarationFilesController;
-
-/***/ }),
 /* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 Object.defineProperty(exports, "__esModule", { value: true });
-
-var AppService = function () {
-    function AppService($q, $rootScope) {
-        _classCallCheck(this, AppService);
-
-        this.$q = $q;
-        this.$rootScope = $rootScope;
-        this.counter = 0;
-        this.eventName = 'loader:status';
-    }
-
-    _createClass(AppService, [{
-        key: "request",
-        value: function request(config) {
-            if (++this.counter === 1) {
-                this.$rootScope.$broadcast(this.eventName, { on: true });
-            }
-            return config;
-        }
-    }, {
-        key: "response",
-        value: function response(_response) {
-            if (--this.counter === 0) {
-                this.$rootScope.$broadcast(this.eventName, { on: false });
-            }
-            return _response;
-        }
-    }, {
-        key: "requestError",
-        value: function requestError(rejection) {
-            this.$rootScope.$broadcast(this.eventName, { on: false });
-            return this.$q.reject(rejection);
-        }
-    }, {
-        key: "responseError",
-        value: function responseError(rejection) {
-            this.$rootScope.$broadcast(this.eventName, { on: false });
-            return this.$q.reject(rejection);
-        }
-    }]);
-
-    return AppService;
-}();
-
-AppService.$inject = ['$q', '$rootScope'];
-exports.default = AppService;
+__webpack_require__(56);
 
 /***/ }),
 /* 56 */
@@ -20541,34 +18531,24 @@ exports.default = AppService;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 __webpack_require__(57);
-
-/***/ }),
-/* 57 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(58);
 var angular = __webpack_require__(0);
-var angularjs_1 = __webpack_require__(8);
-var app_component_1 = __webpack_require__(82);
-var components_module_1 = __webpack_require__(83);
-var common_module_1 = __webpack_require__(218);
-var app_config_1 = __webpack_require__(423);
-var app_service_1 = __webpack_require__(55);
-var AppModule = angular.module('app', [angularjs_1.default, common_module_1.default.name, components_module_1.default.name]).config(app_config_1.default.boot).component('app', app_component_1.default).service('AppService', app_service_1.default);
+var app_component_1 = __webpack_require__(59);
+var components_module_1 = __webpack_require__(60);
+var common_module_1 = __webpack_require__(195);
+var app_config_1 = __webpack_require__(400);
+var app_service_1 = __webpack_require__(29);
+var core_module_1 = __webpack_require__(401);
+var AppModule = angular.module('app', [core_module_1.default.name, common_module_1.default.name, components_module_1.default.name]).config(app_config_1.default.boot).component('app', app_component_1.default).service('AppService', app_service_1.default);
 exports.default = AppModule;
 
 /***/ }),
-/* 58 */
+/* 57 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 59 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(__webpack_provided_window_dot_jQuery) {/**
@@ -54460,663 +52440,10 @@ $provide.value("$locale", {
 })(window);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(27)))
 
 /***/ }),
-/* 60 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-/**
- * @coreapi
- * @module common
- */ /** */
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(5));
-__export(__webpack_require__(62));
-__export(__webpack_require__(63));
-__export(__webpack_require__(64));
-__export(__webpack_require__(65));
-__export(__webpack_require__(75));
-__export(__webpack_require__(76));
-__export(__webpack_require__(77));
-__export(__webpack_require__(43));
-__export(__webpack_require__(38));
-__export(__webpack_require__(78));
-__export(__webpack_require__(81));
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-/* 61 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 62 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(11));
-__export(__webpack_require__(31));
-__export(__webpack_require__(32));
-__export(__webpack_require__(25));
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-/* 63 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-/** @module path */ /** for typedoc */
-__export(__webpack_require__(24));
-__export(__webpack_require__(17));
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-/* 64 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-/** @module resolve */ /** for typedoc */
-__export(__webpack_require__(30));
-__export(__webpack_require__(14));
-__export(__webpack_require__(18));
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-/* 65 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(33));
-__export(__webpack_require__(21));
-__export(__webpack_require__(34));
-__export(__webpack_require__(35));
-__export(__webpack_require__(36));
-__export(__webpack_require__(37));
-__export(__webpack_require__(10));
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-/* 66 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/** @module hooks */ /** */
-var transition_1 = __webpack_require__(16);
-var router_1 = __webpack_require__(38);
-function addCoreResolvables(trans) {
-    trans.addResolvable({ token: router_1.UIRouter, deps: [], resolveFn: function () { return trans.router; }, data: trans.router }, "");
-    trans.addResolvable({ token: transition_1.Transition, deps: [], resolveFn: function () { return trans; }, data: trans }, "");
-    trans.addResolvable({ token: '$transition$', deps: [], resolveFn: function () { return trans; }, data: trans }, "");
-    trans.addResolvable({ token: '$stateParams', deps: [], resolveFn: function () { return trans.params(); }, data: trans.params() }, "");
-    trans.entering().forEach(function (state) {
-        trans.addResolvable({ token: '$state$', deps: [], resolveFn: function () { return state; }, data: state }, state);
-    });
-}
-exports.registerAddCoreResolvables = function (transitionService) {
-    return transitionService.onCreate({}, addCoreResolvables);
-};
-//# sourceMappingURL=coreResolvables.js.map
-
-/***/ }),
-/* 67 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/** @module hooks */ /** */
-var predicates_1 = __webpack_require__(2);
-var coreservices_1 = __webpack_require__(4);
-var targetState_1 = __webpack_require__(10);
-/**
- * A [[TransitionHookFn]] that redirects to a different state or params
- *
- * Registered using `transitionService.onStart({ to: (state) => !!state.redirectTo }, redirectHook);`
- *
- * See [[StateDeclaration.redirectTo]]
- */
-var redirectToHook = function (trans) {
-    var redirect = trans.to().redirectTo;
-    if (!redirect)
-        return;
-    var $state = trans.router.stateService;
-    function handleResult(result) {
-        if (!result)
-            return;
-        if (result instanceof targetState_1.TargetState)
-            return result;
-        if (predicates_1.isString(result))
-            return $state.target(result, trans.params(), trans.options());
-        if (result['state'] || result['params'])
-            return $state.target(result['state'] || trans.to(), result['params'] || trans.params(), trans.options());
-    }
-    if (predicates_1.isFunction(redirect)) {
-        return coreservices_1.services.$q.when(redirect(trans)).then(handleResult);
-    }
-    return handleResult(redirect);
-};
-exports.registerRedirectToHook = function (transitionService) {
-    return transitionService.onStart({ to: function (state) { return !!state.redirectTo; } }, redirectToHook);
-};
-//# sourceMappingURL=redirectTo.js.map
-
-/***/ }),
-/* 68 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * A factory which creates an onEnter, onExit or onRetain transition hook function
- *
- * The returned function invokes the (for instance) state.onEnter hook when the
- * state is being entered.
- *
- * @hidden
- */
-function makeEnterExitRetainHook(hookName) {
-    return function (transition, state) {
-        var _state = state.$$state();
-        var hookFn = _state[hookName];
-        return hookFn(transition, state);
-    };
-}
-/**
- * The [[TransitionStateHookFn]] for onExit
- *
- * When the state is being exited, the state's .onExit function is invoked.
- *
- * Registered using `transitionService.onExit({ exiting: (state) => !!state.onExit }, onExitHook);`
- *
- * See: [[IHookRegistry.onExit]]
- */
-var onExitHook = makeEnterExitRetainHook('onExit');
-exports.registerOnExitHook = function (transitionService) {
-    return transitionService.onExit({ exiting: function (state) { return !!state.onExit; } }, onExitHook);
-};
-/**
- * The [[TransitionStateHookFn]] for onRetain
- *
- * When the state was already entered, and is not being exited or re-entered, the state's .onRetain function is invoked.
- *
- * Registered using `transitionService.onRetain({ retained: (state) => !!state.onRetain }, onRetainHook);`
- *
- * See: [[IHookRegistry.onRetain]]
- */
-var onRetainHook = makeEnterExitRetainHook('onRetain');
-exports.registerOnRetainHook = function (transitionService) {
-    return transitionService.onRetain({ retained: function (state) { return !!state.onRetain; } }, onRetainHook);
-};
-/**
- * The [[TransitionStateHookFn]] for onEnter
- *
- * When the state is being entered, the state's .onEnter function is invoked.
- *
- * Registered using `transitionService.onEnter({ entering: (state) => !!state.onEnter }, onEnterHook);`
- *
- * See: [[IHookRegistry.onEnter]]
- */
-var onEnterHook = makeEnterExitRetainHook('onEnter');
-exports.registerOnEnterHook = function (transitionService) {
-    return transitionService.onEnter({ entering: function (state) { return !!state.onEnter; } }, onEnterHook);
-};
-//# sourceMappingURL=onEnterExitRetain.js.map
-
-/***/ }),
-/* 69 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/** @module hooks */
-/** for typedoc */
-var common_1 = __webpack_require__(1);
-var resolveContext_1 = __webpack_require__(18);
-var hof_1 = __webpack_require__(3);
-/**
- * A [[TransitionHookFn]] which resolves all EAGER Resolvables in the To Path
- *
- * Registered using `transitionService.onStart({}, eagerResolvePath);`
- *
- * When a Transition starts, this hook resolves all the EAGER Resolvables, which the transition then waits for.
- *
- * See [[StateDeclaration.resolve]]
- */
-var eagerResolvePath = function (trans) {
-    return new resolveContext_1.ResolveContext(trans.treeChanges().to)
-        .resolvePath("EAGER", trans)
-        .then(common_1.noop);
-};
-exports.registerEagerResolvePath = function (transitionService) {
-    return transitionService.onStart({}, eagerResolvePath, { priority: 1000 });
-};
-/**
- * A [[TransitionHookFn]] which resolves all LAZY Resolvables for the state (and all its ancestors) in the To Path
- *
- * Registered using `transitionService.onEnter({ entering: () => true }, lazyResolveState);`
- *
- * When a State is being entered, this hook resolves all the Resolvables for this state, which the transition then waits for.
- *
- * See [[StateDeclaration.resolve]]
- */
-var lazyResolveState = function (trans, state) {
-    return new resolveContext_1.ResolveContext(trans.treeChanges().to)
-        .subContext(state.$$state())
-        .resolvePath("LAZY", trans)
-        .then(common_1.noop);
-};
-exports.registerLazyResolveState = function (transitionService) {
-    return transitionService.onEnter({ entering: hof_1.val(true) }, lazyResolveState, { priority: 1000 });
-};
-//# sourceMappingURL=resolve.js.map
-
-/***/ }),
-/* 70 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/** @module hooks */ /** for typedoc */
-var common_1 = __webpack_require__(1);
-var coreservices_1 = __webpack_require__(4);
-/**
- * A [[TransitionHookFn]] which waits for the views to load
- *
- * Registered using `transitionService.onStart({}, loadEnteringViews);`
- *
- * Allows the views to do async work in [[ViewConfig.load]] before the transition continues.
- * In angular 1, this includes loading the templates.
- */
-var loadEnteringViews = function (transition) {
-    var $q = coreservices_1.services.$q;
-    var enteringViews = transition.views("entering");
-    if (!enteringViews.length)
-        return;
-    return $q.all(enteringViews.map(function (view) { return $q.when(view.load()); })).then(common_1.noop);
-};
-exports.registerLoadEnteringViews = function (transitionService) {
-    return transitionService.onFinish({}, loadEnteringViews);
-};
-/**
- * A [[TransitionHookFn]] which activates the new views when a transition is successful.
- *
- * Registered using `transitionService.onSuccess({}, activateViews);`
- *
- * After a transition is complete, this hook deactivates the old views from the previous state,
- * and activates the new views from the destination state.
- *
- * See [[ViewService]]
- */
-var activateViews = function (transition) {
-    var enteringViews = transition.views("entering");
-    var exitingViews = transition.views("exiting");
-    if (!enteringViews.length && !exitingViews.length)
-        return;
-    var $view = transition.router.viewService;
-    exitingViews.forEach(function (vc) { return $view.deactivateViewConfig(vc); });
-    enteringViews.forEach(function (vc) { return $view.activateViewConfig(vc); });
-    $view.sync();
-};
-exports.registerActivateViews = function (transitionService) {
-    return transitionService.onSuccess({}, activateViews);
-};
-//# sourceMappingURL=views.js.map
-
-/***/ }),
-/* 71 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var common_1 = __webpack_require__(1);
-/**
- * A [[TransitionHookFn]] which updates global UI-Router state
- *
- * Registered using `transitionService.onBefore({}, updateGlobalState);`
- *
- * Before a [[Transition]] starts, updates the global value of "the current transition" ([[Globals.transition]]).
- * After a successful [[Transition]], updates the global values of "the current state"
- * ([[Globals.current]] and [[Globals.$current]]) and "the current param values" ([[Globals.params]]).
- *
- * See also the deprecated properties:
- * [[StateService.transition]], [[StateService.current]], [[StateService.params]]
- */
-var updateGlobalState = function (trans) {
-    var globals = trans.router.globals;
-    var transitionSuccessful = function () {
-        globals.successfulTransitions.enqueue(trans);
-        globals.$current = trans.$to();
-        globals.current = globals.$current.self;
-        common_1.copy(trans.params(), globals.params);
-    };
-    var clearCurrentTransition = function () {
-        // Do not clear globals.transition if a different transition has started in the meantime
-        if (globals.transition === trans)
-            globals.transition = null;
-    };
-    trans.onSuccess({}, transitionSuccessful, { priority: 10000 });
-    trans.promise.then(clearCurrentTransition, clearCurrentTransition);
-};
-exports.registerUpdateGlobalState = function (transitionService) {
-    return transitionService.onCreate({}, updateGlobalState);
-};
-//# sourceMappingURL=updateGlobals.js.map
-
-/***/ }),
-/* 72 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * A [[TransitionHookFn]] which updates the URL after a successful transition
- *
- * Registered using `transitionService.onSuccess({}, updateUrl);`
- */
-var updateUrl = function (transition) {
-    var options = transition.options();
-    var $state = transition.router.stateService;
-    var $urlRouter = transition.router.urlRouter;
-    // Dont update the url in these situations:
-    // The transition was triggered by a URL sync (options.source === 'url')
-    // The user doesn't want the url to update (options.location === false)
-    // The destination state, and all parents have no navigable url
-    if (options.source !== 'url' && options.location && $state.$current.navigable) {
-        var urlOptions = { replace: options.location === 'replace' };
-        $urlRouter.push($state.$current.navigable.url, $state.params, urlOptions);
-    }
-    $urlRouter.update(true);
-};
-exports.registerUpdateUrl = function (transitionService) {
-    return transitionService.onSuccess({}, updateUrl, { priority: 9999 });
-};
-//# sourceMappingURL=url.js.map
-
-/***/ }),
-/* 73 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-/** @module hooks */ /** */
-Object.defineProperty(exports, "__esModule", { value: true });
-var trace_1 = __webpack_require__(7);
-var rejectFactory_1 = __webpack_require__(12);
-/**
- * A [[TransitionHookFn]] that skips a transition if it should be ignored
- *
- * This hook is invoked at the end of the onBefore phase.
- *
- * If the transition should be ignored (because no parameter or states changed)
- * then the transition is ignored and not processed.
- */
-function ignoredHook(trans) {
-    var ignoredReason = trans._ignoredReason();
-    if (!ignoredReason)
-        return;
-    trace_1.trace.traceTransitionIgnored(trans);
-    var pending = trans.router.globals.transition;
-    // The user clicked a link going back to the *current state* ('A')
-    // However, there is also a pending transition in flight (to 'B')
-    // Abort the transition to 'B' because the user now wants to be back at 'A'.
-    if (ignoredReason === 'SameAsCurrent' && pending) {
-        pending.abort();
-    }
-    return rejectFactory_1.Rejection.ignored().toPromise();
-}
-exports.registerIgnoredTransitionHook = function (transitionService) {
-    return transitionService.onBefore({}, ignoredHook, { priority: -9999 });
-};
-//# sourceMappingURL=ignoredTransition.js.map
-
-/***/ }),
-/* 74 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-/** @module hooks */ /** */
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * A [[TransitionHookFn]] that rejects the Transition if it is invalid
- *
- * This hook is invoked at the end of the onBefore phase.
- * If the transition is invalid (for example, param values do not validate)
- * then the transition is rejected.
- */
-function invalidTransitionHook(trans) {
-    if (!trans.valid()) {
-        throw new Error(trans.error());
-    }
-}
-exports.registerInvalidTransitionHook = function (transitionService) {
-    return transitionService.onBefore({}, invalidTransitionHook, { priority: -10000 });
-};
-//# sourceMappingURL=invalidTransition.js.map
-
-/***/ }),
-/* 75 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * # Transition subsystem
- *
- * This module contains APIs related to a Transition.
- *
- * See:
- * - [[TransitionService]]
- * - [[Transition]]
- * - [[HookFn]], [[TransitionHookFn]], [[TransitionStateHookFn]], [[HookMatchCriteria]], [[HookResult]]
- *
- * @coreapi
- * @preferred
- * @module transition
- */ /** for typedoc */
-__export(__webpack_require__(9));
-__export(__webpack_require__(29));
-__export(__webpack_require__(23));
-__export(__webpack_require__(12));
-__export(__webpack_require__(16));
-__export(__webpack_require__(13));
-__export(__webpack_require__(46));
-__export(__webpack_require__(26));
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-/* 76 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(19));
-__export(__webpack_require__(39));
-__export(__webpack_require__(40));
-__export(__webpack_require__(41));
-__export(__webpack_require__(44));
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-/* 77 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(42));
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-/* 78 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * @internalapi
- * @module vanilla
- */
-/** */
-__export(__webpack_require__(79));
-//# sourceMappingURL=vanilla.js.map
-
-/***/ }),
-/* 79 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(47));
-__export(__webpack_require__(48));
-__export(__webpack_require__(20));
-__export(__webpack_require__(49));
-__export(__webpack_require__(50));
-__export(__webpack_require__(51));
-__export(__webpack_require__(52));
-__export(__webpack_require__(53));
-__export(__webpack_require__(27));
-__export(__webpack_require__(80));
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-/* 80 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * @internalapi
- * @module vanilla
- */
-/** */
-var browserLocationConfig_1 = __webpack_require__(53);
-var hashLocationService_1 = __webpack_require__(49);
-var utils_1 = __webpack_require__(27);
-var pushStateLocationService_1 = __webpack_require__(51);
-var memoryLocationService_1 = __webpack_require__(50);
-var memoryLocationConfig_1 = __webpack_require__(52);
-var injector_1 = __webpack_require__(48);
-var q_1 = __webpack_require__(47);
-var coreservices_1 = __webpack_require__(4);
-function servicesPlugin(router) {
-    coreservices_1.services.$injector = injector_1.$injector;
-    coreservices_1.services.$q = q_1.$q;
-    return { name: "vanilla.services", $q: q_1.$q, $injector: injector_1.$injector, dispose: function () { return null; } };
-}
-exports.servicesPlugin = servicesPlugin;
-/** A `UIRouterPlugin` uses the browser hash to get/set the current location */
-exports.hashLocationPlugin = utils_1.locationPluginFactory('vanilla.hashBangLocation', false, hashLocationService_1.HashLocationService, browserLocationConfig_1.BrowserLocationConfig);
-/** A `UIRouterPlugin` that gets/sets the current location using the browser's `location` and `history` apis */
-exports.pushStateLocationPlugin = utils_1.locationPluginFactory("vanilla.pushStateLocation", true, pushStateLocationService_1.PushStateLocationService, browserLocationConfig_1.BrowserLocationConfig);
-/** A `UIRouterPlugin` that gets/sets the current location from an in-memory object */
-exports.memoryLocationPlugin = utils_1.locationPluginFactory("vanilla.memoryLocation", false, memoryLocationService_1.MemoryLocationService, memoryLocationConfig_1.MemoryLocationConfig);
-//# sourceMappingURL=plugins.js.map
-
-/***/ }),
-/* 81 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-/**
- * # Core classes and interfaces
- *
- * The classes and interfaces that are core to ui-router and do not belong
- * to a more specific subsystem (such as resolve).
- *
- * @coreapi
- * @preferred
- * @module core
- */ /** for typedoc */
-Object.defineProperty(exports, "__esModule", { value: true });
-/** @internalapi */
-var UIRouterPluginBase = /** @class */ (function () {
-    function UIRouterPluginBase() {
-    }
-    UIRouterPluginBase.prototype.dispose = function (router) { };
-    return UIRouterPluginBase;
-}());
-exports.UIRouterPluginBase = UIRouterPluginBase;
-//# sourceMappingURL=interface.js.map
-
-/***/ }),
-/* 82 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55124,45 +52451,44 @@ exports.UIRouterPluginBase = UIRouterPluginBase;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var AppComponent = {
-    template: "\n        <loader></loader>\n        <navigation></navigation>\n        <div class=\"app\" loader-directive ui-view></div>\n        <copyright></copyright>\n    "
+    template: "\n        <loader></loader>\n        <navigation></navigation>\n        <div class=\"app app--animate\" loader-directive ui-view></div>\n        <copyright></copyright>\n    "
 };
 exports.default = AppComponent;
 
 /***/ }),
-/* 83 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(84);
+__webpack_require__(61);
 var angular = __webpack_require__(0);
-var home_module_1 = __webpack_require__(85);
-var playground_module_1 = __webpack_require__(90);
-var real_world_module_1 = __webpack_require__(200);
+var home_module_1 = __webpack_require__(62);
+var playground_module_1 = __webpack_require__(67);
+var real_world_module_1 = __webpack_require__(177);
 var ComponentsModule = angular.module('app.components', [home_module_1.default.name, playground_module_1.default.name, real_world_module_1.default.name]);
 exports.default = ComponentsModule;
 
 /***/ }),
-/* 84 */
+/* 61 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 85 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(86);
+__webpack_require__(63);
 var angular = __webpack_require__(0);
-var angularjs_1 = __webpack_require__(8);
-var home_component_1 = __webpack_require__(87);
-var HomeModule = angular.module('app.components.home', [angularjs_1.default]).component('home', home_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
+var home_component_1 = __webpack_require__(64);
+var HomeModule = angular.module('app.components.home', []).component('home', home_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('home', {
         component: 'home',
         url: '/'
@@ -55172,21 +52498,21 @@ var HomeModule = angular.module('app.components.home', [angularjs_1.default]).co
 exports.default = HomeModule;
 
 /***/ }),
-/* 86 */
+/* 63 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 87 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var home_controller_1 = __webpack_require__(88);
-var template = __webpack_require__(89);
+var home_controller_1 = __webpack_require__(65);
+var template = __webpack_require__(66);
 var HomeComponent = {
     template: template,
     controller: home_controller_1.default
@@ -55194,7 +52520,7 @@ var HomeComponent = {
 exports.default = HomeComponent;
 
 /***/ }),
-/* 88 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55211,26 +52537,25 @@ var HomeController = function HomeController() {
 exports.default = HomeController;
 
 /***/ }),
-/* 89 */
+/* 66 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container-fluid home\">\n    <h1 class=\"text-center home__title\">TypeScript</h1>\n    <img src=\"/img/home/background.png\" class=\"home__background animated pulse\" alt=\"Home Background\">\n    <h2 class=\"text-center\">Application Scale JavaScript Development</h2>\n\n    <ul class=\"home__triggers\">\n        <li class=\"trigger__item\">\n            <a ui-sref=\"playground\">\n                <img src=\"/img/home/play.svg\" class=\"home__play animated bounce\" alt=\"Playground Examples\">\n            </a>\n        </li>\n        <li class=\"trigger__item\">\n            <a ui-sref=\"real-world\">\n                <img src=\"/img/home/real.svg\" class=\"home__real animated bounce\" alt=\"Real World Examples\">\n            </a>\n        </li>\n    </ul>\n</div>";
+module.exports = "<div class=\"container-fluid home\">\n    <h1 class=\"text-center home__title\">TypeScript</h1>\n    <img src=\"/assets/img/home/background.png\" class=\"home__background animated pulse\" alt=\"Home Background\">\n    <h2 class=\"text-center\">Application Scale JavaScript Development</h2>\n\n    <ul class=\"home__triggers\">\n        <li class=\"trigger__item\">\n            <a ui-sref=\"playground\">\n                <img src=\"/assets/img/home/play.svg\" class=\"home__play animated bounce\" alt=\"Playground Examples\">\n            </a>\n        </li>\n        <li class=\"trigger__item\">\n            <a ui-sref=\"real-world\">\n                <img src=\"/assets/img/home/real.svg\" class=\"home__real animated bounce\" alt=\"Real World Examples\">\n            </a>\n        </li>\n    </ul>\n</div>";
 
 /***/ }),
-/* 90 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(91);
+__webpack_require__(68);
 var angular = __webpack_require__(0);
-var angularjs_1 = __webpack_require__(8);
-var playground_component_1 = __webpack_require__(92);
-var playground_service_1 = __webpack_require__(95);
-var topics_module_1 = __webpack_require__(96);
-var PlaygroundModule = angular.module('app.components.playground', [angularjs_1.default, topics_module_1.default.name]).component('playground', playground_component_1.default).service('PlaygroundService', playground_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
+var playground_component_1 = __webpack_require__(69);
+var playground_service_1 = __webpack_require__(72);
+var topics_module_1 = __webpack_require__(73);
+var PlaygroundModule = angular.module('app.components.playground', [topics_module_1.default.name]).component('playground', playground_component_1.default).service('PlaygroundService', playground_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('playground', {
         component: 'playground',
         url: '/playground'
@@ -55240,21 +52565,21 @@ var PlaygroundModule = angular.module('app.components.playground', [angularjs_1.
 exports.default = PlaygroundModule;
 
 /***/ }),
-/* 91 */
+/* 68 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 92 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var playground_controller_1 = __webpack_require__(93);
-var template = __webpack_require__(94);
+var playground_controller_1 = __webpack_require__(70);
+var template = __webpack_require__(71);
 var PlaygroundComponent = {
     template: template,
     controller: playground_controller_1.default
@@ -55262,7 +52587,7 @@ var PlaygroundComponent = {
 exports.default = PlaygroundComponent;
 
 /***/ }),
-/* 93 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55283,13 +52608,13 @@ PlaygroundController.$inject = ['PlaygroundService'];
 exports.default = PlaygroundController;
 
 /***/ }),
-/* 94 */
+/* 71 */
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"container workshop\">\n    <h1>TypeScript Topics:</h1>\n\n    <ul class=\"workshop__topics\">\n        <li class=\"topic__item\" ng-repeat=\"topic in $ctrl.topics\">\n            <a ui-sref=\"{{ topic.state }}\">{{ topic.label }}</a>\n        </li>\n    </ul>\n</div>";
 
 /***/ }),
-/* 95 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55321,7 +52646,7 @@ var PlaygroundService = function () {
 exports.default = PlaygroundService;
 
 /***/ }),
-/* 96 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55329,41 +52654,41 @@ exports.default = PlaygroundService;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var angular = __webpack_require__(0);
-var advanced_types_module_1 = __webpack_require__(97);
-var basic_types_module_1 = __webpack_require__(102);
-var classes_module_1 = __webpack_require__(107);
-var declaration_files_module_1 = __webpack_require__(112);
-var declaration_merging_module_1 = __webpack_require__(116);
-var decorators_module_1 = __webpack_require__(120);
-var enums_module_1 = __webpack_require__(125);
-var functions_module_1 = __webpack_require__(130);
-var generics_module_1 = __webpack_require__(135);
-var interfaces_module_1 = __webpack_require__(140);
-var iterators_and_generators_module_1 = __webpack_require__(145);
-var mixins_module_1 = __webpack_require__(150);
-var module_resolution_module_1 = __webpack_require__(155);
-var modules_module_1 = __webpack_require__(160);
-var namespaces_module_1 = __webpack_require__(165);
-var namespaces_and_modules_module_1 = __webpack_require__(170);
-var symbols_module_1 = __webpack_require__(175);
-var triple_slash_directives_module_1 = __webpack_require__(180);
-var type_compatibility_module_1 = __webpack_require__(185);
-var type_inference_module_1 = __webpack_require__(190);
-var variable_declarations_module_1 = __webpack_require__(195);
+var advanced_types_module_1 = __webpack_require__(74);
+var basic_types_module_1 = __webpack_require__(79);
+var classes_module_1 = __webpack_require__(84);
+var declaration_files_module_1 = __webpack_require__(89);
+var declaration_merging_module_1 = __webpack_require__(93);
+var decorators_module_1 = __webpack_require__(97);
+var enums_module_1 = __webpack_require__(102);
+var functions_module_1 = __webpack_require__(107);
+var generics_module_1 = __webpack_require__(112);
+var interfaces_module_1 = __webpack_require__(117);
+var iterators_and_generators_module_1 = __webpack_require__(122);
+var mixins_module_1 = __webpack_require__(127);
+var module_resolution_module_1 = __webpack_require__(132);
+var modules_module_1 = __webpack_require__(137);
+var namespaces_module_1 = __webpack_require__(142);
+var namespaces_and_modules_module_1 = __webpack_require__(147);
+var symbols_module_1 = __webpack_require__(152);
+var triple_slash_directives_module_1 = __webpack_require__(157);
+var type_compatibility_module_1 = __webpack_require__(162);
+var type_inference_module_1 = __webpack_require__(167);
+var variable_declarations_module_1 = __webpack_require__(172);
 var TopicsModule = angular.module('app.components.playground.topics', [advanced_types_module_1.default.name, basic_types_module_1.default.name, classes_module_1.default.name, declaration_files_module_1.default.name, declaration_merging_module_1.default.name, decorators_module_1.default.name, enums_module_1.default.name, functions_module_1.default.name, generics_module_1.default.name, interfaces_module_1.default.name, iterators_and_generators_module_1.default.name, mixins_module_1.default.name, module_resolution_module_1.default.name, modules_module_1.default.name, namespaces_module_1.default.name, namespaces_and_modules_module_1.default.name, symbols_module_1.default.name, triple_slash_directives_module_1.default.name, type_compatibility_module_1.default.name, type_inference_module_1.default.name, variable_declarations_module_1.default.name]);
 exports.default = TopicsModule;
 
 /***/ }),
-/* 97 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(98);
+__webpack_require__(75);
 var angular = __webpack_require__(0);
-var advanced_types_component_1 = __webpack_require__(99);
+var advanced_types_component_1 = __webpack_require__(76);
 var AdvancedTypesModule = angular.module('app.components.playground.topics.advanced-types', []).component('advancedTypes', advanced_types_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('advanced-types', {
         component: 'advancedTypes',
@@ -55374,21 +52699,21 @@ var AdvancedTypesModule = angular.module('app.components.playground.topics.advan
 exports.default = AdvancedTypesModule;
 
 /***/ }),
-/* 98 */
+/* 75 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 99 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var advanced_types_controller_1 = __webpack_require__(100);
-var template = __webpack_require__(101);
+var advanced_types_controller_1 = __webpack_require__(77);
+var template = __webpack_require__(78);
 var AdvancedTypesComponent = {
     template: template,
     controller: advanced_types_controller_1.default
@@ -55396,7 +52721,7 @@ var AdvancedTypesComponent = {
 exports.default = AdvancedTypesComponent;
 
 /***/ }),
-/* 100 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55414,22 +52739,22 @@ AdvancedTypesController.$inject = [];
 exports.default = AdvancedTypesController;
 
 /***/ }),
-/* 101 */
+/* 78 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Advanced Types</h1>";
 
 /***/ }),
-/* 102 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(103);
+__webpack_require__(80);
 var angular = __webpack_require__(0);
-var basic_types_component_1 = __webpack_require__(104);
+var basic_types_component_1 = __webpack_require__(81);
 var BasicTypesModule = angular.module('app.components.playground.topics.basic-types', []).component('basicTypes', basic_types_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('basic-types', {
         component: 'basicTypes',
@@ -55440,21 +52765,21 @@ var BasicTypesModule = angular.module('app.components.playground.topics.basic-ty
 exports.default = BasicTypesModule;
 
 /***/ }),
-/* 103 */
+/* 80 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 104 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var basic_types_controller_1 = __webpack_require__(105);
-var template = __webpack_require__(106);
+var basic_types_controller_1 = __webpack_require__(82);
+var template = __webpack_require__(83);
 var BasicTypesComponent = {
     template: template,
     controller: basic_types_controller_1.default
@@ -55462,7 +52787,7 @@ var BasicTypesComponent = {
 exports.default = BasicTypesComponent;
 
 /***/ }),
-/* 105 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55480,22 +52805,22 @@ BasicTypesController.$inject = [];
 exports.default = BasicTypesController;
 
 /***/ }),
-/* 106 */
+/* 83 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Basic Types</h1>";
 
 /***/ }),
-/* 107 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(108);
+__webpack_require__(85);
 var angular = __webpack_require__(0);
-var classes_component_1 = __webpack_require__(109);
+var classes_component_1 = __webpack_require__(86);
 var ClassesModule = angular.module('app.components.playground.topics.classes', []).component('classes', classes_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('classes', {
         component: 'classes',
@@ -55506,21 +52831,21 @@ var ClassesModule = angular.module('app.components.playground.topics.classes', [
 exports.default = ClassesModule;
 
 /***/ }),
-/* 108 */
+/* 85 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 109 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var classes_controller_1 = __webpack_require__(110);
-var template = __webpack_require__(111);
+var classes_controller_1 = __webpack_require__(87);
+var template = __webpack_require__(88);
 var ClassesComponent = {
     template: template,
     controller: classes_controller_1.default
@@ -55528,7 +52853,7 @@ var ClassesComponent = {
 exports.default = ClassesComponent;
 
 /***/ }),
-/* 110 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55546,22 +52871,22 @@ ClassesController.$inject = [];
 exports.default = ClassesController;
 
 /***/ }),
-/* 111 */
+/* 88 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Classes</h1>";
 
 /***/ }),
-/* 112 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(113);
+__webpack_require__(90);
 var angular = __webpack_require__(0);
-var declaration_files_component_1 = __webpack_require__(114);
+var declaration_files_component_1 = __webpack_require__(91);
 var DeclarationFilesModule = angular.module('app.components.playground.topics.declaration-files', []).component('declarationFiles', declaration_files_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('declaration-files', {
         component: 'declarationFiles',
@@ -55572,21 +52897,21 @@ var DeclarationFilesModule = angular.module('app.components.playground.topics.de
 exports.default = DeclarationFilesModule;
 
 /***/ }),
-/* 113 */
+/* 90 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 114 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var declaration_files_controller_1 = __webpack_require__(54);
-var template = __webpack_require__(115);
+var declaration_files_controller_1 = __webpack_require__(28);
+var template = __webpack_require__(92);
 var DeclarationFilesComponent = {
     template: template,
     controller: declaration_files_controller_1.default
@@ -55594,22 +52919,22 @@ var DeclarationFilesComponent = {
 exports.default = DeclarationFilesComponent;
 
 /***/ }),
-/* 115 */
+/* 92 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Declaration Files</h1>";
 
 /***/ }),
-/* 116 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(117);
+__webpack_require__(94);
 var angular = __webpack_require__(0);
-var declaration_merging_component_1 = __webpack_require__(118);
+var declaration_merging_component_1 = __webpack_require__(95);
 var DeclarationMergingModule = angular.module('app.components.playground.topics.declaration-merging', []).component('declarationMerging', declaration_merging_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('declaration-merging', {
         component: 'declarationMerging',
@@ -55620,21 +52945,21 @@ var DeclarationMergingModule = angular.module('app.components.playground.topics.
 exports.default = DeclarationMergingModule;
 
 /***/ }),
-/* 117 */
+/* 94 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 118 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var declaration_files_controller_1 = __webpack_require__(54);
-var template = __webpack_require__(119);
+var declaration_files_controller_1 = __webpack_require__(28);
+var template = __webpack_require__(96);
 var DeclarationMergingComponent = {
     template: template,
     controller: declaration_files_controller_1.default
@@ -55642,22 +52967,22 @@ var DeclarationMergingComponent = {
 exports.default = DeclarationMergingComponent;
 
 /***/ }),
-/* 119 */
+/* 96 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Declaration Merging</h1>";
 
 /***/ }),
-/* 120 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(121);
+__webpack_require__(98);
 var angular = __webpack_require__(0);
-var decorators_component_1 = __webpack_require__(122);
+var decorators_component_1 = __webpack_require__(99);
 var DecoratorsModule = angular.module('app.components.playground.topics.decorators', []).component('decorators', decorators_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('decorators', {
         component: 'decorators',
@@ -55668,21 +52993,21 @@ var DecoratorsModule = angular.module('app.components.playground.topics.decorato
 exports.default = DecoratorsModule;
 
 /***/ }),
-/* 121 */
+/* 98 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 122 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var decorators_controller_1 = __webpack_require__(123);
-var template = __webpack_require__(124);
+var decorators_controller_1 = __webpack_require__(100);
+var template = __webpack_require__(101);
 var DecoratorsComponent = {
     template: template,
     controller: decorators_controller_1.default
@@ -55690,7 +53015,7 @@ var DecoratorsComponent = {
 exports.default = DecoratorsComponent;
 
 /***/ }),
-/* 123 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55708,22 +53033,22 @@ DecoratorsController.$inject = [];
 exports.default = DecoratorsController;
 
 /***/ }),
-/* 124 */
+/* 101 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Decorators</h1>";
 
 /***/ }),
-/* 125 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(126);
+__webpack_require__(103);
 var angular = __webpack_require__(0);
-var enums_component_1 = __webpack_require__(127);
+var enums_component_1 = __webpack_require__(104);
 var EnumsModule = angular.module('app.components.playground.topics.enums', []).component('enums', enums_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('enums', {
         component: 'enums',
@@ -55734,21 +53059,21 @@ var EnumsModule = angular.module('app.components.playground.topics.enums', []).c
 exports.default = EnumsModule;
 
 /***/ }),
-/* 126 */
+/* 103 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 127 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var enums_controller_1 = __webpack_require__(128);
-var template = __webpack_require__(129);
+var enums_controller_1 = __webpack_require__(105);
+var template = __webpack_require__(106);
 var EnumsComponent = {
     template: template,
     controller: enums_controller_1.default
@@ -55756,7 +53081,7 @@ var EnumsComponent = {
 exports.default = EnumsComponent;
 
 /***/ }),
-/* 128 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55774,22 +53099,22 @@ EnumsController.$inject = [];
 exports.default = EnumsController;
 
 /***/ }),
-/* 129 */
+/* 106 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Enums</h1>";
 
 /***/ }),
-/* 130 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(131);
+__webpack_require__(108);
 var angular = __webpack_require__(0);
-var functions_component_1 = __webpack_require__(132);
+var functions_component_1 = __webpack_require__(109);
 var FunctionsModule = angular.module('app.components.playground.topics.functions', []).component('functions', functions_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('functions', {
         component: 'functions',
@@ -55800,21 +53125,21 @@ var FunctionsModule = angular.module('app.components.playground.topics.functions
 exports.default = FunctionsModule;
 
 /***/ }),
-/* 131 */
+/* 108 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 132 */
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var functions_controller_1 = __webpack_require__(133);
-var template = __webpack_require__(134);
+var functions_controller_1 = __webpack_require__(110);
+var template = __webpack_require__(111);
 var FunctionsComponent = {
     template: template,
     controller: functions_controller_1.default
@@ -55822,7 +53147,7 @@ var FunctionsComponent = {
 exports.default = FunctionsComponent;
 
 /***/ }),
-/* 133 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55840,22 +53165,22 @@ FunctionsController.$inject = [];
 exports.default = FunctionsController;
 
 /***/ }),
-/* 134 */
+/* 111 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Functions</h1>";
 
 /***/ }),
-/* 135 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(136);
+__webpack_require__(113);
 var angular = __webpack_require__(0);
-var generics_component_1 = __webpack_require__(137);
+var generics_component_1 = __webpack_require__(114);
 var GenericsModule = angular.module('app.components.playground.topics.generics', []).component('generics', generics_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('generics', {
         component: 'generics',
@@ -55866,21 +53191,21 @@ var GenericsModule = angular.module('app.components.playground.topics.generics',
 exports.default = GenericsModule;
 
 /***/ }),
-/* 136 */
+/* 113 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 137 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var generics_controller_1 = __webpack_require__(138);
-var template = __webpack_require__(139);
+var generics_controller_1 = __webpack_require__(115);
+var template = __webpack_require__(116);
 var GenericsComponent = {
     template: template,
     controller: generics_controller_1.default
@@ -55888,7 +53213,7 @@ var GenericsComponent = {
 exports.default = GenericsComponent;
 
 /***/ }),
-/* 138 */
+/* 115 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55906,22 +53231,22 @@ GenericsController.$inject = [];
 exports.default = GenericsController;
 
 /***/ }),
-/* 139 */
+/* 116 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Generics</h1>";
 
 /***/ }),
-/* 140 */
+/* 117 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(141);
+__webpack_require__(118);
 var angular = __webpack_require__(0);
-var interfaces_component_1 = __webpack_require__(142);
+var interfaces_component_1 = __webpack_require__(119);
 var InterfacesModule = angular.module('app.components.playground.topics.interfaces', []).component('interfaces', interfaces_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('interfaces', {
         component: 'interfaces',
@@ -55932,21 +53257,21 @@ var InterfacesModule = angular.module('app.components.playground.topics.interfac
 exports.default = InterfacesModule;
 
 /***/ }),
-/* 141 */
+/* 118 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 142 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var interfaces_controller_1 = __webpack_require__(143);
-var template = __webpack_require__(144);
+var interfaces_controller_1 = __webpack_require__(120);
+var template = __webpack_require__(121);
 var InterfacesComponent = {
     template: template,
     controller: interfaces_controller_1.default
@@ -55954,7 +53279,7 @@ var InterfacesComponent = {
 exports.default = InterfacesComponent;
 
 /***/ }),
-/* 143 */
+/* 120 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -55972,22 +53297,22 @@ InterfacesController.$inject = [];
 exports.default = InterfacesController;
 
 /***/ }),
-/* 144 */
+/* 121 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Interfaces</h1>";
 
 /***/ }),
-/* 145 */
+/* 122 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(146);
+__webpack_require__(123);
 var angular = __webpack_require__(0);
-var iterators_and_generators_component_1 = __webpack_require__(147);
+var iterators_and_generators_component_1 = __webpack_require__(124);
 var InterfacesModule = angular.module('app.components.playground.topics.iterators-and-generators', []).component('iteratorsAndGenerators', iterators_and_generators_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('iterators-and-generators', {
         component: 'iteratorsAndGenerators',
@@ -55998,21 +53323,21 @@ var InterfacesModule = angular.module('app.components.playground.topics.iterator
 exports.default = InterfacesModule;
 
 /***/ }),
-/* 146 */
+/* 123 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 147 */
+/* 124 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var iterators_and_generators_controller_1 = __webpack_require__(148);
-var template = __webpack_require__(149);
+var iterators_and_generators_controller_1 = __webpack_require__(125);
+var template = __webpack_require__(126);
 var IteratorsAndGeneratorsComponent = {
     template: template,
     controller: iterators_and_generators_controller_1.default
@@ -56020,7 +53345,7 @@ var IteratorsAndGeneratorsComponent = {
 exports.default = IteratorsAndGeneratorsComponent;
 
 /***/ }),
-/* 148 */
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56038,22 +53363,22 @@ IteratorsAndGeneratorsController.$inject = [];
 exports.default = IteratorsAndGeneratorsController;
 
 /***/ }),
-/* 149 */
+/* 126 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Iterators and Generators</h1>";
 
 /***/ }),
-/* 150 */
+/* 127 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(151);
+__webpack_require__(128);
 var angular = __webpack_require__(0);
-var mixins_component_1 = __webpack_require__(152);
+var mixins_component_1 = __webpack_require__(129);
 var MixinxModule = angular.module('app.components.playground.topics.mixins', []).component('mixins', mixins_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('mixins', {
         component: 'mixins',
@@ -56064,21 +53389,21 @@ var MixinxModule = angular.module('app.components.playground.topics.mixins', [])
 exports.default = MixinxModule;
 
 /***/ }),
-/* 151 */
+/* 128 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 152 */
+/* 129 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var mixins_controller_1 = __webpack_require__(153);
-var template = __webpack_require__(154);
+var mixins_controller_1 = __webpack_require__(130);
+var template = __webpack_require__(131);
 var MixinsComponent = {
     template: template,
     controller: mixins_controller_1.default
@@ -56086,7 +53411,7 @@ var MixinsComponent = {
 exports.default = MixinsComponent;
 
 /***/ }),
-/* 153 */
+/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56104,22 +53429,22 @@ MixinsController.$inject = [];
 exports.default = MixinsController;
 
 /***/ }),
-/* 154 */
+/* 131 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Mixins</h1>";
 
 /***/ }),
-/* 155 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(156);
+__webpack_require__(133);
 var angular = __webpack_require__(0);
-var module_resolution_component_1 = __webpack_require__(157);
+var module_resolution_component_1 = __webpack_require__(134);
 var ModuleResolutionModule = angular.module('app.components.playground.topics.module-resolution', []).component('moduleResolution', module_resolution_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('module-resolution', {
         component: 'moduleResolution',
@@ -56130,21 +53455,21 @@ var ModuleResolutionModule = angular.module('app.components.playground.topics.mo
 exports.default = ModuleResolutionModule;
 
 /***/ }),
-/* 156 */
+/* 133 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 157 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var module_resolution_controller_1 = __webpack_require__(158);
-var template = __webpack_require__(159);
+var module_resolution_controller_1 = __webpack_require__(135);
+var template = __webpack_require__(136);
 var ModuleResolutionComponent = {
     template: template,
     controller: module_resolution_controller_1.default
@@ -56152,7 +53477,7 @@ var ModuleResolutionComponent = {
 exports.default = ModuleResolutionComponent;
 
 /***/ }),
-/* 158 */
+/* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56170,22 +53495,22 @@ ModuleResolutionController.$inject = [];
 exports.default = ModuleResolutionController;
 
 /***/ }),
-/* 159 */
+/* 136 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Module Resolution</h1>";
 
 /***/ }),
-/* 160 */
+/* 137 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(161);
+__webpack_require__(138);
 var angular = __webpack_require__(0);
-var modules_component_1 = __webpack_require__(162);
+var modules_component_1 = __webpack_require__(139);
 var ModulesModule = angular.module('app.components.playground.topics.modules', []).component('modules', modules_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('modules', {
         component: 'modules',
@@ -56196,21 +53521,21 @@ var ModulesModule = angular.module('app.components.playground.topics.modules', [
 exports.default = ModulesModule;
 
 /***/ }),
-/* 161 */
+/* 138 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 162 */
+/* 139 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var modules_controller_1 = __webpack_require__(163);
-var template = __webpack_require__(164);
+var modules_controller_1 = __webpack_require__(140);
+var template = __webpack_require__(141);
 var ModulesComponent = {
     template: template,
     controller: modules_controller_1.default
@@ -56218,7 +53543,7 @@ var ModulesComponent = {
 exports.default = ModulesComponent;
 
 /***/ }),
-/* 163 */
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56236,22 +53561,22 @@ ModulesController.$inject = [];
 exports.default = ModulesController;
 
 /***/ }),
-/* 164 */
+/* 141 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Modules</h1>";
 
 /***/ }),
-/* 165 */
+/* 142 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(166);
+__webpack_require__(143);
 var angular = __webpack_require__(0);
-var namespaces_component_1 = __webpack_require__(167);
+var namespaces_component_1 = __webpack_require__(144);
 var NamespacesModule = angular.module('app.components.playground.topics.namespaces', []).component('namespaces', namespaces_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('namespaces', {
         component: 'namespaces',
@@ -56262,21 +53587,21 @@ var NamespacesModule = angular.module('app.components.playground.topics.namespac
 exports.default = NamespacesModule;
 
 /***/ }),
-/* 166 */
+/* 143 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 167 */
+/* 144 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var namespaces_controller_1 = __webpack_require__(168);
-var template = __webpack_require__(169);
+var namespaces_controller_1 = __webpack_require__(145);
+var template = __webpack_require__(146);
 var NamespacesComponent = {
     template: template,
     controller: namespaces_controller_1.default
@@ -56284,7 +53609,7 @@ var NamespacesComponent = {
 exports.default = NamespacesComponent;
 
 /***/ }),
-/* 168 */
+/* 145 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56302,22 +53627,22 @@ NamespacesController.$inject = [];
 exports.default = NamespacesController;
 
 /***/ }),
-/* 169 */
+/* 146 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Namespaces</h1>";
 
 /***/ }),
-/* 170 */
+/* 147 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(171);
+__webpack_require__(148);
 var angular = __webpack_require__(0);
-var namespaces_and_modules_component_1 = __webpack_require__(172);
+var namespaces_and_modules_component_1 = __webpack_require__(149);
 var NamespacesAndModulesModule = angular.module('app.components.playground.topics.namespaces-and-modules', []).component('namespacesAndModules', namespaces_and_modules_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('namespaces-and-modules', {
         component: 'namespacesAndModules',
@@ -56328,21 +53653,21 @@ var NamespacesAndModulesModule = angular.module('app.components.playground.topic
 exports.default = NamespacesAndModulesModule;
 
 /***/ }),
-/* 171 */
+/* 148 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 172 */
+/* 149 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var namespaces_and_modules_controller_1 = __webpack_require__(173);
-var template = __webpack_require__(174);
+var namespaces_and_modules_controller_1 = __webpack_require__(150);
+var template = __webpack_require__(151);
 var NamespacesAndModulesComponent = {
     template: template,
     controller: namespaces_and_modules_controller_1.default
@@ -56350,7 +53675,7 @@ var NamespacesAndModulesComponent = {
 exports.default = NamespacesAndModulesComponent;
 
 /***/ }),
-/* 173 */
+/* 150 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56368,22 +53693,22 @@ NamespacesAndModulesController.$inject = [];
 exports.default = NamespacesAndModulesController;
 
 /***/ }),
-/* 174 */
+/* 151 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Namespaces and Modules</h1>";
 
 /***/ }),
-/* 175 */
+/* 152 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(176);
+__webpack_require__(153);
 var angular = __webpack_require__(0);
-var symbols_component_1 = __webpack_require__(177);
+var symbols_component_1 = __webpack_require__(154);
 var SymbolsModule = angular.module('app.components.playground.topics.symbols', []).component('symbols', symbols_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('symbols', {
         component: 'symbols',
@@ -56394,21 +53719,21 @@ var SymbolsModule = angular.module('app.components.playground.topics.symbols', [
 exports.default = SymbolsModule;
 
 /***/ }),
-/* 176 */
+/* 153 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 177 */
+/* 154 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var symbols_controller_1 = __webpack_require__(178);
-var template = __webpack_require__(179);
+var symbols_controller_1 = __webpack_require__(155);
+var template = __webpack_require__(156);
 var SymbolsComponent = {
     template: template,
     controller: symbols_controller_1.default
@@ -56416,7 +53741,7 @@ var SymbolsComponent = {
 exports.default = SymbolsComponent;
 
 /***/ }),
-/* 178 */
+/* 155 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56434,22 +53759,22 @@ SymbolsController.$inject = [];
 exports.default = SymbolsController;
 
 /***/ }),
-/* 179 */
+/* 156 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Symbols</h1>";
 
 /***/ }),
-/* 180 */
+/* 157 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(181);
+__webpack_require__(158);
 var angular = __webpack_require__(0);
-var triple_slash_directives_component_1 = __webpack_require__(182);
+var triple_slash_directives_component_1 = __webpack_require__(159);
 var TripleSlashDirectivesModule = angular.module('app.components.playground.topics.triple-slash-directives', []).component('tripleSlashDirectives', triple_slash_directives_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('triple-slash-directives', {
         component: 'tripleSlashDirectives',
@@ -56460,21 +53785,21 @@ var TripleSlashDirectivesModule = angular.module('app.components.playground.topi
 exports.default = TripleSlashDirectivesModule;
 
 /***/ }),
-/* 181 */
+/* 158 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 182 */
+/* 159 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var triple_slash_directives_controller_1 = __webpack_require__(183);
-var template = __webpack_require__(184);
+var triple_slash_directives_controller_1 = __webpack_require__(160);
+var template = __webpack_require__(161);
 var TripleSlashDirectivesComponent = {
     template: template,
     controller: triple_slash_directives_controller_1.default
@@ -56482,7 +53807,7 @@ var TripleSlashDirectivesComponent = {
 exports.default = TripleSlashDirectivesComponent;
 
 /***/ }),
-/* 183 */
+/* 160 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56500,22 +53825,22 @@ TripleSlashDirectivesController.$inject = [];
 exports.default = TripleSlashDirectivesController;
 
 /***/ }),
-/* 184 */
+/* 161 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Triple Slash Directives</h1>";
 
 /***/ }),
-/* 185 */
+/* 162 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(186);
+__webpack_require__(163);
 var angular = __webpack_require__(0);
-var type_compatibility_component_1 = __webpack_require__(187);
+var type_compatibility_component_1 = __webpack_require__(164);
 var TypeCompatibilityModule = angular.module('app.components.playground.topics.type-compatibility', []).component('typeCompatibility', type_compatibility_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('type-compatibility', {
         component: 'typeCompatibility',
@@ -56526,21 +53851,21 @@ var TypeCompatibilityModule = angular.module('app.components.playground.topics.t
 exports.default = TypeCompatibilityModule;
 
 /***/ }),
-/* 186 */
+/* 163 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 187 */
+/* 164 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var type_compatibility_controller_1 = __webpack_require__(188);
-var template = __webpack_require__(189);
+var type_compatibility_controller_1 = __webpack_require__(165);
+var template = __webpack_require__(166);
 var TypeCompatibilityComponent = {
     template: template,
     controller: type_compatibility_controller_1.default
@@ -56548,7 +53873,7 @@ var TypeCompatibilityComponent = {
 exports.default = TypeCompatibilityComponent;
 
 /***/ }),
-/* 188 */
+/* 165 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56566,22 +53891,22 @@ TypeCompatibilityController.$inject = [];
 exports.default = TypeCompatibilityController;
 
 /***/ }),
-/* 189 */
+/* 166 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Type Compatibility</h1>";
 
 /***/ }),
-/* 190 */
+/* 167 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(191);
+__webpack_require__(168);
 var angular = __webpack_require__(0);
-var type_inference_component_1 = __webpack_require__(192);
+var type_inference_component_1 = __webpack_require__(169);
 var TypeInferenceModule = angular.module('app.components.playground.topics.type-inference', []).component('typeInference', type_inference_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('type-inference', {
         component: 'typeInference',
@@ -56592,21 +53917,21 @@ var TypeInferenceModule = angular.module('app.components.playground.topics.type-
 exports.default = TypeInferenceModule;
 
 /***/ }),
-/* 191 */
+/* 168 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 192 */
+/* 169 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var type_inference_controller_1 = __webpack_require__(193);
-var template = __webpack_require__(194);
+var type_inference_controller_1 = __webpack_require__(170);
+var template = __webpack_require__(171);
 var TypeInferenceComponent = {
     template: template,
     controller: type_inference_controller_1.default
@@ -56614,7 +53939,7 @@ var TypeInferenceComponent = {
 exports.default = TypeInferenceComponent;
 
 /***/ }),
-/* 193 */
+/* 170 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56632,22 +53957,22 @@ TypeInferenceController.$inject = [];
 exports.default = TypeInferenceController;
 
 /***/ }),
-/* 194 */
+/* 171 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Type Inference</h1>";
 
 /***/ }),
-/* 195 */
+/* 172 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(196);
+__webpack_require__(173);
 var angular = __webpack_require__(0);
-var variable_declarations_component_1 = __webpack_require__(197);
+var variable_declarations_component_1 = __webpack_require__(174);
 var VariableDeclarationsModule = angular.module('app.components.playground.topics.variable-declarations', []).component('variableDeclarations', variable_declarations_component_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('variable-declarations', {
         component: 'variableDeclarations',
@@ -56658,21 +53983,21 @@ var VariableDeclarationsModule = angular.module('app.components.playground.topic
 exports.default = VariableDeclarationsModule;
 
 /***/ }),
-/* 196 */
+/* 173 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 197 */
+/* 174 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var variable_declarations_controller_1 = __webpack_require__(198);
-var template = __webpack_require__(199);
+var variable_declarations_controller_1 = __webpack_require__(175);
+var template = __webpack_require__(176);
 var VariableDeclarationsComponent = {
     template: template,
     controller: variable_declarations_controller_1.default
@@ -56680,7 +54005,7 @@ var VariableDeclarationsComponent = {
 exports.default = VariableDeclarationsComponent;
 
 /***/ }),
-/* 198 */
+/* 175 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56698,27 +54023,26 @@ VariableDeclarationsController.$inject = [];
 exports.default = VariableDeclarationsController;
 
 /***/ }),
-/* 199 */
+/* 176 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Variable Declarations</h1>\n\n<highlighter></highlighter>";
 
 /***/ }),
-/* 200 */
+/* 177 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(201);
+__webpack_require__(178);
 var angular = __webpack_require__(0);
-var angularjs_1 = __webpack_require__(8);
-var real_world_component_1 = __webpack_require__(202);
-var real_world_service_1 = __webpack_require__(205);
-var todos_module_1 = __webpack_require__(206);
-var rates_module_1 = __webpack_require__(212);
-var RealWorldModule = angular.module('app.components.real-world', [angularjs_1.default, todos_module_1.default.name, rates_module_1.default.name]).component('realWorld', real_world_component_1.default).service('RealWorldService', real_world_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
+var real_world_component_1 = __webpack_require__(179);
+var real_world_service_1 = __webpack_require__(182);
+var todos_module_1 = __webpack_require__(183);
+var rates_module_1 = __webpack_require__(189);
+var RealWorldModule = angular.module('app.components.real-world', [todos_module_1.default.name, rates_module_1.default.name]).component('realWorld', real_world_component_1.default).service('RealWorldService', real_world_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('real-world', {
         component: 'realWorld',
         url: '/real-world'
@@ -56728,21 +54052,21 @@ var RealWorldModule = angular.module('app.components.real-world', [angularjs_1.d
 exports.default = RealWorldModule;
 
 /***/ }),
-/* 201 */
+/* 178 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 202 */
+/* 179 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var real_world_controller_1 = __webpack_require__(203);
-var template = __webpack_require__(204);
+var real_world_controller_1 = __webpack_require__(180);
+var template = __webpack_require__(181);
 var PlaygroundComponent = {
     template: template,
     controller: real_world_controller_1.default
@@ -56750,7 +54074,7 @@ var PlaygroundComponent = {
 exports.default = PlaygroundComponent;
 
 /***/ }),
-/* 203 */
+/* 180 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56771,13 +54095,13 @@ RealWorldController.$inject = ['RealWorldService'];
 exports.default = RealWorldController;
 
 /***/ }),
-/* 204 */
+/* 181 */
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"container workshop\">\n    <h1>Real World Topics:</h1>\n\n    <ul class=\"workshop__topics\">\n        <li class=\"topic__item\" ng-repeat=\"topic in $ctrl.topics\">\n            <a ui-sref=\"{{ topic.state }}\">{{ topic.label }}</a>\n        </li>\n    </ul>\n</div>";
 
 /***/ }),
-/* 205 */
+/* 182 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56810,19 +54134,18 @@ RealWorldService.$inject = [];
 exports.default = RealWorldService;
 
 /***/ }),
-/* 206 */
+/* 183 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(207);
+__webpack_require__(184);
 var angular = __webpack_require__(0);
-var angularjs_1 = __webpack_require__(8);
-var todos_component_1 = __webpack_require__(208);
-var todos_service_1 = __webpack_require__(211);
-var TodoModule = angular.module('app.components.real-world.todos', [angularjs_1.default]).component('todos', todos_component_1.default).service('TodosService', todos_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
+var todos_component_1 = __webpack_require__(185);
+var todos_service_1 = __webpack_require__(188);
+var TodoModule = angular.module('app.components.real-world.todos', []).component('todos', todos_component_1.default).service('TodosService', todos_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('todos', {
         component: 'todos',
         url: '/real-world/todos'
@@ -56832,21 +54155,21 @@ var TodoModule = angular.module('app.components.real-world.todos', [angularjs_1.
 exports.default = TodoModule;
 
 /***/ }),
-/* 207 */
+/* 184 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 208 */
+/* 185 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var todos_controller_1 = __webpack_require__(209);
-var template = __webpack_require__(210);
+var todos_controller_1 = __webpack_require__(186);
+var template = __webpack_require__(187);
 var TodosComponent = {
     template: template,
     controller: todos_controller_1.default
@@ -56854,7 +54177,7 @@ var TodosComponent = {
 exports.default = TodosComponent;
 
 /***/ }),
-/* 209 */
+/* 186 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56874,13 +54197,13 @@ TodosController.$inject = ['TodosService'];
 exports.default = TodosController;
 
 /***/ }),
-/* 210 */
+/* 187 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Todo API</h1>";
 
 /***/ }),
-/* 211 */
+/* 188 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56898,19 +54221,18 @@ TodosService.$inject = [];
 exports.default = TodosService;
 
 /***/ }),
-/* 212 */
+/* 189 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(213);
+__webpack_require__(190);
 var angular = __webpack_require__(0);
-var angularjs_1 = __webpack_require__(8);
-var rates_component_1 = __webpack_require__(214);
-var rates_service_1 = __webpack_require__(217);
-var RatesModule = angular.module('app.components.real-world.rates', [angularjs_1.default]).component('rates', rates_component_1.default).service('RatesService', rates_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
+var rates_component_1 = __webpack_require__(191);
+var rates_service_1 = __webpack_require__(194);
+var RatesModule = angular.module('app.components.real-world.rates', []).component('rates', rates_component_1.default).service('RatesService', rates_service_1.default).config(function ($stateProvider, $urlRouterProvider) {
     $stateProvider.state('rates', {
         component: 'rates',
         url: '/real-world/rates'
@@ -56920,21 +54242,21 @@ var RatesModule = angular.module('app.components.real-world.rates', [angularjs_1
 exports.default = RatesModule;
 
 /***/ }),
-/* 213 */
+/* 190 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 214 */
+/* 191 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var rates_controller_1 = __webpack_require__(215);
-var template = __webpack_require__(216);
+var rates_controller_1 = __webpack_require__(192);
+var template = __webpack_require__(193);
 var RatesComponent = {
     template: template,
     controller: rates_controller_1.default
@@ -56942,7 +54264,7 @@ var RatesComponent = {
 exports.default = RatesComponent;
 
 /***/ }),
-/* 215 */
+/* 192 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56962,13 +54284,13 @@ RatesController.$inject = ['RatesService'];
 exports.default = RatesController;
 
 /***/ }),
-/* 216 */
+/* 193 */
 /***/ (function(module, exports) {
 
 module.exports = "<h1>Fixer API</h1>";
 
 /***/ }),
-/* 217 */
+/* 194 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56986,7 +54308,7 @@ RatesService.$inject = [];
 exports.default = RatesService;
 
 /***/ }),
-/* 218 */
+/* 195 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -56994,44 +54316,44 @@ exports.default = RatesService;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var angular = __webpack_require__(0);
-var nav_module_1 = __webpack_require__(219);
-var footer_module_1 = __webpack_require__(224);
-var highlighter_module_1 = __webpack_require__(229);
-var logger_module_1 = __webpack_require__(412);
-var loader_module_1 = __webpack_require__(417);
+var nav_module_1 = __webpack_require__(196);
+var footer_module_1 = __webpack_require__(201);
+var highlighter_module_1 = __webpack_require__(206);
+var logger_module_1 = __webpack_require__(389);
+var loader_module_1 = __webpack_require__(394);
 var CommonModule = angular.module('app.common', [nav_module_1.default.name, footer_module_1.default.name, highlighter_module_1.default.name, logger_module_1.default.name, loader_module_1.default.name]);
 exports.default = CommonModule;
 
 /***/ }),
-/* 219 */
+/* 196 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(220);
+__webpack_require__(197);
 var angular = __webpack_require__(0);
-var nav_component_1 = __webpack_require__(221);
+var nav_component_1 = __webpack_require__(198);
 var NavModule = angular.module('app.common.nav', []).component('footer', nav_component_1.default);
 exports.default = NavModule;
 
 /***/ }),
-/* 220 */
+/* 197 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 221 */
+/* 198 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var nav_controller_1 = __webpack_require__(222);
-var template = __webpack_require__(223);
+var nav_controller_1 = __webpack_require__(199);
+var template = __webpack_require__(200);
 var NavComponent = {
     template: template,
     controller: nav_controller_1.default
@@ -57039,7 +54361,7 @@ var NavComponent = {
 exports.default = NavComponent;
 
 /***/ }),
-/* 222 */
+/* 199 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -57056,41 +54378,41 @@ var NavController = function NavController() {
 exports.default = NavController;
 
 /***/ }),
-/* 223 */
+/* 200 */
 /***/ (function(module, exports) {
 
 module.exports = "";
 
 /***/ }),
-/* 224 */
+/* 201 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(225);
+__webpack_require__(202);
 var angular = __webpack_require__(0);
-var footer_component_1 = __webpack_require__(226);
+var footer_component_1 = __webpack_require__(203);
 var FooterModule = angular.module('app.common.footer', []).component('footer', footer_component_1.default);
 exports.default = FooterModule;
 
 /***/ }),
-/* 225 */
+/* 202 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 226 */
+/* 203 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var footer_controller_1 = __webpack_require__(227);
-var template = __webpack_require__(228);
+var footer_controller_1 = __webpack_require__(204);
+var template = __webpack_require__(205);
 var FooterComponent = {
     template: template,
     controller: footer_controller_1.default
@@ -57098,7 +54420,7 @@ var FooterComponent = {
 exports.default = FooterComponent;
 
 /***/ }),
-/* 227 */
+/* 204 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -57115,41 +54437,41 @@ var FooterController = function FooterController() {
 exports.default = FooterController;
 
 /***/ }),
-/* 228 */
+/* 205 */
 /***/ (function(module, exports) {
 
 module.exports = "";
 
 /***/ }),
-/* 229 */
+/* 206 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(230);
+__webpack_require__(207);
 var angular = __webpack_require__(0);
-var highlighter_component_1 = __webpack_require__(231);
+var highlighter_component_1 = __webpack_require__(208);
 var HighlighterModule = angular.module('app.common.highlighter', []).component('highlighter', highlighter_component_1.default);
 exports.default = HighlighterModule;
 
 /***/ }),
-/* 230 */
+/* 207 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 231 */
+/* 208 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var highlighter_controller_1 = __webpack_require__(232);
-var template = __webpack_require__(411);
+var highlighter_controller_1 = __webpack_require__(209);
+var template = __webpack_require__(388);
 var HighlighterComponent = {
     template: template,
     controller: highlighter_controller_1.default
@@ -57157,7 +54479,7 @@ var HighlighterComponent = {
 exports.default = HighlighterComponent;
 
 /***/ }),
-/* 232 */
+/* 209 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -57166,8 +54488,8 @@ exports.default = HighlighterComponent;
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var hljs = __webpack_require__(233);
-var $ = __webpack_require__(28);
+var hljs = __webpack_require__(210);
+var $ = __webpack_require__(27);
 
 var HighlighterController = function HighlighterController() {
     _classCallCheck(this, HighlighterController);
@@ -57182,192 +54504,192 @@ var HighlighterController = function HighlighterController() {
 exports.default = HighlighterController;
 
 /***/ }),
-/* 233 */
+/* 210 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var hljs = __webpack_require__(234);
+var hljs = __webpack_require__(211);
 
-hljs.registerLanguage('1c', __webpack_require__(235));
-hljs.registerLanguage('abnf', __webpack_require__(236));
-hljs.registerLanguage('accesslog', __webpack_require__(237));
-hljs.registerLanguage('actionscript', __webpack_require__(238));
-hljs.registerLanguage('ada', __webpack_require__(239));
-hljs.registerLanguage('apache', __webpack_require__(240));
-hljs.registerLanguage('applescript', __webpack_require__(241));
-hljs.registerLanguage('cpp', __webpack_require__(242));
-hljs.registerLanguage('arduino', __webpack_require__(243));
-hljs.registerLanguage('armasm', __webpack_require__(244));
-hljs.registerLanguage('xml', __webpack_require__(245));
-hljs.registerLanguage('asciidoc', __webpack_require__(246));
-hljs.registerLanguage('aspectj', __webpack_require__(247));
-hljs.registerLanguage('autohotkey', __webpack_require__(248));
-hljs.registerLanguage('autoit', __webpack_require__(249));
-hljs.registerLanguage('avrasm', __webpack_require__(250));
-hljs.registerLanguage('awk', __webpack_require__(251));
-hljs.registerLanguage('axapta', __webpack_require__(252));
-hljs.registerLanguage('bash', __webpack_require__(253));
-hljs.registerLanguage('basic', __webpack_require__(254));
-hljs.registerLanguage('bnf', __webpack_require__(255));
-hljs.registerLanguage('brainfuck', __webpack_require__(256));
-hljs.registerLanguage('cal', __webpack_require__(257));
-hljs.registerLanguage('capnproto', __webpack_require__(258));
-hljs.registerLanguage('ceylon', __webpack_require__(259));
-hljs.registerLanguage('clean', __webpack_require__(260));
-hljs.registerLanguage('clojure', __webpack_require__(261));
-hljs.registerLanguage('clojure-repl', __webpack_require__(262));
-hljs.registerLanguage('cmake', __webpack_require__(263));
-hljs.registerLanguage('coffeescript', __webpack_require__(264));
-hljs.registerLanguage('coq', __webpack_require__(265));
-hljs.registerLanguage('cos', __webpack_require__(266));
-hljs.registerLanguage('crmsh', __webpack_require__(267));
-hljs.registerLanguage('crystal', __webpack_require__(268));
-hljs.registerLanguage('cs', __webpack_require__(269));
-hljs.registerLanguage('csp', __webpack_require__(270));
-hljs.registerLanguage('css', __webpack_require__(271));
-hljs.registerLanguage('d', __webpack_require__(272));
-hljs.registerLanguage('markdown', __webpack_require__(273));
-hljs.registerLanguage('dart', __webpack_require__(274));
-hljs.registerLanguage('delphi', __webpack_require__(275));
-hljs.registerLanguage('diff', __webpack_require__(276));
-hljs.registerLanguage('django', __webpack_require__(277));
-hljs.registerLanguage('dns', __webpack_require__(278));
-hljs.registerLanguage('dockerfile', __webpack_require__(279));
-hljs.registerLanguage('dos', __webpack_require__(280));
-hljs.registerLanguage('dsconfig', __webpack_require__(281));
-hljs.registerLanguage('dts', __webpack_require__(282));
-hljs.registerLanguage('dust', __webpack_require__(283));
-hljs.registerLanguage('ebnf', __webpack_require__(284));
-hljs.registerLanguage('elixir', __webpack_require__(285));
-hljs.registerLanguage('elm', __webpack_require__(286));
-hljs.registerLanguage('ruby', __webpack_require__(287));
-hljs.registerLanguage('erb', __webpack_require__(288));
-hljs.registerLanguage('erlang-repl', __webpack_require__(289));
-hljs.registerLanguage('erlang', __webpack_require__(290));
-hljs.registerLanguage('excel', __webpack_require__(291));
-hljs.registerLanguage('fix', __webpack_require__(292));
-hljs.registerLanguage('flix', __webpack_require__(293));
-hljs.registerLanguage('fortran', __webpack_require__(294));
-hljs.registerLanguage('fsharp', __webpack_require__(295));
-hljs.registerLanguage('gams', __webpack_require__(296));
-hljs.registerLanguage('gauss', __webpack_require__(297));
-hljs.registerLanguage('gcode', __webpack_require__(298));
-hljs.registerLanguage('gherkin', __webpack_require__(299));
-hljs.registerLanguage('glsl', __webpack_require__(300));
-hljs.registerLanguage('go', __webpack_require__(301));
-hljs.registerLanguage('golo', __webpack_require__(302));
-hljs.registerLanguage('gradle', __webpack_require__(303));
-hljs.registerLanguage('groovy', __webpack_require__(304));
-hljs.registerLanguage('haml', __webpack_require__(305));
-hljs.registerLanguage('handlebars', __webpack_require__(306));
-hljs.registerLanguage('haskell', __webpack_require__(307));
-hljs.registerLanguage('haxe', __webpack_require__(308));
-hljs.registerLanguage('hsp', __webpack_require__(309));
-hljs.registerLanguage('htmlbars', __webpack_require__(310));
-hljs.registerLanguage('http', __webpack_require__(311));
-hljs.registerLanguage('hy', __webpack_require__(312));
-hljs.registerLanguage('inform7', __webpack_require__(313));
-hljs.registerLanguage('ini', __webpack_require__(314));
-hljs.registerLanguage('irpf90', __webpack_require__(315));
-hljs.registerLanguage('java', __webpack_require__(316));
-hljs.registerLanguage('javascript', __webpack_require__(317));
-hljs.registerLanguage('jboss-cli', __webpack_require__(318));
-hljs.registerLanguage('json', __webpack_require__(319));
-hljs.registerLanguage('julia', __webpack_require__(320));
-hljs.registerLanguage('julia-repl', __webpack_require__(321));
-hljs.registerLanguage('kotlin', __webpack_require__(322));
-hljs.registerLanguage('lasso', __webpack_require__(323));
-hljs.registerLanguage('ldif', __webpack_require__(324));
-hljs.registerLanguage('leaf', __webpack_require__(325));
-hljs.registerLanguage('less', __webpack_require__(326));
-hljs.registerLanguage('lisp', __webpack_require__(327));
-hljs.registerLanguage('livecodeserver', __webpack_require__(328));
-hljs.registerLanguage('livescript', __webpack_require__(329));
-hljs.registerLanguage('llvm', __webpack_require__(330));
-hljs.registerLanguage('lsl', __webpack_require__(331));
-hljs.registerLanguage('lua', __webpack_require__(332));
-hljs.registerLanguage('makefile', __webpack_require__(333));
-hljs.registerLanguage('mathematica', __webpack_require__(334));
-hljs.registerLanguage('matlab', __webpack_require__(335));
-hljs.registerLanguage('maxima', __webpack_require__(336));
-hljs.registerLanguage('mel', __webpack_require__(337));
-hljs.registerLanguage('mercury', __webpack_require__(338));
-hljs.registerLanguage('mipsasm', __webpack_require__(339));
-hljs.registerLanguage('mizar', __webpack_require__(340));
-hljs.registerLanguage('perl', __webpack_require__(341));
-hljs.registerLanguage('mojolicious', __webpack_require__(342));
-hljs.registerLanguage('monkey', __webpack_require__(343));
-hljs.registerLanguage('moonscript', __webpack_require__(344));
-hljs.registerLanguage('n1ql', __webpack_require__(345));
-hljs.registerLanguage('nginx', __webpack_require__(346));
-hljs.registerLanguage('nimrod', __webpack_require__(347));
-hljs.registerLanguage('nix', __webpack_require__(348));
-hljs.registerLanguage('nsis', __webpack_require__(349));
-hljs.registerLanguage('objectivec', __webpack_require__(350));
-hljs.registerLanguage('ocaml', __webpack_require__(351));
-hljs.registerLanguage('openscad', __webpack_require__(352));
-hljs.registerLanguage('oxygene', __webpack_require__(353));
-hljs.registerLanguage('parser3', __webpack_require__(354));
-hljs.registerLanguage('pf', __webpack_require__(355));
-hljs.registerLanguage('php', __webpack_require__(356));
-hljs.registerLanguage('pony', __webpack_require__(357));
-hljs.registerLanguage('powershell', __webpack_require__(358));
-hljs.registerLanguage('processing', __webpack_require__(359));
-hljs.registerLanguage('profile', __webpack_require__(360));
-hljs.registerLanguage('prolog', __webpack_require__(361));
-hljs.registerLanguage('protobuf', __webpack_require__(362));
-hljs.registerLanguage('puppet', __webpack_require__(363));
-hljs.registerLanguage('purebasic', __webpack_require__(364));
-hljs.registerLanguage('python', __webpack_require__(365));
-hljs.registerLanguage('q', __webpack_require__(366));
-hljs.registerLanguage('qml', __webpack_require__(367));
-hljs.registerLanguage('r', __webpack_require__(368));
-hljs.registerLanguage('rib', __webpack_require__(369));
-hljs.registerLanguage('roboconf', __webpack_require__(370));
-hljs.registerLanguage('routeros', __webpack_require__(371));
-hljs.registerLanguage('rsl', __webpack_require__(372));
-hljs.registerLanguage('ruleslanguage', __webpack_require__(373));
-hljs.registerLanguage('rust', __webpack_require__(374));
-hljs.registerLanguage('scala', __webpack_require__(375));
-hljs.registerLanguage('scheme', __webpack_require__(376));
-hljs.registerLanguage('scilab', __webpack_require__(377));
-hljs.registerLanguage('scss', __webpack_require__(378));
-hljs.registerLanguage('shell', __webpack_require__(379));
-hljs.registerLanguage('smali', __webpack_require__(380));
-hljs.registerLanguage('smalltalk', __webpack_require__(381));
-hljs.registerLanguage('sml', __webpack_require__(382));
-hljs.registerLanguage('sqf', __webpack_require__(383));
-hljs.registerLanguage('sql', __webpack_require__(384));
-hljs.registerLanguage('stan', __webpack_require__(385));
-hljs.registerLanguage('stata', __webpack_require__(386));
-hljs.registerLanguage('step21', __webpack_require__(387));
-hljs.registerLanguage('stylus', __webpack_require__(388));
-hljs.registerLanguage('subunit', __webpack_require__(389));
-hljs.registerLanguage('swift', __webpack_require__(390));
-hljs.registerLanguage('taggerscript', __webpack_require__(391));
-hljs.registerLanguage('yaml', __webpack_require__(392));
-hljs.registerLanguage('tap', __webpack_require__(393));
-hljs.registerLanguage('tcl', __webpack_require__(394));
-hljs.registerLanguage('tex', __webpack_require__(395));
-hljs.registerLanguage('thrift', __webpack_require__(396));
-hljs.registerLanguage('tp', __webpack_require__(397));
-hljs.registerLanguage('twig', __webpack_require__(398));
-hljs.registerLanguage('typescript', __webpack_require__(399));
-hljs.registerLanguage('vala', __webpack_require__(400));
-hljs.registerLanguage('vbnet', __webpack_require__(401));
-hljs.registerLanguage('vbscript', __webpack_require__(402));
-hljs.registerLanguage('vbscript-html', __webpack_require__(403));
-hljs.registerLanguage('verilog', __webpack_require__(404));
-hljs.registerLanguage('vhdl', __webpack_require__(405));
-hljs.registerLanguage('vim', __webpack_require__(406));
-hljs.registerLanguage('x86asm', __webpack_require__(407));
-hljs.registerLanguage('xl', __webpack_require__(408));
-hljs.registerLanguage('xquery', __webpack_require__(409));
-hljs.registerLanguage('zephir', __webpack_require__(410));
+hljs.registerLanguage('1c', __webpack_require__(212));
+hljs.registerLanguage('abnf', __webpack_require__(213));
+hljs.registerLanguage('accesslog', __webpack_require__(214));
+hljs.registerLanguage('actionscript', __webpack_require__(215));
+hljs.registerLanguage('ada', __webpack_require__(216));
+hljs.registerLanguage('apache', __webpack_require__(217));
+hljs.registerLanguage('applescript', __webpack_require__(218));
+hljs.registerLanguage('cpp', __webpack_require__(219));
+hljs.registerLanguage('arduino', __webpack_require__(220));
+hljs.registerLanguage('armasm', __webpack_require__(221));
+hljs.registerLanguage('xml', __webpack_require__(222));
+hljs.registerLanguage('asciidoc', __webpack_require__(223));
+hljs.registerLanguage('aspectj', __webpack_require__(224));
+hljs.registerLanguage('autohotkey', __webpack_require__(225));
+hljs.registerLanguage('autoit', __webpack_require__(226));
+hljs.registerLanguage('avrasm', __webpack_require__(227));
+hljs.registerLanguage('awk', __webpack_require__(228));
+hljs.registerLanguage('axapta', __webpack_require__(229));
+hljs.registerLanguage('bash', __webpack_require__(230));
+hljs.registerLanguage('basic', __webpack_require__(231));
+hljs.registerLanguage('bnf', __webpack_require__(232));
+hljs.registerLanguage('brainfuck', __webpack_require__(233));
+hljs.registerLanguage('cal', __webpack_require__(234));
+hljs.registerLanguage('capnproto', __webpack_require__(235));
+hljs.registerLanguage('ceylon', __webpack_require__(236));
+hljs.registerLanguage('clean', __webpack_require__(237));
+hljs.registerLanguage('clojure', __webpack_require__(238));
+hljs.registerLanguage('clojure-repl', __webpack_require__(239));
+hljs.registerLanguage('cmake', __webpack_require__(240));
+hljs.registerLanguage('coffeescript', __webpack_require__(241));
+hljs.registerLanguage('coq', __webpack_require__(242));
+hljs.registerLanguage('cos', __webpack_require__(243));
+hljs.registerLanguage('crmsh', __webpack_require__(244));
+hljs.registerLanguage('crystal', __webpack_require__(245));
+hljs.registerLanguage('cs', __webpack_require__(246));
+hljs.registerLanguage('csp', __webpack_require__(247));
+hljs.registerLanguage('css', __webpack_require__(248));
+hljs.registerLanguage('d', __webpack_require__(249));
+hljs.registerLanguage('markdown', __webpack_require__(250));
+hljs.registerLanguage('dart', __webpack_require__(251));
+hljs.registerLanguage('delphi', __webpack_require__(252));
+hljs.registerLanguage('diff', __webpack_require__(253));
+hljs.registerLanguage('django', __webpack_require__(254));
+hljs.registerLanguage('dns', __webpack_require__(255));
+hljs.registerLanguage('dockerfile', __webpack_require__(256));
+hljs.registerLanguage('dos', __webpack_require__(257));
+hljs.registerLanguage('dsconfig', __webpack_require__(258));
+hljs.registerLanguage('dts', __webpack_require__(259));
+hljs.registerLanguage('dust', __webpack_require__(260));
+hljs.registerLanguage('ebnf', __webpack_require__(261));
+hljs.registerLanguage('elixir', __webpack_require__(262));
+hljs.registerLanguage('elm', __webpack_require__(263));
+hljs.registerLanguage('ruby', __webpack_require__(264));
+hljs.registerLanguage('erb', __webpack_require__(265));
+hljs.registerLanguage('erlang-repl', __webpack_require__(266));
+hljs.registerLanguage('erlang', __webpack_require__(267));
+hljs.registerLanguage('excel', __webpack_require__(268));
+hljs.registerLanguage('fix', __webpack_require__(269));
+hljs.registerLanguage('flix', __webpack_require__(270));
+hljs.registerLanguage('fortran', __webpack_require__(271));
+hljs.registerLanguage('fsharp', __webpack_require__(272));
+hljs.registerLanguage('gams', __webpack_require__(273));
+hljs.registerLanguage('gauss', __webpack_require__(274));
+hljs.registerLanguage('gcode', __webpack_require__(275));
+hljs.registerLanguage('gherkin', __webpack_require__(276));
+hljs.registerLanguage('glsl', __webpack_require__(277));
+hljs.registerLanguage('go', __webpack_require__(278));
+hljs.registerLanguage('golo', __webpack_require__(279));
+hljs.registerLanguage('gradle', __webpack_require__(280));
+hljs.registerLanguage('groovy', __webpack_require__(281));
+hljs.registerLanguage('haml', __webpack_require__(282));
+hljs.registerLanguage('handlebars', __webpack_require__(283));
+hljs.registerLanguage('haskell', __webpack_require__(284));
+hljs.registerLanguage('haxe', __webpack_require__(285));
+hljs.registerLanguage('hsp', __webpack_require__(286));
+hljs.registerLanguage('htmlbars', __webpack_require__(287));
+hljs.registerLanguage('http', __webpack_require__(288));
+hljs.registerLanguage('hy', __webpack_require__(289));
+hljs.registerLanguage('inform7', __webpack_require__(290));
+hljs.registerLanguage('ini', __webpack_require__(291));
+hljs.registerLanguage('irpf90', __webpack_require__(292));
+hljs.registerLanguage('java', __webpack_require__(293));
+hljs.registerLanguage('javascript', __webpack_require__(294));
+hljs.registerLanguage('jboss-cli', __webpack_require__(295));
+hljs.registerLanguage('json', __webpack_require__(296));
+hljs.registerLanguage('julia', __webpack_require__(297));
+hljs.registerLanguage('julia-repl', __webpack_require__(298));
+hljs.registerLanguage('kotlin', __webpack_require__(299));
+hljs.registerLanguage('lasso', __webpack_require__(300));
+hljs.registerLanguage('ldif', __webpack_require__(301));
+hljs.registerLanguage('leaf', __webpack_require__(302));
+hljs.registerLanguage('less', __webpack_require__(303));
+hljs.registerLanguage('lisp', __webpack_require__(304));
+hljs.registerLanguage('livecodeserver', __webpack_require__(305));
+hljs.registerLanguage('livescript', __webpack_require__(306));
+hljs.registerLanguage('llvm', __webpack_require__(307));
+hljs.registerLanguage('lsl', __webpack_require__(308));
+hljs.registerLanguage('lua', __webpack_require__(309));
+hljs.registerLanguage('makefile', __webpack_require__(310));
+hljs.registerLanguage('mathematica', __webpack_require__(311));
+hljs.registerLanguage('matlab', __webpack_require__(312));
+hljs.registerLanguage('maxima', __webpack_require__(313));
+hljs.registerLanguage('mel', __webpack_require__(314));
+hljs.registerLanguage('mercury', __webpack_require__(315));
+hljs.registerLanguage('mipsasm', __webpack_require__(316));
+hljs.registerLanguage('mizar', __webpack_require__(317));
+hljs.registerLanguage('perl', __webpack_require__(318));
+hljs.registerLanguage('mojolicious', __webpack_require__(319));
+hljs.registerLanguage('monkey', __webpack_require__(320));
+hljs.registerLanguage('moonscript', __webpack_require__(321));
+hljs.registerLanguage('n1ql', __webpack_require__(322));
+hljs.registerLanguage('nginx', __webpack_require__(323));
+hljs.registerLanguage('nimrod', __webpack_require__(324));
+hljs.registerLanguage('nix', __webpack_require__(325));
+hljs.registerLanguage('nsis', __webpack_require__(326));
+hljs.registerLanguage('objectivec', __webpack_require__(327));
+hljs.registerLanguage('ocaml', __webpack_require__(328));
+hljs.registerLanguage('openscad', __webpack_require__(329));
+hljs.registerLanguage('oxygene', __webpack_require__(330));
+hljs.registerLanguage('parser3', __webpack_require__(331));
+hljs.registerLanguage('pf', __webpack_require__(332));
+hljs.registerLanguage('php', __webpack_require__(333));
+hljs.registerLanguage('pony', __webpack_require__(334));
+hljs.registerLanguage('powershell', __webpack_require__(335));
+hljs.registerLanguage('processing', __webpack_require__(336));
+hljs.registerLanguage('profile', __webpack_require__(337));
+hljs.registerLanguage('prolog', __webpack_require__(338));
+hljs.registerLanguage('protobuf', __webpack_require__(339));
+hljs.registerLanguage('puppet', __webpack_require__(340));
+hljs.registerLanguage('purebasic', __webpack_require__(341));
+hljs.registerLanguage('python', __webpack_require__(342));
+hljs.registerLanguage('q', __webpack_require__(343));
+hljs.registerLanguage('qml', __webpack_require__(344));
+hljs.registerLanguage('r', __webpack_require__(345));
+hljs.registerLanguage('rib', __webpack_require__(346));
+hljs.registerLanguage('roboconf', __webpack_require__(347));
+hljs.registerLanguage('routeros', __webpack_require__(348));
+hljs.registerLanguage('rsl', __webpack_require__(349));
+hljs.registerLanguage('ruleslanguage', __webpack_require__(350));
+hljs.registerLanguage('rust', __webpack_require__(351));
+hljs.registerLanguage('scala', __webpack_require__(352));
+hljs.registerLanguage('scheme', __webpack_require__(353));
+hljs.registerLanguage('scilab', __webpack_require__(354));
+hljs.registerLanguage('scss', __webpack_require__(355));
+hljs.registerLanguage('shell', __webpack_require__(356));
+hljs.registerLanguage('smali', __webpack_require__(357));
+hljs.registerLanguage('smalltalk', __webpack_require__(358));
+hljs.registerLanguage('sml', __webpack_require__(359));
+hljs.registerLanguage('sqf', __webpack_require__(360));
+hljs.registerLanguage('sql', __webpack_require__(361));
+hljs.registerLanguage('stan', __webpack_require__(362));
+hljs.registerLanguage('stata', __webpack_require__(363));
+hljs.registerLanguage('step21', __webpack_require__(364));
+hljs.registerLanguage('stylus', __webpack_require__(365));
+hljs.registerLanguage('subunit', __webpack_require__(366));
+hljs.registerLanguage('swift', __webpack_require__(367));
+hljs.registerLanguage('taggerscript', __webpack_require__(368));
+hljs.registerLanguage('yaml', __webpack_require__(369));
+hljs.registerLanguage('tap', __webpack_require__(370));
+hljs.registerLanguage('tcl', __webpack_require__(371));
+hljs.registerLanguage('tex', __webpack_require__(372));
+hljs.registerLanguage('thrift', __webpack_require__(373));
+hljs.registerLanguage('tp', __webpack_require__(374));
+hljs.registerLanguage('twig', __webpack_require__(375));
+hljs.registerLanguage('typescript', __webpack_require__(376));
+hljs.registerLanguage('vala', __webpack_require__(377));
+hljs.registerLanguage('vbnet', __webpack_require__(378));
+hljs.registerLanguage('vbscript', __webpack_require__(379));
+hljs.registerLanguage('vbscript-html', __webpack_require__(380));
+hljs.registerLanguage('verilog', __webpack_require__(381));
+hljs.registerLanguage('vhdl', __webpack_require__(382));
+hljs.registerLanguage('vim', __webpack_require__(383));
+hljs.registerLanguage('x86asm', __webpack_require__(384));
+hljs.registerLanguage('xl', __webpack_require__(385));
+hljs.registerLanguage('xquery', __webpack_require__(386));
+hljs.registerLanguage('zephir', __webpack_require__(387));
 
 module.exports = hljs;
 
 /***/ }),
-/* 234 */
+/* 211 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -58189,7 +55511,7 @@ https://highlightjs.org/
 
 
 /***/ }),
-/* 235 */
+/* 212 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs){
@@ -58703,7 +56025,7 @@ module.exports = function(hljs){
 };
 
 /***/ }),
-/* 236 */
+/* 213 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -58778,7 +56100,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 237 */
+/* 214 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -58820,7 +56142,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 238 */
+/* 215 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -58898,7 +56220,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 239 */
+/* 216 */
 /***/ (function(module, exports) {
 
 module.exports = // We try to support full Ada2012
@@ -59075,7 +56397,7 @@ function(hljs) {
 };
 
 /***/ }),
-/* 240 */
+/* 217 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -59125,7 +56447,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 241 */
+/* 218 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -59215,7 +56537,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 242 */
+/* 219 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -59394,7 +56716,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 243 */
+/* 220 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -59498,7 +56820,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 244 */
+/* 221 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -59594,7 +56916,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 245 */
+/* 222 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -59701,7 +57023,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 246 */
+/* 223 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -59893,7 +57215,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 247 */
+/* 224 */
 /***/ (function(module, exports) {
 
 module.exports = function (hljs) {
@@ -60042,7 +57364,7 @@ module.exports = function (hljs) {
 };
 
 /***/ }),
-/* 248 */
+/* 225 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60105,7 +57427,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 249 */
+/* 226 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60245,7 +57567,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 250 */
+/* 227 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60311,7 +57633,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 251 */
+/* 228 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60368,7 +57690,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 252 */
+/* 229 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60403,7 +57725,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 253 */
+/* 230 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60482,7 +57804,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 254 */
+/* 231 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60537,7 +57859,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 255 */
+/* 232 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs){
@@ -60570,7 +57892,7 @@ module.exports = function(hljs){
 };
 
 /***/ }),
-/* 256 */
+/* 233 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs){
@@ -60611,7 +57933,7 @@ module.exports = function(hljs){
 };
 
 /***/ }),
-/* 257 */
+/* 234 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60695,7 +58017,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 258 */
+/* 235 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60748,7 +58070,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 259 */
+/* 236 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60819,7 +58141,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 260 */
+/* 237 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60848,7 +58170,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 261 */
+/* 238 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60948,7 +58270,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 262 */
+/* 239 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -60967,7 +58289,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 263 */
+/* 240 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -61009,7 +58331,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 264 */
+/* 241 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -61159,7 +58481,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 265 */
+/* 242 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -61230,7 +58552,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 266 */
+/* 243 */
 /***/ (function(module, exports) {
 
 module.exports = function cos (hljs) {
@@ -61358,7 +58680,7 @@ module.exports = function cos (hljs) {
 };
 
 /***/ }),
-/* 267 */
+/* 244 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -61456,7 +58778,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 268 */
+/* 245 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -61654,7 +58976,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 269 */
+/* 246 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -61835,7 +59157,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 270 */
+/* 247 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -61861,7 +59183,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 271 */
+/* 248 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -61970,7 +59292,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 272 */
+/* 249 */
 /***/ (function(module, exports) {
 
 module.exports = /**
@@ -62232,7 +59554,7 @@ function(hljs) {
 };
 
 /***/ }),
-/* 273 */
+/* 250 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -62344,7 +59666,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 274 */
+/* 251 */
 /***/ (function(module, exports) {
 
 module.exports = function (hljs) {
@@ -62449,7 +59771,7 @@ module.exports = function (hljs) {
 };
 
 /***/ }),
-/* 275 */
+/* 252 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -62522,7 +59844,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 276 */
+/* 253 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -62566,7 +59888,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 277 */
+/* 254 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -62634,7 +59956,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 278 */
+/* 255 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -62667,7 +59989,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 279 */
+/* 256 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -62693,7 +60015,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 280 */
+/* 257 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -62749,7 +60071,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 281 */
+/* 258 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -62800,7 +60122,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 282 */
+/* 259 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -62928,7 +60250,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 283 */
+/* 260 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -62964,7 +60286,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 284 */
+/* 261 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -63001,7 +60323,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 285 */
+/* 262 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -63102,7 +60424,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 286 */
+/* 263 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -63190,7 +60512,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 287 */
+/* 264 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -63371,7 +60693,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 288 */
+/* 265 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -63390,7 +60712,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 289 */
+/* 266 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -63440,7 +60762,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 290 */
+/* 267 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -63590,7 +60912,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 291 */
+/* 268 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -63642,7 +60964,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 292 */
+/* 269 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -63675,7 +60997,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 293 */
+/* 270 */
 /***/ (function(module, exports) {
 
 module.exports = function (hljs) {
@@ -63724,7 +61046,7 @@ module.exports = function (hljs) {
 };
 
 /***/ }),
-/* 294 */
+/* 271 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -63799,7 +61121,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 295 */
+/* 272 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -63862,7 +61184,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 296 */
+/* 273 */
 /***/ (function(module, exports) {
 
 module.exports = function (hljs) {
@@ -64020,7 +61342,7 @@ module.exports = function (hljs) {
 };
 
 /***/ }),
-/* 297 */
+/* 274 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -64248,7 +61570,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 298 */
+/* 275 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -64319,7 +61641,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 299 */
+/* 276 */
 /***/ (function(module, exports) {
 
 module.exports = function (hljs) {
@@ -64360,7 +61682,7 @@ module.exports = function (hljs) {
 };
 
 /***/ }),
-/* 300 */
+/* 277 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -64481,7 +61803,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 301 */
+/* 278 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -64539,7 +61861,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 302 */
+/* 279 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -64566,7 +61888,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 303 */
+/* 280 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -64605,7 +61927,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 304 */
+/* 281 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -64703,7 +62025,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 305 */
+/* 282 */
 /***/ (function(module, exports) {
 
 module.exports = // TODO support filter tags like :javascript, support inline HTML
@@ -64814,7 +62136,7 @@ function(hljs) {
 };
 
 /***/ }),
-/* 306 */
+/* 283 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -64852,7 +62174,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 307 */
+/* 284 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -64978,7 +62300,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 308 */
+/* 285 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -65094,7 +62416,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 309 */
+/* 286 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -65144,7 +62466,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 310 */
+/* 287 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -65219,7 +62541,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 311 */
+/* 288 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -65264,7 +62586,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 312 */
+/* 289 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -65370,7 +62692,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 313 */
+/* 290 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -65431,7 +62753,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 314 */
+/* 291 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -65501,7 +62823,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 315 */
+/* 292 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -65581,7 +62903,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 316 */
+/* 293 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -65693,7 +63015,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 317 */
+/* 294 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -65868,7 +63190,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 318 */
+/* 295 */
 /***/ (function(module, exports) {
 
 module.exports = function (hljs) {
@@ -65919,7 +63241,7 @@ module.exports = function (hljs) {
 };
 
 /***/ }),
-/* 319 */
+/* 296 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -65960,7 +63282,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 320 */
+/* 297 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -66126,7 +63448,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 321 */
+/* 298 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -66154,7 +63476,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 322 */
+/* 299 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -66332,7 +63654,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 323 */
+/* 300 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -66499,7 +63821,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 324 */
+/* 301 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -66526,7 +63848,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 325 */
+/* 302 */
 /***/ (function(module, exports) {
 
 module.exports = function (hljs) {
@@ -66570,7 +63892,7 @@ module.exports = function (hljs) {
 };
 
 /***/ }),
-/* 326 */
+/* 303 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -66714,7 +64036,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 327 */
+/* 304 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -66821,7 +64143,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 328 */
+/* 305 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -66982,7 +64304,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 329 */
+/* 306 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -67135,7 +64457,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 330 */
+/* 307 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -67228,7 +64550,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 331 */
+/* 308 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -67315,7 +64637,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 332 */
+/* 309 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -67385,7 +64707,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 333 */
+/* 310 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -67470,7 +64792,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 334 */
+/* 311 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -67532,7 +64854,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 335 */
+/* 312 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -67624,7 +64946,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 336 */
+/* 313 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -68034,7 +65356,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 337 */
+/* 314 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -68263,7 +65585,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 338 */
+/* 315 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -68349,7 +65671,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 339 */
+/* 316 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -68439,7 +65761,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 340 */
+/* 317 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -68462,7 +65784,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 341 */
+/* 318 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -68623,7 +65945,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 342 */
+/* 319 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -68652,7 +65974,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 343 */
+/* 320 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -68731,7 +66053,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 344 */
+/* 321 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -68847,7 +66169,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 345 */
+/* 322 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -68920,7 +66242,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 346 */
+/* 323 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69017,7 +66339,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 347 */
+/* 324 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69076,7 +66398,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 348 */
+/* 325 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69129,7 +66451,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 349 */
+/* 326 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69239,7 +66561,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 350 */
+/* 327 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69334,7 +66656,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 351 */
+/* 328 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69409,7 +66731,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 352 */
+/* 329 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69470,7 +66792,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 353 */
+/* 330 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69544,7 +66866,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 354 */
+/* 331 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69596,7 +66918,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 355 */
+/* 332 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69652,7 +66974,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 356 */
+/* 333 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69783,7 +67105,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 357 */
+/* 334 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69878,7 +67200,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 358 */
+/* 335 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -69963,7 +67285,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 359 */
+/* 336 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -70015,7 +67337,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 360 */
+/* 337 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -70049,7 +67371,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 361 */
+/* 338 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -70141,7 +67463,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 362 */
+/* 339 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -70181,7 +67503,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 363 */
+/* 340 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -70300,7 +67622,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 364 */
+/* 341 */
 /***/ (function(module, exports) {
 
 module.exports = // Base deafult colors in PB IDE: background: #FFFFDF; foreground: #000000;
@@ -70362,7 +67684,7 @@ function(hljs) {
 };
 
 /***/ }),
-/* 365 */
+/* 342 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -70482,7 +67804,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 366 */
+/* 343 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -70509,7 +67831,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 367 */
+/* 344 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -70682,7 +68004,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 368 */
+/* 345 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -70756,7 +68078,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 369 */
+/* 346 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -70787,7 +68109,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 370 */
+/* 347 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -70858,7 +68180,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 371 */
+/* 348 */
 /***/ (function(module, exports) {
 
 module.exports = // Colors from RouterOS terminal:
@@ -71021,7 +68343,7 @@ function(hljs) {
 };
 
 /***/ }),
-/* 372 */
+/* 349 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -71061,7 +68383,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 373 */
+/* 350 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -71126,7 +68448,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 374 */
+/* 351 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -71238,7 +68560,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 375 */
+/* 352 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -71357,7 +68679,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 376 */
+/* 353 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -71505,7 +68827,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 377 */
+/* 354 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -71563,7 +68885,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 378 */
+/* 355 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -71665,7 +68987,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 379 */
+/* 356 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -71684,7 +69006,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 380 */
+/* 357 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -71744,7 +69066,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 381 */
+/* 358 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -71798,7 +69120,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 382 */
+/* 359 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -71868,7 +69190,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 383 */
+/* 360 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -72243,7 +69565,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 384 */
+/* 361 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -72407,7 +69729,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 385 */
+/* 362 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -72494,7 +69816,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 386 */
+/* 363 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -72536,7 +69858,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 387 */
+/* 364 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -72587,7 +69909,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 388 */
+/* 365 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73045,7 +70367,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 389 */
+/* 366 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73083,7 +70405,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 390 */
+/* 367 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73204,7 +70526,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 391 */
+/* 368 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73252,7 +70574,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 392 */
+/* 369 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73344,7 +70666,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 393 */
+/* 370 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73384,7 +70706,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 394 */
+/* 371 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73449,7 +70771,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 395 */
+/* 372 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73515,7 +70837,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 396 */
+/* 373 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73554,7 +70876,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 397 */
+/* 374 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73642,7 +70964,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 398 */
+/* 375 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73712,7 +71034,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 399 */
+/* 376 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73872,7 +71194,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 400 */
+/* 377 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73926,7 +71248,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 401 */
+/* 378 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -73986,7 +71308,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 402 */
+/* 379 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -74029,7 +71351,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 403 */
+/* 380 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -74045,7 +71367,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 404 */
+/* 381 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -74148,7 +71470,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 405 */
+/* 382 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -74213,7 +71535,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 406 */
+/* 383 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -74323,7 +71645,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 407 */
+/* 384 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -74463,7 +71785,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 408 */
+/* 385 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -74540,7 +71862,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 409 */
+/* 386 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -74615,7 +71937,7 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 410 */
+/* 387 */
 /***/ (function(module, exports) {
 
 module.exports = function(hljs) {
@@ -74726,41 +72048,41 @@ module.exports = function(hljs) {
 };
 
 /***/ }),
-/* 411 */
+/* 388 */
 /***/ (function(module, exports) {
 
 module.exports = "<pre class=\"highlighter\">\n    <code class=\"highlighter__code\">\n        const x: number = 10;\n        const y: string = \"Steve\";\n        // This is some comment\n    </code>\n</pre>";
 
 /***/ }),
-/* 412 */
+/* 389 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(413);
+__webpack_require__(390);
 var angular = __webpack_require__(0);
-var logger_component_1 = __webpack_require__(414);
+var logger_component_1 = __webpack_require__(391);
 var LoggerModule = angular.module('app.common.logger', []).component('logger', logger_component_1.default);
 exports.default = LoggerModule;
 
 /***/ }),
-/* 413 */
+/* 390 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 414 */
+/* 391 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var logger_controller_1 = __webpack_require__(415);
-var template = __webpack_require__(416);
+var logger_controller_1 = __webpack_require__(392);
+var template = __webpack_require__(393);
 var LoggerComponent = {
     template: template,
     controller: logger_controller_1.default
@@ -74768,7 +72090,7 @@ var LoggerComponent = {
 exports.default = LoggerComponent;
 
 /***/ }),
-/* 415 */
+/* 392 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -74785,42 +72107,42 @@ var LoggerController = function LoggerController() {
 exports.default = LoggerController;
 
 /***/ }),
-/* 416 */
+/* 393 */
 /***/ (function(module, exports) {
 
 module.exports = "";
 
 /***/ }),
-/* 417 */
+/* 394 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(418);
+__webpack_require__(395);
 var angular = __webpack_require__(0);
-var loader_component_1 = __webpack_require__(419);
-var loader_directive_1 = __webpack_require__(422);
+var loader_component_1 = __webpack_require__(396);
+var loader_directive_1 = __webpack_require__(399);
 var LoaderModule = angular.module('app.common.loader', []).component('loader', loader_component_1.default).directive('loaderDirective', loader_directive_1.default.factory());
 exports.default = LoaderModule;
 
 /***/ }),
-/* 418 */
+/* 395 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 419 */
+/* 396 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var loader_controller_1 = __webpack_require__(420);
-var template = __webpack_require__(421);
+var loader_controller_1 = __webpack_require__(397);
+var template = __webpack_require__(398);
 var LoaderComponent = {
     template: template,
     controller: loader_controller_1.default
@@ -74828,7 +72150,7 @@ var LoaderComponent = {
 exports.default = LoaderComponent;
 
 /***/ }),
-/* 420 */
+/* 397 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -74854,13 +72176,13 @@ LoaderController.$inject = ['$scope'];
 exports.default = LoaderController;
 
 /***/ }),
-/* 421 */
+/* 398 */
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"loader__container\" ng-if=\"$ctrl.visible\">\n    <div class=\"loader\">\n        <div class=\"loader__text\">Loading...</div>\n        <div class=\"loader__hands\"></div>\n        <div class=\"loader__body\"></div>\n        <div class=\"loader__head\">\n            <div class=\"loader__eyes\"></div>\n        </div>\n    </div>\n</div>";
 
 /***/ }),
-/* 422 */
+/* 399 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -74908,7 +72230,7 @@ LoaderDirective.$inject = ['$timeout'];
 exports.default = LoaderDirective;
 
 /***/ }),
-/* 423 */
+/* 400 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -74919,7 +72241,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var app_service_1 = __webpack_require__(55);
+var app_service_1 = __webpack_require__(29);
 
 var AppConfig = function () {
     function AppConfig() {
@@ -74938,6 +72260,6861 @@ var AppConfig = function () {
 
 AppConfig.$inject = ['$httpProvider'];
 exports.default = AppConfig;
+
+/***/ }),
+/* 401 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var angular = __webpack_require__(0);
+var ngAnimate = __webpack_require__(402);
+var angularjs_1 = __webpack_require__(404);
+var CoreModule = angular.module('app.core', [angularjs_1.default, ngAnimate]);
+exports.default = CoreModule;
+
+/***/ }),
+/* 402 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(403);
+module.exports = 'ngAnimate';
+
+
+/***/ }),
+/* 403 */
+/***/ (function(module, exports) {
+
+/**
+ * @license AngularJS v1.6.6
+ * (c) 2010-2017 Google, Inc. http://angularjs.org
+ * License: MIT
+ */
+(function(window, angular) {'use strict';
+
+var ELEMENT_NODE = 1;
+var COMMENT_NODE = 8;
+
+var ADD_CLASS_SUFFIX = '-add';
+var REMOVE_CLASS_SUFFIX = '-remove';
+var EVENT_CLASS_PREFIX = 'ng-';
+var ACTIVE_CLASS_SUFFIX = '-active';
+var PREPARE_CLASS_SUFFIX = '-prepare';
+
+var NG_ANIMATE_CLASSNAME = 'ng-animate';
+var NG_ANIMATE_CHILDREN_DATA = '$$ngAnimateChildren';
+
+// Detect proper transitionend/animationend event names.
+var CSS_PREFIX = '', TRANSITION_PROP, TRANSITIONEND_EVENT, ANIMATION_PROP, ANIMATIONEND_EVENT;
+
+// If unprefixed events are not supported but webkit-prefixed are, use the latter.
+// Otherwise, just use W3C names, browsers not supporting them at all will just ignore them.
+// Note: Chrome implements `window.onwebkitanimationend` and doesn't implement `window.onanimationend`
+// but at the same time dispatches the `animationend` event and not `webkitAnimationEnd`.
+// Register both events in case `window.onanimationend` is not supported because of that,
+// do the same for `transitionend` as Safari is likely to exhibit similar behavior.
+// Also, the only modern browser that uses vendor prefixes for transitions/keyframes is webkit
+// therefore there is no reason to test anymore for other vendor prefixes:
+// http://caniuse.com/#search=transition
+if ((window.ontransitionend === undefined) && (window.onwebkittransitionend !== undefined)) {
+  CSS_PREFIX = '-webkit-';
+  TRANSITION_PROP = 'WebkitTransition';
+  TRANSITIONEND_EVENT = 'webkitTransitionEnd transitionend';
+} else {
+  TRANSITION_PROP = 'transition';
+  TRANSITIONEND_EVENT = 'transitionend';
+}
+
+if ((window.onanimationend === undefined) && (window.onwebkitanimationend !== undefined)) {
+  CSS_PREFIX = '-webkit-';
+  ANIMATION_PROP = 'WebkitAnimation';
+  ANIMATIONEND_EVENT = 'webkitAnimationEnd animationend';
+} else {
+  ANIMATION_PROP = 'animation';
+  ANIMATIONEND_EVENT = 'animationend';
+}
+
+var DURATION_KEY = 'Duration';
+var PROPERTY_KEY = 'Property';
+var DELAY_KEY = 'Delay';
+var TIMING_KEY = 'TimingFunction';
+var ANIMATION_ITERATION_COUNT_KEY = 'IterationCount';
+var ANIMATION_PLAYSTATE_KEY = 'PlayState';
+var SAFE_FAST_FORWARD_DURATION_VALUE = 9999;
+
+var ANIMATION_DELAY_PROP = ANIMATION_PROP + DELAY_KEY;
+var ANIMATION_DURATION_PROP = ANIMATION_PROP + DURATION_KEY;
+var TRANSITION_DELAY_PROP = TRANSITION_PROP + DELAY_KEY;
+var TRANSITION_DURATION_PROP = TRANSITION_PROP + DURATION_KEY;
+
+var ngMinErr = angular.$$minErr('ng');
+function assertArg(arg, name, reason) {
+  if (!arg) {
+    throw ngMinErr('areq', 'Argument \'{0}\' is {1}', (name || '?'), (reason || 'required'));
+  }
+  return arg;
+}
+
+function mergeClasses(a,b) {
+  if (!a && !b) return '';
+  if (!a) return b;
+  if (!b) return a;
+  if (isArray(a)) a = a.join(' ');
+  if (isArray(b)) b = b.join(' ');
+  return a + ' ' + b;
+}
+
+function packageStyles(options) {
+  var styles = {};
+  if (options && (options.to || options.from)) {
+    styles.to = options.to;
+    styles.from = options.from;
+  }
+  return styles;
+}
+
+function pendClasses(classes, fix, isPrefix) {
+  var className = '';
+  classes = isArray(classes)
+      ? classes
+      : classes && isString(classes) && classes.length
+          ? classes.split(/\s+/)
+          : [];
+  forEach(classes, function(klass, i) {
+    if (klass && klass.length > 0) {
+      className += (i > 0) ? ' ' : '';
+      className += isPrefix ? fix + klass
+                            : klass + fix;
+    }
+  });
+  return className;
+}
+
+function removeFromArray(arr, val) {
+  var index = arr.indexOf(val);
+  if (val >= 0) {
+    arr.splice(index, 1);
+  }
+}
+
+function stripCommentsFromElement(element) {
+  if (element instanceof jqLite) {
+    switch (element.length) {
+      case 0:
+        return element;
+
+      case 1:
+        // there is no point of stripping anything if the element
+        // is the only element within the jqLite wrapper.
+        // (it's important that we retain the element instance.)
+        if (element[0].nodeType === ELEMENT_NODE) {
+          return element;
+        }
+        break;
+
+      default:
+        return jqLite(extractElementNode(element));
+    }
+  }
+
+  if (element.nodeType === ELEMENT_NODE) {
+    return jqLite(element);
+  }
+}
+
+function extractElementNode(element) {
+  if (!element[0]) return element;
+  for (var i = 0; i < element.length; i++) {
+    var elm = element[i];
+    if (elm.nodeType === ELEMENT_NODE) {
+      return elm;
+    }
+  }
+}
+
+function $$addClass($$jqLite, element, className) {
+  forEach(element, function(elm) {
+    $$jqLite.addClass(elm, className);
+  });
+}
+
+function $$removeClass($$jqLite, element, className) {
+  forEach(element, function(elm) {
+    $$jqLite.removeClass(elm, className);
+  });
+}
+
+function applyAnimationClassesFactory($$jqLite) {
+  return function(element, options) {
+    if (options.addClass) {
+      $$addClass($$jqLite, element, options.addClass);
+      options.addClass = null;
+    }
+    if (options.removeClass) {
+      $$removeClass($$jqLite, element, options.removeClass);
+      options.removeClass = null;
+    }
+  };
+}
+
+function prepareAnimationOptions(options) {
+  options = options || {};
+  if (!options.$$prepared) {
+    var domOperation = options.domOperation || noop;
+    options.domOperation = function() {
+      options.$$domOperationFired = true;
+      domOperation();
+      domOperation = noop;
+    };
+    options.$$prepared = true;
+  }
+  return options;
+}
+
+function applyAnimationStyles(element, options) {
+  applyAnimationFromStyles(element, options);
+  applyAnimationToStyles(element, options);
+}
+
+function applyAnimationFromStyles(element, options) {
+  if (options.from) {
+    element.css(options.from);
+    options.from = null;
+  }
+}
+
+function applyAnimationToStyles(element, options) {
+  if (options.to) {
+    element.css(options.to);
+    options.to = null;
+  }
+}
+
+function mergeAnimationDetails(element, oldAnimation, newAnimation) {
+  var target = oldAnimation.options || {};
+  var newOptions = newAnimation.options || {};
+
+  var toAdd = (target.addClass || '') + ' ' + (newOptions.addClass || '');
+  var toRemove = (target.removeClass || '') + ' ' + (newOptions.removeClass || '');
+  var classes = resolveElementClasses(element.attr('class'), toAdd, toRemove);
+
+  if (newOptions.preparationClasses) {
+    target.preparationClasses = concatWithSpace(newOptions.preparationClasses, target.preparationClasses);
+    delete newOptions.preparationClasses;
+  }
+
+  // noop is basically when there is no callback; otherwise something has been set
+  var realDomOperation = target.domOperation !== noop ? target.domOperation : null;
+
+  extend(target, newOptions);
+
+  // TODO(matsko or sreeramu): proper fix is to maintain all animation callback in array and call at last,but now only leave has the callback so no issue with this.
+  if (realDomOperation) {
+    target.domOperation = realDomOperation;
+  }
+
+  if (classes.addClass) {
+    target.addClass = classes.addClass;
+  } else {
+    target.addClass = null;
+  }
+
+  if (classes.removeClass) {
+    target.removeClass = classes.removeClass;
+  } else {
+    target.removeClass = null;
+  }
+
+  oldAnimation.addClass = target.addClass;
+  oldAnimation.removeClass = target.removeClass;
+
+  return target;
+}
+
+function resolveElementClasses(existing, toAdd, toRemove) {
+  var ADD_CLASS = 1;
+  var REMOVE_CLASS = -1;
+
+  var flags = {};
+  existing = splitClassesToLookup(existing);
+
+  toAdd = splitClassesToLookup(toAdd);
+  forEach(toAdd, function(value, key) {
+    flags[key] = ADD_CLASS;
+  });
+
+  toRemove = splitClassesToLookup(toRemove);
+  forEach(toRemove, function(value, key) {
+    flags[key] = flags[key] === ADD_CLASS ? null : REMOVE_CLASS;
+  });
+
+  var classes = {
+    addClass: '',
+    removeClass: ''
+  };
+
+  forEach(flags, function(val, klass) {
+    var prop, allow;
+    if (val === ADD_CLASS) {
+      prop = 'addClass';
+      allow = !existing[klass] || existing[klass + REMOVE_CLASS_SUFFIX];
+    } else if (val === REMOVE_CLASS) {
+      prop = 'removeClass';
+      allow = existing[klass] || existing[klass + ADD_CLASS_SUFFIX];
+    }
+    if (allow) {
+      if (classes[prop].length) {
+        classes[prop] += ' ';
+      }
+      classes[prop] += klass;
+    }
+  });
+
+  function splitClassesToLookup(classes) {
+    if (isString(classes)) {
+      classes = classes.split(' ');
+    }
+
+    var obj = {};
+    forEach(classes, function(klass) {
+      // sometimes the split leaves empty string values
+      // incase extra spaces were applied to the options
+      if (klass.length) {
+        obj[klass] = true;
+      }
+    });
+    return obj;
+  }
+
+  return classes;
+}
+
+function getDomNode(element) {
+  return (element instanceof jqLite) ? element[0] : element;
+}
+
+function applyGeneratedPreparationClasses(element, event, options) {
+  var classes = '';
+  if (event) {
+    classes = pendClasses(event, EVENT_CLASS_PREFIX, true);
+  }
+  if (options.addClass) {
+    classes = concatWithSpace(classes, pendClasses(options.addClass, ADD_CLASS_SUFFIX));
+  }
+  if (options.removeClass) {
+    classes = concatWithSpace(classes, pendClasses(options.removeClass, REMOVE_CLASS_SUFFIX));
+  }
+  if (classes.length) {
+    options.preparationClasses = classes;
+    element.addClass(classes);
+  }
+}
+
+function clearGeneratedClasses(element, options) {
+  if (options.preparationClasses) {
+    element.removeClass(options.preparationClasses);
+    options.preparationClasses = null;
+  }
+  if (options.activeClasses) {
+    element.removeClass(options.activeClasses);
+    options.activeClasses = null;
+  }
+}
+
+function blockTransitions(node, duration) {
+  // we use a negative delay value since it performs blocking
+  // yet it doesn't kill any existing transitions running on the
+  // same element which makes this safe for class-based animations
+  var value = duration ? '-' + duration + 's' : '';
+  applyInlineStyle(node, [TRANSITION_DELAY_PROP, value]);
+  return [TRANSITION_DELAY_PROP, value];
+}
+
+function blockKeyframeAnimations(node, applyBlock) {
+  var value = applyBlock ? 'paused' : '';
+  var key = ANIMATION_PROP + ANIMATION_PLAYSTATE_KEY;
+  applyInlineStyle(node, [key, value]);
+  return [key, value];
+}
+
+function applyInlineStyle(node, styleTuple) {
+  var prop = styleTuple[0];
+  var value = styleTuple[1];
+  node.style[prop] = value;
+}
+
+function concatWithSpace(a,b) {
+  if (!a) return b;
+  if (!b) return a;
+  return a + ' ' + b;
+}
+
+var $$rAFSchedulerFactory = ['$$rAF', function($$rAF) {
+  var queue, cancelFn;
+
+  function scheduler(tasks) {
+    // we make a copy since RAFScheduler mutates the state
+    // of the passed in array variable and this would be difficult
+    // to track down on the outside code
+    queue = queue.concat(tasks);
+    nextTick();
+  }
+
+  queue = scheduler.queue = [];
+
+  /* waitUntilQuiet does two things:
+   * 1. It will run the FINAL `fn` value only when an uncanceled RAF has passed through
+   * 2. It will delay the next wave of tasks from running until the quiet `fn` has run.
+   *
+   * The motivation here is that animation code can request more time from the scheduler
+   * before the next wave runs. This allows for certain DOM properties such as classes to
+   * be resolved in time for the next animation to run.
+   */
+  scheduler.waitUntilQuiet = function(fn) {
+    if (cancelFn) cancelFn();
+
+    cancelFn = $$rAF(function() {
+      cancelFn = null;
+      fn();
+      nextTick();
+    });
+  };
+
+  return scheduler;
+
+  function nextTick() {
+    if (!queue.length) return;
+
+    var items = queue.shift();
+    for (var i = 0; i < items.length; i++) {
+      items[i]();
+    }
+
+    if (!cancelFn) {
+      $$rAF(function() {
+        if (!cancelFn) nextTick();
+      });
+    }
+  }
+}];
+
+/**
+ * @ngdoc directive
+ * @name ngAnimateChildren
+ * @restrict AE
+ * @element ANY
+ *
+ * @description
+ *
+ * ngAnimateChildren allows you to specify that children of this element should animate even if any
+ * of the children's parents are currently animating. By default, when an element has an active `enter`, `leave`, or `move`
+ * (structural) animation, child elements that also have an active structural animation are not animated.
+ *
+ * Note that even if `ngAnimateChildren` is set, no child animations will run when the parent element is removed from the DOM (`leave` animation).
+ *
+ *
+ * @param {string} ngAnimateChildren If the value is empty, `true` or `on`,
+ *     then child animations are allowed. If the value is `false`, child animations are not allowed.
+ *
+ * @example
+ * <example module="ngAnimateChildren" name="ngAnimateChildren" deps="angular-animate.js" animations="true">
+     <file name="index.html">
+       <div ng-controller="MainController as main">
+         <label>Show container? <input type="checkbox" ng-model="main.enterElement" /></label>
+         <label>Animate children? <input type="checkbox" ng-model="main.animateChildren" /></label>
+         <hr>
+         <div ng-animate-children="{{main.animateChildren}}">
+           <div ng-if="main.enterElement" class="container">
+             List of items:
+             <div ng-repeat="item in [0, 1, 2, 3]" class="item">Item {{item}}</div>
+           </div>
+         </div>
+       </div>
+     </file>
+     <file name="animations.css">
+
+      .container.ng-enter,
+      .container.ng-leave {
+        transition: all ease 1.5s;
+      }
+
+      .container.ng-enter,
+      .container.ng-leave-active {
+        opacity: 0;
+      }
+
+      .container.ng-leave,
+      .container.ng-enter-active {
+        opacity: 1;
+      }
+
+      .item {
+        background: firebrick;
+        color: #FFF;
+        margin-bottom: 10px;
+      }
+
+      .item.ng-enter,
+      .item.ng-leave {
+        transition: transform 1.5s ease;
+      }
+
+      .item.ng-enter {
+        transform: translateX(50px);
+      }
+
+      .item.ng-enter-active {
+        transform: translateX(0);
+      }
+    </file>
+    <file name="script.js">
+      angular.module('ngAnimateChildren', ['ngAnimate'])
+        .controller('MainController', function MainController() {
+          this.animateChildren = false;
+          this.enterElement = false;
+        });
+    </file>
+  </example>
+ */
+var $$AnimateChildrenDirective = ['$interpolate', function($interpolate) {
+  return {
+    link: function(scope, element, attrs) {
+      var val = attrs.ngAnimateChildren;
+      if (isString(val) && val.length === 0) { //empty attribute
+        element.data(NG_ANIMATE_CHILDREN_DATA, true);
+      } else {
+        // Interpolate and set the value, so that it is available to
+        // animations that run right after compilation
+        setData($interpolate(val)(scope));
+        attrs.$observe('ngAnimateChildren', setData);
+      }
+
+      function setData(value) {
+        value = value === 'on' || value === 'true';
+        element.data(NG_ANIMATE_CHILDREN_DATA, value);
+      }
+    }
+  };
+}];
+
+/* exported $AnimateCssProvider */
+
+var ANIMATE_TIMER_KEY = '$$animateCss';
+
+/**
+ * @ngdoc service
+ * @name $animateCss
+ * @kind object
+ *
+ * @description
+ * The `$animateCss` service is a useful utility to trigger customized CSS-based transitions/keyframes
+ * from a JavaScript-based animation or directly from a directive. The purpose of `$animateCss` is NOT
+ * to side-step how `$animate` and ngAnimate work, but the goal is to allow pre-existing animations or
+ * directives to create more complex animations that can be purely driven using CSS code.
+ *
+ * Note that only browsers that support CSS transitions and/or keyframe animations are capable of
+ * rendering animations triggered via `$animateCss` (bad news for IE9 and lower).
+ *
+ * ## Usage
+ * Once again, `$animateCss` is designed to be used inside of a registered JavaScript animation that
+ * is powered by ngAnimate. It is possible to use `$animateCss` directly inside of a directive, however,
+ * any automatic control over cancelling animations and/or preventing animations from being run on
+ * child elements will not be handled by Angular. For this to work as expected, please use `$animate` to
+ * trigger the animation and then setup a JavaScript animation that injects `$animateCss` to trigger
+ * the CSS animation.
+ *
+ * The example below shows how we can create a folding animation on an element using `ng-if`:
+ *
+ * ```html
+ * <!-- notice the `fold-animation` CSS class -->
+ * <div ng-if="onOff" class="fold-animation">
+ *   This element will go BOOM
+ * </div>
+ * <button ng-click="onOff=true">Fold In</button>
+ * ```
+ *
+ * Now we create the **JavaScript animation** that will trigger the CSS transition:
+ *
+ * ```js
+ * ngModule.animation('.fold-animation', ['$animateCss', function($animateCss) {
+ *   return {
+ *     enter: function(element, doneFn) {
+ *       var height = element[0].offsetHeight;
+ *       return $animateCss(element, {
+ *         from: { height:'0px' },
+ *         to: { height:height + 'px' },
+ *         duration: 1 // one second
+ *       });
+ *     }
+ *   }
+ * }]);
+ * ```
+ *
+ * ## More Advanced Uses
+ *
+ * `$animateCss` is the underlying code that ngAnimate uses to power **CSS-based animations** behind the scenes. Therefore CSS hooks
+ * like `.ng-EVENT`, `.ng-EVENT-active`, `.ng-EVENT-stagger` are all features that can be triggered using `$animateCss` via JavaScript code.
+ *
+ * This also means that just about any combination of adding classes, removing classes, setting styles, dynamically setting a keyframe animation,
+ * applying a hardcoded duration or delay value, changing the animation easing or applying a stagger animation are all options that work with
+ * `$animateCss`. The service itself is smart enough to figure out the combination of options and examine the element styling properties in order
+ * to provide a working animation that will run in CSS.
+ *
+ * The example below showcases a more advanced version of the `.fold-animation` from the example above:
+ *
+ * ```js
+ * ngModule.animation('.fold-animation', ['$animateCss', function($animateCss) {
+ *   return {
+ *     enter: function(element, doneFn) {
+ *       var height = element[0].offsetHeight;
+ *       return $animateCss(element, {
+ *         addClass: 'red large-text pulse-twice',
+ *         easing: 'ease-out',
+ *         from: { height:'0px' },
+ *         to: { height:height + 'px' },
+ *         duration: 1 // one second
+ *       });
+ *     }
+ *   }
+ * }]);
+ * ```
+ *
+ * Since we're adding/removing CSS classes then the CSS transition will also pick those up:
+ *
+ * ```css
+ * /&#42; since a hardcoded duration value of 1 was provided in the JavaScript animation code,
+ * the CSS classes below will be transitioned despite them being defined as regular CSS classes &#42;/
+ * .red { background:red; }
+ * .large-text { font-size:20px; }
+ *
+ * /&#42; we can also use a keyframe animation and $animateCss will make it work alongside the transition &#42;/
+ * .pulse-twice {
+ *   animation: 0.5s pulse linear 2;
+ *   -webkit-animation: 0.5s pulse linear 2;
+ * }
+ *
+ * @keyframes pulse {
+ *   from { transform: scale(0.5); }
+ *   to { transform: scale(1.5); }
+ * }
+ *
+ * @-webkit-keyframes pulse {
+ *   from { -webkit-transform: scale(0.5); }
+ *   to { -webkit-transform: scale(1.5); }
+ * }
+ * ```
+ *
+ * Given this complex combination of CSS classes, styles and options, `$animateCss` will figure everything out and make the animation happen.
+ *
+ * ## How the Options are handled
+ *
+ * `$animateCss` is very versatile and intelligent when it comes to figuring out what configurations to apply to the element to ensure the animation
+ * works with the options provided. Say for example we were adding a class that contained a keyframe value and we wanted to also animate some inline
+ * styles using the `from` and `to` properties.
+ *
+ * ```js
+ * var animator = $animateCss(element, {
+ *   from: { background:'red' },
+ *   to: { background:'blue' }
+ * });
+ * animator.start();
+ * ```
+ *
+ * ```css
+ * .rotating-animation {
+ *   animation:0.5s rotate linear;
+ *   -webkit-animation:0.5s rotate linear;
+ * }
+ *
+ * @keyframes rotate {
+ *   from { transform: rotate(0deg); }
+ *   to { transform: rotate(360deg); }
+ * }
+ *
+ * @-webkit-keyframes rotate {
+ *   from { -webkit-transform: rotate(0deg); }
+ *   to { -webkit-transform: rotate(360deg); }
+ * }
+ * ```
+ *
+ * The missing pieces here are that we do not have a transition set (within the CSS code nor within the `$animateCss` options) and the duration of the animation is
+ * going to be detected from what the keyframe styles on the CSS class are. In this event, `$animateCss` will automatically create an inline transition
+ * style matching the duration detected from the keyframe style (which is present in the CSS class that is being added) and then prepare both the transition
+ * and keyframe animations to run in parallel on the element. Then when the animation is underway the provided `from` and `to` CSS styles will be applied
+ * and spread across the transition and keyframe animation.
+ *
+ * ## What is returned
+ *
+ * `$animateCss` works in two stages: a preparation phase and an animation phase. Therefore when `$animateCss` is first called it will NOT actually
+ * start the animation. All that is going on here is that the element is being prepared for the animation (which means that the generated CSS classes are
+ * added and removed on the element). Once `$animateCss` is called it will return an object with the following properties:
+ *
+ * ```js
+ * var animator = $animateCss(element, { ... });
+ * ```
+ *
+ * Now what do the contents of our `animator` variable look like:
+ *
+ * ```js
+ * {
+ *   // starts the animation
+ *   start: Function,
+ *
+ *   // ends (aborts) the animation
+ *   end: Function
+ * }
+ * ```
+ *
+ * To actually start the animation we need to run `animation.start()` which will then return a promise that we can hook into to detect when the animation ends.
+ * If we choose not to run the animation then we MUST run `animation.end()` to perform a cleanup on the element (since some CSS classes and styles may have been
+ * applied to the element during the preparation phase). Note that all other properties such as duration, delay, transitions and keyframes are just properties
+ * and that changing them will not reconfigure the parameters of the animation.
+ *
+ * ### runner.done() vs runner.then()
+ * It is documented that `animation.start()` will return a promise object and this is true, however, there is also an additional method available on the
+ * runner called `.done(callbackFn)`. The done method works the same as `.finally(callbackFn)`, however, it does **not trigger a digest to occur**.
+ * Therefore, for performance reasons, it's always best to use `runner.done(callback)` instead of `runner.then()`, `runner.catch()` or `runner.finally()`
+ * unless you really need a digest to kick off afterwards.
+ *
+ * Keep in mind that, to make this easier, ngAnimate has tweaked the JS animations API to recognize when a runner instance is returned from $animateCss
+ * (so there is no need to call `runner.done(doneFn)` inside of your JavaScript animation code).
+ * Check the {@link ngAnimate.$animateCss#usage animation code above} to see how this works.
+ *
+ * @param {DOMElement} element the element that will be animated
+ * @param {object} options the animation-related options that will be applied during the animation
+ *
+ * * `event` - The DOM event (e.g. enter, leave, move). When used, a generated CSS class of `ng-EVENT` and `ng-EVENT-active` will be applied
+ * to the element during the animation. Multiple events can be provided when spaces are used as a separator. (Note that this will not perform any DOM operation.)
+ * * `structural` - Indicates that the `ng-` prefix will be added to the event class. Setting to `false` or omitting will turn `ng-EVENT` and
+ * `ng-EVENT-active` in `EVENT` and `EVENT-active`. Unused if `event` is omitted.
+ * * `easing` - The CSS easing value that will be applied to the transition or keyframe animation (or both).
+ * * `transitionStyle` - The raw CSS transition style that will be used (e.g. `1s linear all`).
+ * * `keyframeStyle` - The raw CSS keyframe animation style that will be used (e.g. `1s my_animation linear`).
+ * * `from` - The starting CSS styles (a key/value object) that will be applied at the start of the animation.
+ * * `to` - The ending CSS styles (a key/value object) that will be applied across the animation via a CSS transition.
+ * * `addClass` - A space separated list of CSS classes that will be added to the element and spread across the animation.
+ * * `removeClass` - A space separated list of CSS classes that will be removed from the element and spread across the animation.
+ * * `duration` - A number value representing the total duration of the transition and/or keyframe (note that a value of 1 is 1000ms). If a value of `0`
+ * is provided then the animation will be skipped entirely.
+ * * `delay` - A number value representing the total delay of the transition and/or keyframe (note that a value of 1 is 1000ms). If a value of `true` is
+ * used then whatever delay value is detected from the CSS classes will be mirrored on the elements styles (e.g. by setting delay true then the style value
+ * of the element will be `transition-delay: DETECTED_VALUE`). Using `true` is useful when you want the CSS classes and inline styles to all share the same
+ * CSS delay value.
+ * * `stagger` - A numeric time value representing the delay between successively animated elements
+ * ({@link ngAnimate#css-staggering-animations Click here to learn how CSS-based staggering works in ngAnimate.})
+ * * `staggerIndex` - The numeric index representing the stagger item (e.g. a value of 5 is equal to the sixth item in the stagger; therefore when a
+ *   `stagger` option value of `0.1` is used then there will be a stagger delay of `600ms`)
+ * * `applyClassesEarly` - Whether or not the classes being added or removed will be used when detecting the animation. This is set by `$animate` when enter/leave/move animations are fired to ensure that the CSS classes are resolved in time. (Note that this will prevent any transitions from occurring on the classes being added and removed.)
+ * * `cleanupStyles` - Whether or not the provided `from` and `to` styles will be removed once
+ *    the animation is closed. This is useful for when the styles are used purely for the sake of
+ *    the animation and do not have a lasting visual effect on the element (e.g. a collapse and open animation).
+ *    By default this value is set to `false`.
+ *
+ * @return {object} an object with start and end methods and details about the animation.
+ *
+ * * `start` - The method to start the animation. This will return a `Promise` when called.
+ * * `end` - This method will cancel the animation and remove all applied CSS classes and styles.
+ */
+var ONE_SECOND = 1000;
+
+var ELAPSED_TIME_MAX_DECIMAL_PLACES = 3;
+var CLOSING_TIME_BUFFER = 1.5;
+
+var DETECT_CSS_PROPERTIES = {
+  transitionDuration:      TRANSITION_DURATION_PROP,
+  transitionDelay:         TRANSITION_DELAY_PROP,
+  transitionProperty:      TRANSITION_PROP + PROPERTY_KEY,
+  animationDuration:       ANIMATION_DURATION_PROP,
+  animationDelay:          ANIMATION_DELAY_PROP,
+  animationIterationCount: ANIMATION_PROP + ANIMATION_ITERATION_COUNT_KEY
+};
+
+var DETECT_STAGGER_CSS_PROPERTIES = {
+  transitionDuration:      TRANSITION_DURATION_PROP,
+  transitionDelay:         TRANSITION_DELAY_PROP,
+  animationDuration:       ANIMATION_DURATION_PROP,
+  animationDelay:          ANIMATION_DELAY_PROP
+};
+
+function getCssKeyframeDurationStyle(duration) {
+  return [ANIMATION_DURATION_PROP, duration + 's'];
+}
+
+function getCssDelayStyle(delay, isKeyframeAnimation) {
+  var prop = isKeyframeAnimation ? ANIMATION_DELAY_PROP : TRANSITION_DELAY_PROP;
+  return [prop, delay + 's'];
+}
+
+function computeCssStyles($window, element, properties) {
+  var styles = Object.create(null);
+  var detectedStyles = $window.getComputedStyle(element) || {};
+  forEach(properties, function(formalStyleName, actualStyleName) {
+    var val = detectedStyles[formalStyleName];
+    if (val) {
+      var c = val.charAt(0);
+
+      // only numerical-based values have a negative sign or digit as the first value
+      if (c === '-' || c === '+' || c >= 0) {
+        val = parseMaxTime(val);
+      }
+
+      // by setting this to null in the event that the delay is not set or is set directly as 0
+      // then we can still allow for negative values to be used later on and not mistake this
+      // value for being greater than any other negative value.
+      if (val === 0) {
+        val = null;
+      }
+      styles[actualStyleName] = val;
+    }
+  });
+
+  return styles;
+}
+
+function parseMaxTime(str) {
+  var maxValue = 0;
+  var values = str.split(/\s*,\s*/);
+  forEach(values, function(value) {
+    // it's always safe to consider only second values and omit `ms` values since
+    // getComputedStyle will always handle the conversion for us
+    if (value.charAt(value.length - 1) === 's') {
+      value = value.substring(0, value.length - 1);
+    }
+    value = parseFloat(value) || 0;
+    maxValue = maxValue ? Math.max(value, maxValue) : value;
+  });
+  return maxValue;
+}
+
+function truthyTimingValue(val) {
+  return val === 0 || val != null;
+}
+
+function getCssTransitionDurationStyle(duration, applyOnlyDuration) {
+  var style = TRANSITION_PROP;
+  var value = duration + 's';
+  if (applyOnlyDuration) {
+    style += DURATION_KEY;
+  } else {
+    value += ' linear all';
+  }
+  return [style, value];
+}
+
+function createLocalCacheLookup() {
+  var cache = Object.create(null);
+  return {
+    flush: function() {
+      cache = Object.create(null);
+    },
+
+    count: function(key) {
+      var entry = cache[key];
+      return entry ? entry.total : 0;
+    },
+
+    get: function(key) {
+      var entry = cache[key];
+      return entry && entry.value;
+    },
+
+    put: function(key, value) {
+      if (!cache[key]) {
+        cache[key] = { total: 1, value: value };
+      } else {
+        cache[key].total++;
+      }
+    }
+  };
+}
+
+// we do not reassign an already present style value since
+// if we detect the style property value again we may be
+// detecting styles that were added via the `from` styles.
+// We make use of `isDefined` here since an empty string
+// or null value (which is what getPropertyValue will return
+// for a non-existing style) will still be marked as a valid
+// value for the style (a falsy value implies that the style
+// is to be removed at the end of the animation). If we had a simple
+// "OR" statement then it would not be enough to catch that.
+function registerRestorableStyles(backup, node, properties) {
+  forEach(properties, function(prop) {
+    backup[prop] = isDefined(backup[prop])
+        ? backup[prop]
+        : node.style.getPropertyValue(prop);
+  });
+}
+
+var $AnimateCssProvider = ['$animateProvider', /** @this */ function($animateProvider) {
+  var gcsLookup = createLocalCacheLookup();
+  var gcsStaggerLookup = createLocalCacheLookup();
+
+  this.$get = ['$window', '$$jqLite', '$$AnimateRunner', '$timeout',
+               '$$forceReflow', '$sniffer', '$$rAFScheduler', '$$animateQueue',
+       function($window,   $$jqLite,   $$AnimateRunner,   $timeout,
+                $$forceReflow,   $sniffer,   $$rAFScheduler, $$animateQueue) {
+
+    var applyAnimationClasses = applyAnimationClassesFactory($$jqLite);
+
+    var parentCounter = 0;
+    function gcsHashFn(node, extraClasses) {
+      var KEY = '$$ngAnimateParentKey';
+      var parentNode = node.parentNode;
+      var parentID = parentNode[KEY] || (parentNode[KEY] = ++parentCounter);
+      return parentID + '-' + node.getAttribute('class') + '-' + extraClasses;
+    }
+
+    function computeCachedCssStyles(node, className, cacheKey, properties) {
+      var timings = gcsLookup.get(cacheKey);
+
+      if (!timings) {
+        timings = computeCssStyles($window, node, properties);
+        if (timings.animationIterationCount === 'infinite') {
+          timings.animationIterationCount = 1;
+        }
+      }
+
+      // we keep putting this in multiple times even though the value and the cacheKey are the same
+      // because we're keeping an internal tally of how many duplicate animations are detected.
+      gcsLookup.put(cacheKey, timings);
+      return timings;
+    }
+
+    function computeCachedCssStaggerStyles(node, className, cacheKey, properties) {
+      var stagger;
+
+      // if we have one or more existing matches of matching elements
+      // containing the same parent + CSS styles (which is how cacheKey works)
+      // then staggering is possible
+      if (gcsLookup.count(cacheKey) > 0) {
+        stagger = gcsStaggerLookup.get(cacheKey);
+
+        if (!stagger) {
+          var staggerClassName = pendClasses(className, '-stagger');
+
+          $$jqLite.addClass(node, staggerClassName);
+
+          stagger = computeCssStyles($window, node, properties);
+
+          // force the conversion of a null value to zero incase not set
+          stagger.animationDuration = Math.max(stagger.animationDuration, 0);
+          stagger.transitionDuration = Math.max(stagger.transitionDuration, 0);
+
+          $$jqLite.removeClass(node, staggerClassName);
+
+          gcsStaggerLookup.put(cacheKey, stagger);
+        }
+      }
+
+      return stagger || {};
+    }
+
+    var rafWaitQueue = [];
+    function waitUntilQuiet(callback) {
+      rafWaitQueue.push(callback);
+      $$rAFScheduler.waitUntilQuiet(function() {
+        gcsLookup.flush();
+        gcsStaggerLookup.flush();
+
+        // DO NOT REMOVE THIS LINE OR REFACTOR OUT THE `pageWidth` variable.
+        // PLEASE EXAMINE THE `$$forceReflow` service to understand why.
+        var pageWidth = $$forceReflow();
+
+        // we use a for loop to ensure that if the queue is changed
+        // during this looping then it will consider new requests
+        for (var i = 0; i < rafWaitQueue.length; i++) {
+          rafWaitQueue[i](pageWidth);
+        }
+        rafWaitQueue.length = 0;
+      });
+    }
+
+    function computeTimings(node, className, cacheKey) {
+      var timings = computeCachedCssStyles(node, className, cacheKey, DETECT_CSS_PROPERTIES);
+      var aD = timings.animationDelay;
+      var tD = timings.transitionDelay;
+      timings.maxDelay = aD && tD
+          ? Math.max(aD, tD)
+          : (aD || tD);
+      timings.maxDuration = Math.max(
+          timings.animationDuration * timings.animationIterationCount,
+          timings.transitionDuration);
+
+      return timings;
+    }
+
+    return function init(element, initialOptions) {
+      // all of the animation functions should create
+      // a copy of the options data, however, if a
+      // parent service has already created a copy then
+      // we should stick to using that
+      var options = initialOptions || {};
+      if (!options.$$prepared) {
+        options = prepareAnimationOptions(copy(options));
+      }
+
+      var restoreStyles = {};
+      var node = getDomNode(element);
+      if (!node
+          || !node.parentNode
+          || !$$animateQueue.enabled()) {
+        return closeAndReturnNoopAnimator();
+      }
+
+      var temporaryStyles = [];
+      var classes = element.attr('class');
+      var styles = packageStyles(options);
+      var animationClosed;
+      var animationPaused;
+      var animationCompleted;
+      var runner;
+      var runnerHost;
+      var maxDelay;
+      var maxDelayTime;
+      var maxDuration;
+      var maxDurationTime;
+      var startTime;
+      var events = [];
+
+      if (options.duration === 0 || (!$sniffer.animations && !$sniffer.transitions)) {
+        return closeAndReturnNoopAnimator();
+      }
+
+      var method = options.event && isArray(options.event)
+            ? options.event.join(' ')
+            : options.event;
+
+      var isStructural = method && options.structural;
+      var structuralClassName = '';
+      var addRemoveClassName = '';
+
+      if (isStructural) {
+        structuralClassName = pendClasses(method, EVENT_CLASS_PREFIX, true);
+      } else if (method) {
+        structuralClassName = method;
+      }
+
+      if (options.addClass) {
+        addRemoveClassName += pendClasses(options.addClass, ADD_CLASS_SUFFIX);
+      }
+
+      if (options.removeClass) {
+        if (addRemoveClassName.length) {
+          addRemoveClassName += ' ';
+        }
+        addRemoveClassName += pendClasses(options.removeClass, REMOVE_CLASS_SUFFIX);
+      }
+
+      // there may be a situation where a structural animation is combined together
+      // with CSS classes that need to resolve before the animation is computed.
+      // However this means that there is no explicit CSS code to block the animation
+      // from happening (by setting 0s none in the class name). If this is the case
+      // we need to apply the classes before the first rAF so we know to continue if
+      // there actually is a detected transition or keyframe animation
+      if (options.applyClassesEarly && addRemoveClassName.length) {
+        applyAnimationClasses(element, options);
+      }
+
+      var preparationClasses = [structuralClassName, addRemoveClassName].join(' ').trim();
+      var fullClassName = classes + ' ' + preparationClasses;
+      var activeClasses = pendClasses(preparationClasses, ACTIVE_CLASS_SUFFIX);
+      var hasToStyles = styles.to && Object.keys(styles.to).length > 0;
+      var containsKeyframeAnimation = (options.keyframeStyle || '').length > 0;
+
+      // there is no way we can trigger an animation if no styles and
+      // no classes are being applied which would then trigger a transition,
+      // unless there a is raw keyframe value that is applied to the element.
+      if (!containsKeyframeAnimation
+           && !hasToStyles
+           && !preparationClasses) {
+        return closeAndReturnNoopAnimator();
+      }
+
+      var cacheKey, stagger;
+      if (options.stagger > 0) {
+        var staggerVal = parseFloat(options.stagger);
+        stagger = {
+          transitionDelay: staggerVal,
+          animationDelay: staggerVal,
+          transitionDuration: 0,
+          animationDuration: 0
+        };
+      } else {
+        cacheKey = gcsHashFn(node, fullClassName);
+        stagger = computeCachedCssStaggerStyles(node, preparationClasses, cacheKey, DETECT_STAGGER_CSS_PROPERTIES);
+      }
+
+      if (!options.$$skipPreparationClasses) {
+        $$jqLite.addClass(element, preparationClasses);
+      }
+
+      var applyOnlyDuration;
+
+      if (options.transitionStyle) {
+        var transitionStyle = [TRANSITION_PROP, options.transitionStyle];
+        applyInlineStyle(node, transitionStyle);
+        temporaryStyles.push(transitionStyle);
+      }
+
+      if (options.duration >= 0) {
+        applyOnlyDuration = node.style[TRANSITION_PROP].length > 0;
+        var durationStyle = getCssTransitionDurationStyle(options.duration, applyOnlyDuration);
+
+        // we set the duration so that it will be picked up by getComputedStyle later
+        applyInlineStyle(node, durationStyle);
+        temporaryStyles.push(durationStyle);
+      }
+
+      if (options.keyframeStyle) {
+        var keyframeStyle = [ANIMATION_PROP, options.keyframeStyle];
+        applyInlineStyle(node, keyframeStyle);
+        temporaryStyles.push(keyframeStyle);
+      }
+
+      var itemIndex = stagger
+          ? options.staggerIndex >= 0
+              ? options.staggerIndex
+              : gcsLookup.count(cacheKey)
+          : 0;
+
+      var isFirst = itemIndex === 0;
+
+      // this is a pre-emptive way of forcing the setup classes to be added and applied INSTANTLY
+      // without causing any combination of transitions to kick in. By adding a negative delay value
+      // it forces the setup class' transition to end immediately. We later then remove the negative
+      // transition delay to allow for the transition to naturally do it's thing. The beauty here is
+      // that if there is no transition defined then nothing will happen and this will also allow
+      // other transitions to be stacked on top of each other without any chopping them out.
+      if (isFirst && !options.skipBlocking) {
+        blockTransitions(node, SAFE_FAST_FORWARD_DURATION_VALUE);
+      }
+
+      var timings = computeTimings(node, fullClassName, cacheKey);
+      var relativeDelay = timings.maxDelay;
+      maxDelay = Math.max(relativeDelay, 0);
+      maxDuration = timings.maxDuration;
+
+      var flags = {};
+      flags.hasTransitions          = timings.transitionDuration > 0;
+      flags.hasAnimations           = timings.animationDuration > 0;
+      flags.hasTransitionAll        = flags.hasTransitions && timings.transitionProperty === 'all';
+      flags.applyTransitionDuration = hasToStyles && (
+                                        (flags.hasTransitions && !flags.hasTransitionAll)
+                                         || (flags.hasAnimations && !flags.hasTransitions));
+      flags.applyAnimationDuration  = options.duration && flags.hasAnimations;
+      flags.applyTransitionDelay    = truthyTimingValue(options.delay) && (flags.applyTransitionDuration || flags.hasTransitions);
+      flags.applyAnimationDelay     = truthyTimingValue(options.delay) && flags.hasAnimations;
+      flags.recalculateTimingStyles = addRemoveClassName.length > 0;
+
+      if (flags.applyTransitionDuration || flags.applyAnimationDuration) {
+        maxDuration = options.duration ? parseFloat(options.duration) : maxDuration;
+
+        if (flags.applyTransitionDuration) {
+          flags.hasTransitions = true;
+          timings.transitionDuration = maxDuration;
+          applyOnlyDuration = node.style[TRANSITION_PROP + PROPERTY_KEY].length > 0;
+          temporaryStyles.push(getCssTransitionDurationStyle(maxDuration, applyOnlyDuration));
+        }
+
+        if (flags.applyAnimationDuration) {
+          flags.hasAnimations = true;
+          timings.animationDuration = maxDuration;
+          temporaryStyles.push(getCssKeyframeDurationStyle(maxDuration));
+        }
+      }
+
+      if (maxDuration === 0 && !flags.recalculateTimingStyles) {
+        return closeAndReturnNoopAnimator();
+      }
+
+      if (options.delay != null) {
+        var delayStyle;
+        if (typeof options.delay !== 'boolean') {
+          delayStyle = parseFloat(options.delay);
+          // number in options.delay means we have to recalculate the delay for the closing timeout
+          maxDelay = Math.max(delayStyle, 0);
+        }
+
+        if (flags.applyTransitionDelay) {
+          temporaryStyles.push(getCssDelayStyle(delayStyle));
+        }
+
+        if (flags.applyAnimationDelay) {
+          temporaryStyles.push(getCssDelayStyle(delayStyle, true));
+        }
+      }
+
+      // we need to recalculate the delay value since we used a pre-emptive negative
+      // delay value and the delay value is required for the final event checking. This
+      // property will ensure that this will happen after the RAF phase has passed.
+      if (options.duration == null && timings.transitionDuration > 0) {
+        flags.recalculateTimingStyles = flags.recalculateTimingStyles || isFirst;
+      }
+
+      maxDelayTime = maxDelay * ONE_SECOND;
+      maxDurationTime = maxDuration * ONE_SECOND;
+      if (!options.skipBlocking) {
+        flags.blockTransition = timings.transitionDuration > 0;
+        flags.blockKeyframeAnimation = timings.animationDuration > 0 &&
+                                       stagger.animationDelay > 0 &&
+                                       stagger.animationDuration === 0;
+      }
+
+      if (options.from) {
+        if (options.cleanupStyles) {
+          registerRestorableStyles(restoreStyles, node, Object.keys(options.from));
+        }
+        applyAnimationFromStyles(element, options);
+      }
+
+      if (flags.blockTransition || flags.blockKeyframeAnimation) {
+        applyBlocking(maxDuration);
+      } else if (!options.skipBlocking) {
+        blockTransitions(node, false);
+      }
+
+      // TODO(matsko): for 1.5 change this code to have an animator object for better debugging
+      return {
+        $$willAnimate: true,
+        end: endFn,
+        start: function() {
+          if (animationClosed) return;
+
+          runnerHost = {
+            end: endFn,
+            cancel: cancelFn,
+            resume: null, //this will be set during the start() phase
+            pause: null
+          };
+
+          runner = new $$AnimateRunner(runnerHost);
+
+          waitUntilQuiet(start);
+
+          // we don't have access to pause/resume the animation
+          // since it hasn't run yet. AnimateRunner will therefore
+          // set noop functions for resume and pause and they will
+          // later be overridden once the animation is triggered
+          return runner;
+        }
+      };
+
+      function endFn() {
+        close();
+      }
+
+      function cancelFn() {
+        close(true);
+      }
+
+      function close(rejected) {
+        // if the promise has been called already then we shouldn't close
+        // the animation again
+        if (animationClosed || (animationCompleted && animationPaused)) return;
+        animationClosed = true;
+        animationPaused = false;
+
+        if (!options.$$skipPreparationClasses) {
+          $$jqLite.removeClass(element, preparationClasses);
+        }
+        $$jqLite.removeClass(element, activeClasses);
+
+        blockKeyframeAnimations(node, false);
+        blockTransitions(node, false);
+
+        forEach(temporaryStyles, function(entry) {
+          // There is only one way to remove inline style properties entirely from elements.
+          // By using `removeProperty` this works, but we need to convert camel-cased CSS
+          // styles down to hyphenated values.
+          node.style[entry[0]] = '';
+        });
+
+        applyAnimationClasses(element, options);
+        applyAnimationStyles(element, options);
+
+        if (Object.keys(restoreStyles).length) {
+          forEach(restoreStyles, function(value, prop) {
+            if (value) {
+              node.style.setProperty(prop, value);
+            } else {
+              node.style.removeProperty(prop);
+            }
+          });
+        }
+
+        // the reason why we have this option is to allow a synchronous closing callback
+        // that is fired as SOON as the animation ends (when the CSS is removed) or if
+        // the animation never takes off at all. A good example is a leave animation since
+        // the element must be removed just after the animation is over or else the element
+        // will appear on screen for one animation frame causing an overbearing flicker.
+        if (options.onDone) {
+          options.onDone();
+        }
+
+        if (events && events.length) {
+          // Remove the transitionend / animationend listener(s)
+          element.off(events.join(' '), onAnimationProgress);
+        }
+
+        //Cancel the fallback closing timeout and remove the timer data
+        var animationTimerData = element.data(ANIMATE_TIMER_KEY);
+        if (animationTimerData) {
+          $timeout.cancel(animationTimerData[0].timer);
+          element.removeData(ANIMATE_TIMER_KEY);
+        }
+
+        // if the preparation function fails then the promise is not setup
+        if (runner) {
+          runner.complete(!rejected);
+        }
+      }
+
+      function applyBlocking(duration) {
+        if (flags.blockTransition) {
+          blockTransitions(node, duration);
+        }
+
+        if (flags.blockKeyframeAnimation) {
+          blockKeyframeAnimations(node, !!duration);
+        }
+      }
+
+      function closeAndReturnNoopAnimator() {
+        runner = new $$AnimateRunner({
+          end: endFn,
+          cancel: cancelFn
+        });
+
+        // should flush the cache animation
+        waitUntilQuiet(noop);
+        close();
+
+        return {
+          $$willAnimate: false,
+          start: function() {
+            return runner;
+          },
+          end: endFn
+        };
+      }
+
+      function onAnimationProgress(event) {
+        event.stopPropagation();
+        var ev = event.originalEvent || event;
+
+        // we now always use `Date.now()` due to the recent changes with
+        // event.timeStamp in Firefox, Webkit and Chrome (see #13494 for more info)
+        var timeStamp = ev.$manualTimeStamp || Date.now();
+
+        /* Firefox (or possibly just Gecko) likes to not round values up
+         * when a ms measurement is used for the animation */
+        var elapsedTime = parseFloat(ev.elapsedTime.toFixed(ELAPSED_TIME_MAX_DECIMAL_PLACES));
+
+        /* $manualTimeStamp is a mocked timeStamp value which is set
+         * within browserTrigger(). This is only here so that tests can
+         * mock animations properly. Real events fallback to event.timeStamp,
+         * or, if they don't, then a timeStamp is automatically created for them.
+         * We're checking to see if the timeStamp surpasses the expected delay,
+         * but we're using elapsedTime instead of the timeStamp on the 2nd
+         * pre-condition since animationPauseds sometimes close off early */
+        if (Math.max(timeStamp - startTime, 0) >= maxDelayTime && elapsedTime >= maxDuration) {
+          // we set this flag to ensure that if the transition is paused then, when resumed,
+          // the animation will automatically close itself since transitions cannot be paused.
+          animationCompleted = true;
+          close();
+        }
+      }
+
+      function start() {
+        if (animationClosed) return;
+        if (!node.parentNode) {
+          close();
+          return;
+        }
+
+        // even though we only pause keyframe animations here the pause flag
+        // will still happen when transitions are used. Only the transition will
+        // not be paused since that is not possible. If the animation ends when
+        // paused then it will not complete until unpaused or cancelled.
+        var playPause = function(playAnimation) {
+          if (!animationCompleted) {
+            animationPaused = !playAnimation;
+            if (timings.animationDuration) {
+              var value = blockKeyframeAnimations(node, animationPaused);
+              if (animationPaused) {
+                temporaryStyles.push(value);
+              } else {
+                removeFromArray(temporaryStyles, value);
+              }
+            }
+          } else if (animationPaused && playAnimation) {
+            animationPaused = false;
+            close();
+          }
+        };
+
+        // checking the stagger duration prevents an accidentally cascade of the CSS delay style
+        // being inherited from the parent. If the transition duration is zero then we can safely
+        // rely that the delay value is an intentional stagger delay style.
+        var maxStagger = itemIndex > 0
+                         && ((timings.transitionDuration && stagger.transitionDuration === 0) ||
+                            (timings.animationDuration && stagger.animationDuration === 0))
+                         && Math.max(stagger.animationDelay, stagger.transitionDelay);
+        if (maxStagger) {
+          $timeout(triggerAnimationStart,
+                   Math.floor(maxStagger * itemIndex * ONE_SECOND),
+                   false);
+        } else {
+          triggerAnimationStart();
+        }
+
+        // this will decorate the existing promise runner with pause/resume methods
+        runnerHost.resume = function() {
+          playPause(true);
+        };
+
+        runnerHost.pause = function() {
+          playPause(false);
+        };
+
+        function triggerAnimationStart() {
+          // just incase a stagger animation kicks in when the animation
+          // itself was cancelled entirely
+          if (animationClosed) return;
+
+          applyBlocking(false);
+
+          forEach(temporaryStyles, function(entry) {
+            var key = entry[0];
+            var value = entry[1];
+            node.style[key] = value;
+          });
+
+          applyAnimationClasses(element, options);
+          $$jqLite.addClass(element, activeClasses);
+
+          if (flags.recalculateTimingStyles) {
+            fullClassName = node.getAttribute('class') + ' ' + preparationClasses;
+            cacheKey = gcsHashFn(node, fullClassName);
+
+            timings = computeTimings(node, fullClassName, cacheKey);
+            relativeDelay = timings.maxDelay;
+            maxDelay = Math.max(relativeDelay, 0);
+            maxDuration = timings.maxDuration;
+
+            if (maxDuration === 0) {
+              close();
+              return;
+            }
+
+            flags.hasTransitions = timings.transitionDuration > 0;
+            flags.hasAnimations = timings.animationDuration > 0;
+          }
+
+          if (flags.applyAnimationDelay) {
+            relativeDelay = typeof options.delay !== 'boolean' && truthyTimingValue(options.delay)
+                  ? parseFloat(options.delay)
+                  : relativeDelay;
+
+            maxDelay = Math.max(relativeDelay, 0);
+            timings.animationDelay = relativeDelay;
+            delayStyle = getCssDelayStyle(relativeDelay, true);
+            temporaryStyles.push(delayStyle);
+            node.style[delayStyle[0]] = delayStyle[1];
+          }
+
+          maxDelayTime = maxDelay * ONE_SECOND;
+          maxDurationTime = maxDuration * ONE_SECOND;
+
+          if (options.easing) {
+            var easeProp, easeVal = options.easing;
+            if (flags.hasTransitions) {
+              easeProp = TRANSITION_PROP + TIMING_KEY;
+              temporaryStyles.push([easeProp, easeVal]);
+              node.style[easeProp] = easeVal;
+            }
+            if (flags.hasAnimations) {
+              easeProp = ANIMATION_PROP + TIMING_KEY;
+              temporaryStyles.push([easeProp, easeVal]);
+              node.style[easeProp] = easeVal;
+            }
+          }
+
+          if (timings.transitionDuration) {
+            events.push(TRANSITIONEND_EVENT);
+          }
+
+          if (timings.animationDuration) {
+            events.push(ANIMATIONEND_EVENT);
+          }
+
+          startTime = Date.now();
+          var timerTime = maxDelayTime + CLOSING_TIME_BUFFER * maxDurationTime;
+          var endTime = startTime + timerTime;
+
+          var animationsData = element.data(ANIMATE_TIMER_KEY) || [];
+          var setupFallbackTimer = true;
+          if (animationsData.length) {
+            var currentTimerData = animationsData[0];
+            setupFallbackTimer = endTime > currentTimerData.expectedEndTime;
+            if (setupFallbackTimer) {
+              $timeout.cancel(currentTimerData.timer);
+            } else {
+              animationsData.push(close);
+            }
+          }
+
+          if (setupFallbackTimer) {
+            var timer = $timeout(onAnimationExpired, timerTime, false);
+            animationsData[0] = {
+              timer: timer,
+              expectedEndTime: endTime
+            };
+            animationsData.push(close);
+            element.data(ANIMATE_TIMER_KEY, animationsData);
+          }
+
+          if (events.length) {
+            element.on(events.join(' '), onAnimationProgress);
+          }
+
+          if (options.to) {
+            if (options.cleanupStyles) {
+              registerRestorableStyles(restoreStyles, node, Object.keys(options.to));
+            }
+            applyAnimationToStyles(element, options);
+          }
+        }
+
+        function onAnimationExpired() {
+          var animationsData = element.data(ANIMATE_TIMER_KEY);
+
+          // this will be false in the event that the element was
+          // removed from the DOM (via a leave animation or something
+          // similar)
+          if (animationsData) {
+            for (var i = 1; i < animationsData.length; i++) {
+              animationsData[i]();
+            }
+            element.removeData(ANIMATE_TIMER_KEY);
+          }
+        }
+      }
+    };
+  }];
+}];
+
+var $$AnimateCssDriverProvider = ['$$animationProvider', /** @this */ function($$animationProvider) {
+  $$animationProvider.drivers.push('$$animateCssDriver');
+
+  var NG_ANIMATE_SHIM_CLASS_NAME = 'ng-animate-shim';
+  var NG_ANIMATE_ANCHOR_CLASS_NAME = 'ng-anchor';
+
+  var NG_OUT_ANCHOR_CLASS_NAME = 'ng-anchor-out';
+  var NG_IN_ANCHOR_CLASS_NAME = 'ng-anchor-in';
+
+  function isDocumentFragment(node) {
+    return node.parentNode && node.parentNode.nodeType === 11;
+  }
+
+  this.$get = ['$animateCss', '$rootScope', '$$AnimateRunner', '$rootElement', '$sniffer', '$$jqLite', '$document',
+       function($animateCss,   $rootScope,   $$AnimateRunner,   $rootElement,   $sniffer,   $$jqLite,   $document) {
+
+    // only browsers that support these properties can render animations
+    if (!$sniffer.animations && !$sniffer.transitions) return noop;
+
+    var bodyNode = $document[0].body;
+    var rootNode = getDomNode($rootElement);
+
+    var rootBodyElement = jqLite(
+      // this is to avoid using something that exists outside of the body
+      // we also special case the doc fragment case because our unit test code
+      // appends the $rootElement to the body after the app has been bootstrapped
+      isDocumentFragment(rootNode) || bodyNode.contains(rootNode) ? rootNode : bodyNode
+    );
+
+    return function initDriverFn(animationDetails) {
+      return animationDetails.from && animationDetails.to
+          ? prepareFromToAnchorAnimation(animationDetails.from,
+                                         animationDetails.to,
+                                         animationDetails.classes,
+                                         animationDetails.anchors)
+          : prepareRegularAnimation(animationDetails);
+    };
+
+    function filterCssClasses(classes) {
+      //remove all the `ng-` stuff
+      return classes.replace(/\bng-\S+\b/g, '');
+    }
+
+    function getUniqueValues(a, b) {
+      if (isString(a)) a = a.split(' ');
+      if (isString(b)) b = b.split(' ');
+      return a.filter(function(val) {
+        return b.indexOf(val) === -1;
+      }).join(' ');
+    }
+
+    function prepareAnchoredAnimation(classes, outAnchor, inAnchor) {
+      var clone = jqLite(getDomNode(outAnchor).cloneNode(true));
+      var startingClasses = filterCssClasses(getClassVal(clone));
+
+      outAnchor.addClass(NG_ANIMATE_SHIM_CLASS_NAME);
+      inAnchor.addClass(NG_ANIMATE_SHIM_CLASS_NAME);
+
+      clone.addClass(NG_ANIMATE_ANCHOR_CLASS_NAME);
+
+      rootBodyElement.append(clone);
+
+      var animatorIn, animatorOut = prepareOutAnimation();
+
+      // the user may not end up using the `out` animation and
+      // only making use of the `in` animation or vice-versa.
+      // In either case we should allow this and not assume the
+      // animation is over unless both animations are not used.
+      if (!animatorOut) {
+        animatorIn = prepareInAnimation();
+        if (!animatorIn) {
+          return end();
+        }
+      }
+
+      var startingAnimator = animatorOut || animatorIn;
+
+      return {
+        start: function() {
+          var runner;
+
+          var currentAnimation = startingAnimator.start();
+          currentAnimation.done(function() {
+            currentAnimation = null;
+            if (!animatorIn) {
+              animatorIn = prepareInAnimation();
+              if (animatorIn) {
+                currentAnimation = animatorIn.start();
+                currentAnimation.done(function() {
+                  currentAnimation = null;
+                  end();
+                  runner.complete();
+                });
+                return currentAnimation;
+              }
+            }
+            // in the event that there is no `in` animation
+            end();
+            runner.complete();
+          });
+
+          runner = new $$AnimateRunner({
+            end: endFn,
+            cancel: endFn
+          });
+
+          return runner;
+
+          function endFn() {
+            if (currentAnimation) {
+              currentAnimation.end();
+            }
+          }
+        }
+      };
+
+      function calculateAnchorStyles(anchor) {
+        var styles = {};
+
+        var coords = getDomNode(anchor).getBoundingClientRect();
+
+        // we iterate directly since safari messes up and doesn't return
+        // all the keys for the coords object when iterated
+        forEach(['width','height','top','left'], function(key) {
+          var value = coords[key];
+          switch (key) {
+            case 'top':
+              value += bodyNode.scrollTop;
+              break;
+            case 'left':
+              value += bodyNode.scrollLeft;
+              break;
+          }
+          styles[key] = Math.floor(value) + 'px';
+        });
+        return styles;
+      }
+
+      function prepareOutAnimation() {
+        var animator = $animateCss(clone, {
+          addClass: NG_OUT_ANCHOR_CLASS_NAME,
+          delay: true,
+          from: calculateAnchorStyles(outAnchor)
+        });
+
+        // read the comment within `prepareRegularAnimation` to understand
+        // why this check is necessary
+        return animator.$$willAnimate ? animator : null;
+      }
+
+      function getClassVal(element) {
+        return element.attr('class') || '';
+      }
+
+      function prepareInAnimation() {
+        var endingClasses = filterCssClasses(getClassVal(inAnchor));
+        var toAdd = getUniqueValues(endingClasses, startingClasses);
+        var toRemove = getUniqueValues(startingClasses, endingClasses);
+
+        var animator = $animateCss(clone, {
+          to: calculateAnchorStyles(inAnchor),
+          addClass: NG_IN_ANCHOR_CLASS_NAME + ' ' + toAdd,
+          removeClass: NG_OUT_ANCHOR_CLASS_NAME + ' ' + toRemove,
+          delay: true
+        });
+
+        // read the comment within `prepareRegularAnimation` to understand
+        // why this check is necessary
+        return animator.$$willAnimate ? animator : null;
+      }
+
+      function end() {
+        clone.remove();
+        outAnchor.removeClass(NG_ANIMATE_SHIM_CLASS_NAME);
+        inAnchor.removeClass(NG_ANIMATE_SHIM_CLASS_NAME);
+      }
+    }
+
+    function prepareFromToAnchorAnimation(from, to, classes, anchors) {
+      var fromAnimation = prepareRegularAnimation(from, noop);
+      var toAnimation = prepareRegularAnimation(to, noop);
+
+      var anchorAnimations = [];
+      forEach(anchors, function(anchor) {
+        var outElement = anchor['out'];
+        var inElement = anchor['in'];
+        var animator = prepareAnchoredAnimation(classes, outElement, inElement);
+        if (animator) {
+          anchorAnimations.push(animator);
+        }
+      });
+
+      // no point in doing anything when there are no elements to animate
+      if (!fromAnimation && !toAnimation && anchorAnimations.length === 0) return;
+
+      return {
+        start: function() {
+          var animationRunners = [];
+
+          if (fromAnimation) {
+            animationRunners.push(fromAnimation.start());
+          }
+
+          if (toAnimation) {
+            animationRunners.push(toAnimation.start());
+          }
+
+          forEach(anchorAnimations, function(animation) {
+            animationRunners.push(animation.start());
+          });
+
+          var runner = new $$AnimateRunner({
+            end: endFn,
+            cancel: endFn // CSS-driven animations cannot be cancelled, only ended
+          });
+
+          $$AnimateRunner.all(animationRunners, function(status) {
+            runner.complete(status);
+          });
+
+          return runner;
+
+          function endFn() {
+            forEach(animationRunners, function(runner) {
+              runner.end();
+            });
+          }
+        }
+      };
+    }
+
+    function prepareRegularAnimation(animationDetails) {
+      var element = animationDetails.element;
+      var options = animationDetails.options || {};
+
+      if (animationDetails.structural) {
+        options.event = animationDetails.event;
+        options.structural = true;
+        options.applyClassesEarly = true;
+
+        // we special case the leave animation since we want to ensure that
+        // the element is removed as soon as the animation is over. Otherwise
+        // a flicker might appear or the element may not be removed at all
+        if (animationDetails.event === 'leave') {
+          options.onDone = options.domOperation;
+        }
+      }
+
+      // We assign the preparationClasses as the actual animation event since
+      // the internals of $animateCss will just suffix the event token values
+      // with `-active` to trigger the animation.
+      if (options.preparationClasses) {
+        options.event = concatWithSpace(options.event, options.preparationClasses);
+      }
+
+      var animator = $animateCss(element, options);
+
+      // the driver lookup code inside of $$animation attempts to spawn a
+      // driver one by one until a driver returns a.$$willAnimate animator object.
+      // $animateCss will always return an object, however, it will pass in
+      // a flag as a hint as to whether an animation was detected or not
+      return animator.$$willAnimate ? animator : null;
+    }
+  }];
+}];
+
+// TODO(matsko): use caching here to speed things up for detection
+// TODO(matsko): add documentation
+//  by the time...
+
+var $$AnimateJsProvider = ['$animateProvider', /** @this */ function($animateProvider) {
+  this.$get = ['$injector', '$$AnimateRunner', '$$jqLite',
+       function($injector,   $$AnimateRunner,   $$jqLite) {
+
+    var applyAnimationClasses = applyAnimationClassesFactory($$jqLite);
+         // $animateJs(element, 'enter');
+    return function(element, event, classes, options) {
+      var animationClosed = false;
+
+      // the `classes` argument is optional and if it is not used
+      // then the classes will be resolved from the element's className
+      // property as well as options.addClass/options.removeClass.
+      if (arguments.length === 3 && isObject(classes)) {
+        options = classes;
+        classes = null;
+      }
+
+      options = prepareAnimationOptions(options);
+      if (!classes) {
+        classes = element.attr('class') || '';
+        if (options.addClass) {
+          classes += ' ' + options.addClass;
+        }
+        if (options.removeClass) {
+          classes += ' ' + options.removeClass;
+        }
+      }
+
+      var classesToAdd = options.addClass;
+      var classesToRemove = options.removeClass;
+
+      // the lookupAnimations function returns a series of animation objects that are
+      // matched up with one or more of the CSS classes. These animation objects are
+      // defined via the module.animation factory function. If nothing is detected then
+      // we don't return anything which then makes $animation query the next driver.
+      var animations = lookupAnimations(classes);
+      var before, after;
+      if (animations.length) {
+        var afterFn, beforeFn;
+        if (event === 'leave') {
+          beforeFn = 'leave';
+          afterFn = 'afterLeave'; // TODO(matsko): get rid of this
+        } else {
+          beforeFn = 'before' + event.charAt(0).toUpperCase() + event.substr(1);
+          afterFn = event;
+        }
+
+        if (event !== 'enter' && event !== 'move') {
+          before = packageAnimations(element, event, options, animations, beforeFn);
+        }
+        after  = packageAnimations(element, event, options, animations, afterFn);
+      }
+
+      // no matching animations
+      if (!before && !after) return;
+
+      function applyOptions() {
+        options.domOperation();
+        applyAnimationClasses(element, options);
+      }
+
+      function close() {
+        animationClosed = true;
+        applyOptions();
+        applyAnimationStyles(element, options);
+      }
+
+      var runner;
+
+      return {
+        $$willAnimate: true,
+        end: function() {
+          if (runner) {
+            runner.end();
+          } else {
+            close();
+            runner = new $$AnimateRunner();
+            runner.complete(true);
+          }
+          return runner;
+        },
+        start: function() {
+          if (runner) {
+            return runner;
+          }
+
+          runner = new $$AnimateRunner();
+          var closeActiveAnimations;
+          var chain = [];
+
+          if (before) {
+            chain.push(function(fn) {
+              closeActiveAnimations = before(fn);
+            });
+          }
+
+          if (chain.length) {
+            chain.push(function(fn) {
+              applyOptions();
+              fn(true);
+            });
+          } else {
+            applyOptions();
+          }
+
+          if (after) {
+            chain.push(function(fn) {
+              closeActiveAnimations = after(fn);
+            });
+          }
+
+          runner.setHost({
+            end: function() {
+              endAnimations();
+            },
+            cancel: function() {
+              endAnimations(true);
+            }
+          });
+
+          $$AnimateRunner.chain(chain, onComplete);
+          return runner;
+
+          function onComplete(success) {
+            close(success);
+            runner.complete(success);
+          }
+
+          function endAnimations(cancelled) {
+            if (!animationClosed) {
+              (closeActiveAnimations || noop)(cancelled);
+              onComplete(cancelled);
+            }
+          }
+        }
+      };
+
+      function executeAnimationFn(fn, element, event, options, onDone) {
+        var args;
+        switch (event) {
+          case 'animate':
+            args = [element, options.from, options.to, onDone];
+            break;
+
+          case 'setClass':
+            args = [element, classesToAdd, classesToRemove, onDone];
+            break;
+
+          case 'addClass':
+            args = [element, classesToAdd, onDone];
+            break;
+
+          case 'removeClass':
+            args = [element, classesToRemove, onDone];
+            break;
+
+          default:
+            args = [element, onDone];
+            break;
+        }
+
+        args.push(options);
+
+        var value = fn.apply(fn, args);
+        if (value) {
+          if (isFunction(value.start)) {
+            value = value.start();
+          }
+
+          if (value instanceof $$AnimateRunner) {
+            value.done(onDone);
+          } else if (isFunction(value)) {
+            // optional onEnd / onCancel callback
+            return value;
+          }
+        }
+
+        return noop;
+      }
+
+      function groupEventedAnimations(element, event, options, animations, fnName) {
+        var operations = [];
+        forEach(animations, function(ani) {
+          var animation = ani[fnName];
+          if (!animation) return;
+
+          // note that all of these animations will run in parallel
+          operations.push(function() {
+            var runner;
+            var endProgressCb;
+
+            var resolved = false;
+            var onAnimationComplete = function(rejected) {
+              if (!resolved) {
+                resolved = true;
+                (endProgressCb || noop)(rejected);
+                runner.complete(!rejected);
+              }
+            };
+
+            runner = new $$AnimateRunner({
+              end: function() {
+                onAnimationComplete();
+              },
+              cancel: function() {
+                onAnimationComplete(true);
+              }
+            });
+
+            endProgressCb = executeAnimationFn(animation, element, event, options, function(result) {
+              var cancelled = result === false;
+              onAnimationComplete(cancelled);
+            });
+
+            return runner;
+          });
+        });
+
+        return operations;
+      }
+
+      function packageAnimations(element, event, options, animations, fnName) {
+        var operations = groupEventedAnimations(element, event, options, animations, fnName);
+        if (operations.length === 0) {
+          var a, b;
+          if (fnName === 'beforeSetClass') {
+            a = groupEventedAnimations(element, 'removeClass', options, animations, 'beforeRemoveClass');
+            b = groupEventedAnimations(element, 'addClass', options, animations, 'beforeAddClass');
+          } else if (fnName === 'setClass') {
+            a = groupEventedAnimations(element, 'removeClass', options, animations, 'removeClass');
+            b = groupEventedAnimations(element, 'addClass', options, animations, 'addClass');
+          }
+
+          if (a) {
+            operations = operations.concat(a);
+          }
+          if (b) {
+            operations = operations.concat(b);
+          }
+        }
+
+        if (operations.length === 0) return;
+
+        // TODO(matsko): add documentation
+        return function startAnimation(callback) {
+          var runners = [];
+          if (operations.length) {
+            forEach(operations, function(animateFn) {
+              runners.push(animateFn());
+            });
+          }
+
+          if (runners.length) {
+            $$AnimateRunner.all(runners, callback);
+          }  else {
+            callback();
+          }
+
+          return function endFn(reject) {
+            forEach(runners, function(runner) {
+              if (reject) {
+                runner.cancel();
+              } else {
+                runner.end();
+              }
+            });
+          };
+        };
+      }
+    };
+
+    function lookupAnimations(classes) {
+      classes = isArray(classes) ? classes : classes.split(' ');
+      var matches = [], flagMap = {};
+      for (var i = 0; i < classes.length; i++) {
+        var klass = classes[i],
+            animationFactory = $animateProvider.$$registeredAnimations[klass];
+        if (animationFactory && !flagMap[klass]) {
+          matches.push($injector.get(animationFactory));
+          flagMap[klass] = true;
+        }
+      }
+      return matches;
+    }
+  }];
+}];
+
+var $$AnimateJsDriverProvider = ['$$animationProvider', /** @this */ function($$animationProvider) {
+  $$animationProvider.drivers.push('$$animateJsDriver');
+  this.$get = ['$$animateJs', '$$AnimateRunner', function($$animateJs, $$AnimateRunner) {
+    return function initDriverFn(animationDetails) {
+      if (animationDetails.from && animationDetails.to) {
+        var fromAnimation = prepareAnimation(animationDetails.from);
+        var toAnimation = prepareAnimation(animationDetails.to);
+        if (!fromAnimation && !toAnimation) return;
+
+        return {
+          start: function() {
+            var animationRunners = [];
+
+            if (fromAnimation) {
+              animationRunners.push(fromAnimation.start());
+            }
+
+            if (toAnimation) {
+              animationRunners.push(toAnimation.start());
+            }
+
+            $$AnimateRunner.all(animationRunners, done);
+
+            var runner = new $$AnimateRunner({
+              end: endFnFactory(),
+              cancel: endFnFactory()
+            });
+
+            return runner;
+
+            function endFnFactory() {
+              return function() {
+                forEach(animationRunners, function(runner) {
+                  // at this point we cannot cancel animations for groups just yet. 1.5+
+                  runner.end();
+                });
+              };
+            }
+
+            function done(status) {
+              runner.complete(status);
+            }
+          }
+        };
+      } else {
+        return prepareAnimation(animationDetails);
+      }
+    };
+
+    function prepareAnimation(animationDetails) {
+      // TODO(matsko): make sure to check for grouped animations and delegate down to normal animations
+      var element = animationDetails.element;
+      var event = animationDetails.event;
+      var options = animationDetails.options;
+      var classes = animationDetails.classes;
+      return $$animateJs(element, event, classes, options);
+    }
+  }];
+}];
+
+var NG_ANIMATE_ATTR_NAME = 'data-ng-animate';
+var NG_ANIMATE_PIN_DATA = '$ngAnimatePin';
+var $$AnimateQueueProvider = ['$animateProvider', /** @this */ function($animateProvider) {
+  var PRE_DIGEST_STATE = 1;
+  var RUNNING_STATE = 2;
+  var ONE_SPACE = ' ';
+
+  var rules = this.rules = {
+    skip: [],
+    cancel: [],
+    join: []
+  };
+
+  function makeTruthyCssClassMap(classString) {
+    if (!classString) {
+      return null;
+    }
+
+    var keys = classString.split(ONE_SPACE);
+    var map = Object.create(null);
+
+    forEach(keys, function(key) {
+      map[key] = true;
+    });
+    return map;
+  }
+
+  function hasMatchingClasses(newClassString, currentClassString) {
+    if (newClassString && currentClassString) {
+      var currentClassMap = makeTruthyCssClassMap(currentClassString);
+      return newClassString.split(ONE_SPACE).some(function(className) {
+        return currentClassMap[className];
+      });
+    }
+  }
+
+  function isAllowed(ruleType, currentAnimation, previousAnimation) {
+    return rules[ruleType].some(function(fn) {
+      return fn(currentAnimation, previousAnimation);
+    });
+  }
+
+  function hasAnimationClasses(animation, and) {
+    var a = (animation.addClass || '').length > 0;
+    var b = (animation.removeClass || '').length > 0;
+    return and ? a && b : a || b;
+  }
+
+  rules.join.push(function(newAnimation, currentAnimation) {
+    // if the new animation is class-based then we can just tack that on
+    return !newAnimation.structural && hasAnimationClasses(newAnimation);
+  });
+
+  rules.skip.push(function(newAnimation, currentAnimation) {
+    // there is no need to animate anything if no classes are being added and
+    // there is no structural animation that will be triggered
+    return !newAnimation.structural && !hasAnimationClasses(newAnimation);
+  });
+
+  rules.skip.push(function(newAnimation, currentAnimation) {
+    // why should we trigger a new structural animation if the element will
+    // be removed from the DOM anyway?
+    return currentAnimation.event === 'leave' && newAnimation.structural;
+  });
+
+  rules.skip.push(function(newAnimation, currentAnimation) {
+    // if there is an ongoing current animation then don't even bother running the class-based animation
+    return currentAnimation.structural && currentAnimation.state === RUNNING_STATE && !newAnimation.structural;
+  });
+
+  rules.cancel.push(function(newAnimation, currentAnimation) {
+    // there can never be two structural animations running at the same time
+    return currentAnimation.structural && newAnimation.structural;
+  });
+
+  rules.cancel.push(function(newAnimation, currentAnimation) {
+    // if the previous animation is already running, but the new animation will
+    // be triggered, but the new animation is structural
+    return currentAnimation.state === RUNNING_STATE && newAnimation.structural;
+  });
+
+  rules.cancel.push(function(newAnimation, currentAnimation) {
+    // cancel the animation if classes added / removed in both animation cancel each other out,
+    // but only if the current animation isn't structural
+
+    if (currentAnimation.structural) return false;
+
+    var nA = newAnimation.addClass;
+    var nR = newAnimation.removeClass;
+    var cA = currentAnimation.addClass;
+    var cR = currentAnimation.removeClass;
+
+    // early detection to save the global CPU shortage :)
+    if ((isUndefined(nA) && isUndefined(nR)) || (isUndefined(cA) && isUndefined(cR))) {
+      return false;
+    }
+
+    return hasMatchingClasses(nA, cR) || hasMatchingClasses(nR, cA);
+  });
+
+  this.$get = ['$$rAF', '$rootScope', '$rootElement', '$document', '$$Map',
+               '$$animation', '$$AnimateRunner', '$templateRequest', '$$jqLite', '$$forceReflow',
+               '$$isDocumentHidden',
+       function($$rAF,   $rootScope,   $rootElement,   $document,   $$Map,
+                $$animation,   $$AnimateRunner,   $templateRequest,   $$jqLite,   $$forceReflow,
+                $$isDocumentHidden) {
+
+    var activeAnimationsLookup = new $$Map();
+    var disabledElementsLookup = new $$Map();
+    var animationsEnabled = null;
+
+    function postDigestTaskFactory() {
+      var postDigestCalled = false;
+      return function(fn) {
+        // we only issue a call to postDigest before
+        // it has first passed. This prevents any callbacks
+        // from not firing once the animation has completed
+        // since it will be out of the digest cycle.
+        if (postDigestCalled) {
+          fn();
+        } else {
+          $rootScope.$$postDigest(function() {
+            postDigestCalled = true;
+            fn();
+          });
+        }
+      };
+    }
+
+    // Wait until all directive and route-related templates are downloaded and
+    // compiled. The $templateRequest.totalPendingRequests variable keeps track of
+    // all of the remote templates being currently downloaded. If there are no
+    // templates currently downloading then the watcher will still fire anyway.
+    var deregisterWatch = $rootScope.$watch(
+      function() { return $templateRequest.totalPendingRequests === 0; },
+      function(isEmpty) {
+        if (!isEmpty) return;
+        deregisterWatch();
+
+        // Now that all templates have been downloaded, $animate will wait until
+        // the post digest queue is empty before enabling animations. By having two
+        // calls to $postDigest calls we can ensure that the flag is enabled at the
+        // very end of the post digest queue. Since all of the animations in $animate
+        // use $postDigest, it's important that the code below executes at the end.
+        // This basically means that the page is fully downloaded and compiled before
+        // any animations are triggered.
+        $rootScope.$$postDigest(function() {
+          $rootScope.$$postDigest(function() {
+            // we check for null directly in the event that the application already called
+            // .enabled() with whatever arguments that it provided it with
+            if (animationsEnabled === null) {
+              animationsEnabled = true;
+            }
+          });
+        });
+      }
+    );
+
+    var callbackRegistry = Object.create(null);
+
+    // remember that the `customFilter`/`classNameFilter` are set during the
+    // provider/config stage therefore we can optimize here and setup helper functions
+    var customFilter = $animateProvider.customFilter();
+    var classNameFilter = $animateProvider.classNameFilter();
+    var returnTrue = function() { return true; };
+
+    var isAnimatableByFilter = customFilter || returnTrue;
+    var isAnimatableClassName = !classNameFilter ? returnTrue : function(node, options) {
+      var className = [node.getAttribute('class'), options.addClass, options.removeClass].join(' ');
+      return classNameFilter.test(className);
+    };
+
+    var applyAnimationClasses = applyAnimationClassesFactory($$jqLite);
+
+    function normalizeAnimationDetails(element, animation) {
+      return mergeAnimationDetails(element, animation, {});
+    }
+
+    // IE9-11 has no method "contains" in SVG element and in Node.prototype. Bug #10259.
+    var contains = window.Node.prototype.contains || /** @this */ function(arg) {
+      // eslint-disable-next-line no-bitwise
+      return this === arg || !!(this.compareDocumentPosition(arg) & 16);
+    };
+
+    function findCallbacks(targetParentNode, targetNode, event) {
+      var matches = [];
+      var entries = callbackRegistry[event];
+      if (entries) {
+        forEach(entries, function(entry) {
+          if (contains.call(entry.node, targetNode)) {
+            matches.push(entry.callback);
+          } else if (event === 'leave' && contains.call(entry.node, targetParentNode)) {
+            matches.push(entry.callback);
+          }
+        });
+      }
+
+      return matches;
+    }
+
+    function filterFromRegistry(list, matchContainer, matchCallback) {
+      var containerNode = extractElementNode(matchContainer);
+      return list.filter(function(entry) {
+        var isMatch = entry.node === containerNode &&
+                        (!matchCallback || entry.callback === matchCallback);
+        return !isMatch;
+      });
+    }
+
+    function cleanupEventListeners(phase, node) {
+      if (phase === 'close' && !node.parentNode) {
+        // If the element is not attached to a parentNode, it has been removed by
+        // the domOperation, and we can safely remove the event callbacks
+        $animate.off(node);
+      }
+    }
+
+    var $animate = {
+      on: function(event, container, callback) {
+        var node = extractElementNode(container);
+        callbackRegistry[event] = callbackRegistry[event] || [];
+        callbackRegistry[event].push({
+          node: node,
+          callback: callback
+        });
+
+        // Remove the callback when the element is removed from the DOM
+        jqLite(container).on('$destroy', function() {
+          var animationDetails = activeAnimationsLookup.get(node);
+
+          if (!animationDetails) {
+            // If there's an animation ongoing, the callback calling code will remove
+            // the event listeners. If we'd remove here, the callbacks would be removed
+            // before the animation ends
+            $animate.off(event, container, callback);
+          }
+        });
+      },
+
+      off: function(event, container, callback) {
+        if (arguments.length === 1 && !isString(arguments[0])) {
+          container = arguments[0];
+          for (var eventType in callbackRegistry) {
+            callbackRegistry[eventType] = filterFromRegistry(callbackRegistry[eventType], container);
+          }
+
+          return;
+        }
+
+        var entries = callbackRegistry[event];
+        if (!entries) return;
+
+        callbackRegistry[event] = arguments.length === 1
+            ? null
+            : filterFromRegistry(entries, container, callback);
+      },
+
+      pin: function(element, parentElement) {
+        assertArg(isElement(element), 'element', 'not an element');
+        assertArg(isElement(parentElement), 'parentElement', 'not an element');
+        element.data(NG_ANIMATE_PIN_DATA, parentElement);
+      },
+
+      push: function(element, event, options, domOperation) {
+        options = options || {};
+        options.domOperation = domOperation;
+        return queueAnimation(element, event, options);
+      },
+
+      // this method has four signatures:
+      //  () - global getter
+      //  (bool) - global setter
+      //  (element) - element getter
+      //  (element, bool) - element setter<F37>
+      enabled: function(element, bool) {
+        var argCount = arguments.length;
+
+        if (argCount === 0) {
+          // () - Global getter
+          bool = !!animationsEnabled;
+        } else {
+          var hasElement = isElement(element);
+
+          if (!hasElement) {
+            // (bool) - Global setter
+            bool = animationsEnabled = !!element;
+          } else {
+            var node = getDomNode(element);
+
+            if (argCount === 1) {
+              // (element) - Element getter
+              bool = !disabledElementsLookup.get(node);
+            } else {
+              // (element, bool) - Element setter
+              disabledElementsLookup.set(node, !bool);
+            }
+          }
+        }
+
+        return bool;
+      }
+    };
+
+    return $animate;
+
+    function queueAnimation(originalElement, event, initialOptions) {
+      // we always make a copy of the options since
+      // there should never be any side effects on
+      // the input data when running `$animateCss`.
+      var options = copy(initialOptions);
+
+      var element = stripCommentsFromElement(originalElement);
+      var node = getDomNode(element);
+      var parentNode = node && node.parentNode;
+
+      options = prepareAnimationOptions(options);
+
+      // we create a fake runner with a working promise.
+      // These methods will become available after the digest has passed
+      var runner = new $$AnimateRunner();
+
+      // this is used to trigger callbacks in postDigest mode
+      var runInNextPostDigestOrNow = postDigestTaskFactory();
+
+      if (isArray(options.addClass)) {
+        options.addClass = options.addClass.join(' ');
+      }
+
+      if (options.addClass && !isString(options.addClass)) {
+        options.addClass = null;
+      }
+
+      if (isArray(options.removeClass)) {
+        options.removeClass = options.removeClass.join(' ');
+      }
+
+      if (options.removeClass && !isString(options.removeClass)) {
+        options.removeClass = null;
+      }
+
+      if (options.from && !isObject(options.from)) {
+        options.from = null;
+      }
+
+      if (options.to && !isObject(options.to)) {
+        options.to = null;
+      }
+
+      // If animations are hard-disabled for the whole application there is no need to continue.
+      // There are also situations where a directive issues an animation for a jqLite wrapper that
+      // contains only comment nodes. In this case, there is no way we can perform an animation.
+      if (!animationsEnabled ||
+          !node ||
+          !isAnimatableByFilter(node, event, initialOptions) ||
+          !isAnimatableClassName(node, options)) {
+        close();
+        return runner;
+      }
+
+      var isStructural = ['enter', 'move', 'leave'].indexOf(event) >= 0;
+
+      var documentHidden = $$isDocumentHidden();
+
+      // This is a hard disable of all animations the element itself, therefore  there is no need to
+      // continue further past this point if not enabled
+      // Animations are also disabled if the document is currently hidden (page is not visible
+      // to the user), because browsers slow down or do not flush calls to requestAnimationFrame
+      var skipAnimations = documentHidden || disabledElementsLookup.get(node);
+      var existingAnimation = (!skipAnimations && activeAnimationsLookup.get(node)) || {};
+      var hasExistingAnimation = !!existingAnimation.state;
+
+      // there is no point in traversing the same collection of parent ancestors if a followup
+      // animation will be run on the same element that already did all that checking work
+      if (!skipAnimations && (!hasExistingAnimation || existingAnimation.state !== PRE_DIGEST_STATE)) {
+        skipAnimations = !areAnimationsAllowed(node, parentNode, event);
+      }
+
+      if (skipAnimations) {
+        // Callbacks should fire even if the document is hidden (regression fix for issue #14120)
+        if (documentHidden) notifyProgress(runner, event, 'start');
+        close();
+        if (documentHidden) notifyProgress(runner, event, 'close');
+        return runner;
+      }
+
+      if (isStructural) {
+        closeChildAnimations(node);
+      }
+
+      var newAnimation = {
+        structural: isStructural,
+        element: element,
+        event: event,
+        addClass: options.addClass,
+        removeClass: options.removeClass,
+        close: close,
+        options: options,
+        runner: runner
+      };
+
+      if (hasExistingAnimation) {
+        var skipAnimationFlag = isAllowed('skip', newAnimation, existingAnimation);
+        if (skipAnimationFlag) {
+          if (existingAnimation.state === RUNNING_STATE) {
+            close();
+            return runner;
+          } else {
+            mergeAnimationDetails(element, existingAnimation, newAnimation);
+            return existingAnimation.runner;
+          }
+        }
+        var cancelAnimationFlag = isAllowed('cancel', newAnimation, existingAnimation);
+        if (cancelAnimationFlag) {
+          if (existingAnimation.state === RUNNING_STATE) {
+            // this will end the animation right away and it is safe
+            // to do so since the animation is already running and the
+            // runner callback code will run in async
+            existingAnimation.runner.end();
+          } else if (existingAnimation.structural) {
+            // this means that the animation is queued into a digest, but
+            // hasn't started yet. Therefore it is safe to run the close
+            // method which will call the runner methods in async.
+            existingAnimation.close();
+          } else {
+            // this will merge the new animation options into existing animation options
+            mergeAnimationDetails(element, existingAnimation, newAnimation);
+
+            return existingAnimation.runner;
+          }
+        } else {
+          // a joined animation means that this animation will take over the existing one
+          // so an example would involve a leave animation taking over an enter. Then when
+          // the postDigest kicks in the enter will be ignored.
+          var joinAnimationFlag = isAllowed('join', newAnimation, existingAnimation);
+          if (joinAnimationFlag) {
+            if (existingAnimation.state === RUNNING_STATE) {
+              normalizeAnimationDetails(element, newAnimation);
+            } else {
+              applyGeneratedPreparationClasses(element, isStructural ? event : null, options);
+
+              event = newAnimation.event = existingAnimation.event;
+              options = mergeAnimationDetails(element, existingAnimation, newAnimation);
+
+              //we return the same runner since only the option values of this animation will
+              //be fed into the `existingAnimation`.
+              return existingAnimation.runner;
+            }
+          }
+        }
+      } else {
+        // normalization in this case means that it removes redundant CSS classes that
+        // already exist (addClass) or do not exist (removeClass) on the element
+        normalizeAnimationDetails(element, newAnimation);
+      }
+
+      // when the options are merged and cleaned up we may end up not having to do
+      // an animation at all, therefore we should check this before issuing a post
+      // digest callback. Structural animations will always run no matter what.
+      var isValidAnimation = newAnimation.structural;
+      if (!isValidAnimation) {
+        // animate (from/to) can be quickly checked first, otherwise we check if any classes are present
+        isValidAnimation = (newAnimation.event === 'animate' && Object.keys(newAnimation.options.to || {}).length > 0)
+                            || hasAnimationClasses(newAnimation);
+      }
+
+      if (!isValidAnimation) {
+        close();
+        clearElementAnimationState(node);
+        return runner;
+      }
+
+      // the counter keeps track of cancelled animations
+      var counter = (existingAnimation.counter || 0) + 1;
+      newAnimation.counter = counter;
+
+      markElementAnimationState(node, PRE_DIGEST_STATE, newAnimation);
+
+      $rootScope.$$postDigest(function() {
+        // It is possible that the DOM nodes inside `originalElement` have been replaced. This can
+        // happen if the animated element is a transcluded clone and also has a `templateUrl`
+        // directive on it. Therefore, we must recreate `element` in order to interact with the
+        // actual DOM nodes.
+        // Note: We still need to use the old `node` for certain things, such as looking up in
+        //       HashMaps where it was used as the key.
+
+        element = stripCommentsFromElement(originalElement);
+
+        var animationDetails = activeAnimationsLookup.get(node);
+        var animationCancelled = !animationDetails;
+        animationDetails = animationDetails || {};
+
+        // if addClass/removeClass is called before something like enter then the
+        // registered parent element may not be present. The code below will ensure
+        // that a final value for parent element is obtained
+        var parentElement = element.parent() || [];
+
+        // animate/structural/class-based animations all have requirements. Otherwise there
+        // is no point in performing an animation. The parent node must also be set.
+        var isValidAnimation = parentElement.length > 0
+                                && (animationDetails.event === 'animate'
+                                    || animationDetails.structural
+                                    || hasAnimationClasses(animationDetails));
+
+        // this means that the previous animation was cancelled
+        // even if the follow-up animation is the same event
+        if (animationCancelled || animationDetails.counter !== counter || !isValidAnimation) {
+          // if another animation did not take over then we need
+          // to make sure that the domOperation and options are
+          // handled accordingly
+          if (animationCancelled) {
+            applyAnimationClasses(element, options);
+            applyAnimationStyles(element, options);
+          }
+
+          // if the event changed from something like enter to leave then we do
+          // it, otherwise if it's the same then the end result will be the same too
+          if (animationCancelled || (isStructural && animationDetails.event !== event)) {
+            options.domOperation();
+            runner.end();
+          }
+
+          // in the event that the element animation was not cancelled or a follow-up animation
+          // isn't allowed to animate from here then we need to clear the state of the element
+          // so that any future animations won't read the expired animation data.
+          if (!isValidAnimation) {
+            clearElementAnimationState(node);
+          }
+
+          return;
+        }
+
+        // this combined multiple class to addClass / removeClass into a setClass event
+        // so long as a structural event did not take over the animation
+        event = !animationDetails.structural && hasAnimationClasses(animationDetails, true)
+            ? 'setClass'
+            : animationDetails.event;
+
+        markElementAnimationState(node, RUNNING_STATE);
+        var realRunner = $$animation(element, event, animationDetails.options);
+
+        // this will update the runner's flow-control events based on
+        // the `realRunner` object.
+        runner.setHost(realRunner);
+        notifyProgress(runner, event, 'start', {});
+
+        realRunner.done(function(status) {
+          close(!status);
+          var animationDetails = activeAnimationsLookup.get(node);
+          if (animationDetails && animationDetails.counter === counter) {
+            clearElementAnimationState(node);
+          }
+          notifyProgress(runner, event, 'close', {});
+        });
+      });
+
+      return runner;
+
+      function notifyProgress(runner, event, phase, data) {
+        runInNextPostDigestOrNow(function() {
+          var callbacks = findCallbacks(parentNode, node, event);
+          if (callbacks.length) {
+            // do not optimize this call here to RAF because
+            // we don't know how heavy the callback code here will
+            // be and if this code is buffered then this can
+            // lead to a performance regression.
+            $$rAF(function() {
+              forEach(callbacks, function(callback) {
+                callback(element, phase, data);
+              });
+              cleanupEventListeners(phase, node);
+            });
+          } else {
+            cleanupEventListeners(phase, node);
+          }
+        });
+        runner.progress(event, phase, data);
+      }
+
+      function close(reject) {
+        clearGeneratedClasses(element, options);
+        applyAnimationClasses(element, options);
+        applyAnimationStyles(element, options);
+        options.domOperation();
+        runner.complete(!reject);
+      }
+    }
+
+    function closeChildAnimations(node) {
+      var children = node.querySelectorAll('[' + NG_ANIMATE_ATTR_NAME + ']');
+      forEach(children, function(child) {
+        var state = parseInt(child.getAttribute(NG_ANIMATE_ATTR_NAME), 10);
+        var animationDetails = activeAnimationsLookup.get(child);
+        if (animationDetails) {
+          switch (state) {
+            case RUNNING_STATE:
+              animationDetails.runner.end();
+              /* falls through */
+            case PRE_DIGEST_STATE:
+              activeAnimationsLookup.delete(child);
+              break;
+          }
+        }
+      });
+    }
+
+    function clearElementAnimationState(node) {
+      node.removeAttribute(NG_ANIMATE_ATTR_NAME);
+      activeAnimationsLookup.delete(node);
+    }
+
+    /**
+     * This fn returns false if any of the following is true:
+     * a) animations on any parent element are disabled, and animations on the element aren't explicitly allowed
+     * b) a parent element has an ongoing structural animation, and animateChildren is false
+     * c) the element is not a child of the body
+     * d) the element is not a child of the $rootElement
+     */
+    function areAnimationsAllowed(node, parentNode, event) {
+      var bodyNode = $document[0].body;
+      var rootNode = getDomNode($rootElement);
+
+      var bodyNodeDetected = (node === bodyNode) || node.nodeName === 'HTML';
+      var rootNodeDetected = (node === rootNode);
+      var parentAnimationDetected = false;
+      var elementDisabled = disabledElementsLookup.get(node);
+      var animateChildren;
+
+      var parentHost = jqLite.data(node, NG_ANIMATE_PIN_DATA);
+      if (parentHost) {
+        parentNode = getDomNode(parentHost);
+      }
+
+      while (parentNode) {
+        if (!rootNodeDetected) {
+          // angular doesn't want to attempt to animate elements outside of the application
+          // therefore we need to ensure that the rootElement is an ancestor of the current element
+          rootNodeDetected = (parentNode === rootNode);
+        }
+
+        if (parentNode.nodeType !== ELEMENT_NODE) {
+          // no point in inspecting the #document element
+          break;
+        }
+
+        var details = activeAnimationsLookup.get(parentNode) || {};
+        // either an enter, leave or move animation will commence
+        // therefore we can't allow any animations to take place
+        // but if a parent animation is class-based then that's ok
+        if (!parentAnimationDetected) {
+          var parentNodeDisabled = disabledElementsLookup.get(parentNode);
+
+          if (parentNodeDisabled === true && elementDisabled !== false) {
+            // disable animations if the user hasn't explicitly enabled animations on the
+            // current element
+            elementDisabled = true;
+            // element is disabled via parent element, no need to check anything else
+            break;
+          } else if (parentNodeDisabled === false) {
+            elementDisabled = false;
+          }
+          parentAnimationDetected = details.structural;
+        }
+
+        if (isUndefined(animateChildren) || animateChildren === true) {
+          var value = jqLite.data(parentNode, NG_ANIMATE_CHILDREN_DATA);
+          if (isDefined(value)) {
+            animateChildren = value;
+          }
+        }
+
+        // there is no need to continue traversing at this point
+        if (parentAnimationDetected && animateChildren === false) break;
+
+        if (!bodyNodeDetected) {
+          // we also need to ensure that the element is or will be a part of the body element
+          // otherwise it is pointless to even issue an animation to be rendered
+          bodyNodeDetected = (parentNode === bodyNode);
+        }
+
+        if (bodyNodeDetected && rootNodeDetected) {
+          // If both body and root have been found, any other checks are pointless,
+          // as no animation data should live outside the application
+          break;
+        }
+
+        if (!rootNodeDetected) {
+          // If `rootNode` is not detected, check if `parentNode` is pinned to another element
+          parentHost = jqLite.data(parentNode, NG_ANIMATE_PIN_DATA);
+          if (parentHost) {
+            // The pin target element becomes the next parent element
+            parentNode = getDomNode(parentHost);
+            continue;
+          }
+        }
+
+        parentNode = parentNode.parentNode;
+      }
+
+      var allowAnimation = (!parentAnimationDetected || animateChildren) && elementDisabled !== true;
+      return allowAnimation && rootNodeDetected && bodyNodeDetected;
+    }
+
+    function markElementAnimationState(node, state, details) {
+      details = details || {};
+      details.state = state;
+
+      node.setAttribute(NG_ANIMATE_ATTR_NAME, state);
+
+      var oldValue = activeAnimationsLookup.get(node);
+      var newValue = oldValue
+          ? extend(oldValue, details)
+          : details;
+      activeAnimationsLookup.set(node, newValue);
+    }
+  }];
+}];
+
+/* exported $$AnimationProvider */
+
+var $$AnimationProvider = ['$animateProvider', /** @this */ function($animateProvider) {
+  var NG_ANIMATE_REF_ATTR = 'ng-animate-ref';
+
+  var drivers = this.drivers = [];
+
+  var RUNNER_STORAGE_KEY = '$$animationRunner';
+
+  function setRunner(element, runner) {
+    element.data(RUNNER_STORAGE_KEY, runner);
+  }
+
+  function removeRunner(element) {
+    element.removeData(RUNNER_STORAGE_KEY);
+  }
+
+  function getRunner(element) {
+    return element.data(RUNNER_STORAGE_KEY);
+  }
+
+  this.$get = ['$$jqLite', '$rootScope', '$injector', '$$AnimateRunner', '$$Map', '$$rAFScheduler',
+       function($$jqLite,   $rootScope,   $injector,   $$AnimateRunner,   $$Map,   $$rAFScheduler) {
+
+    var animationQueue = [];
+    var applyAnimationClasses = applyAnimationClassesFactory($$jqLite);
+
+    function sortAnimations(animations) {
+      var tree = { children: [] };
+      var i, lookup = new $$Map();
+
+      // this is done first beforehand so that the map
+      // is filled with a list of the elements that will be animated
+      for (i = 0; i < animations.length; i++) {
+        var animation = animations[i];
+        lookup.set(animation.domNode, animations[i] = {
+          domNode: animation.domNode,
+          fn: animation.fn,
+          children: []
+        });
+      }
+
+      for (i = 0; i < animations.length; i++) {
+        processNode(animations[i]);
+      }
+
+      return flatten(tree);
+
+      function processNode(entry) {
+        if (entry.processed) return entry;
+        entry.processed = true;
+
+        var elementNode = entry.domNode;
+        var parentNode = elementNode.parentNode;
+        lookup.set(elementNode, entry);
+
+        var parentEntry;
+        while (parentNode) {
+          parentEntry = lookup.get(parentNode);
+          if (parentEntry) {
+            if (!parentEntry.processed) {
+              parentEntry = processNode(parentEntry);
+            }
+            break;
+          }
+          parentNode = parentNode.parentNode;
+        }
+
+        (parentEntry || tree).children.push(entry);
+        return entry;
+      }
+
+      function flatten(tree) {
+        var result = [];
+        var queue = [];
+        var i;
+
+        for (i = 0; i < tree.children.length; i++) {
+          queue.push(tree.children[i]);
+        }
+
+        var remainingLevelEntries = queue.length;
+        var nextLevelEntries = 0;
+        var row = [];
+
+        for (i = 0; i < queue.length; i++) {
+          var entry = queue[i];
+          if (remainingLevelEntries <= 0) {
+            remainingLevelEntries = nextLevelEntries;
+            nextLevelEntries = 0;
+            result.push(row);
+            row = [];
+          }
+          row.push(entry.fn);
+          entry.children.forEach(function(childEntry) {
+            nextLevelEntries++;
+            queue.push(childEntry);
+          });
+          remainingLevelEntries--;
+        }
+
+        if (row.length) {
+          result.push(row);
+        }
+
+        return result;
+      }
+    }
+
+    // TODO(matsko): document the signature in a better way
+    return function(element, event, options) {
+      options = prepareAnimationOptions(options);
+      var isStructural = ['enter', 'move', 'leave'].indexOf(event) >= 0;
+
+      // there is no animation at the current moment, however
+      // these runner methods will get later updated with the
+      // methods leading into the driver's end/cancel methods
+      // for now they just stop the animation from starting
+      var runner = new $$AnimateRunner({
+        end: function() { close(); },
+        cancel: function() { close(true); }
+      });
+
+      if (!drivers.length) {
+        close();
+        return runner;
+      }
+
+      setRunner(element, runner);
+
+      var classes = mergeClasses(element.attr('class'), mergeClasses(options.addClass, options.removeClass));
+      var tempClasses = options.tempClasses;
+      if (tempClasses) {
+        classes += ' ' + tempClasses;
+        options.tempClasses = null;
+      }
+
+      var prepareClassName;
+      if (isStructural) {
+        prepareClassName = 'ng-' + event + PREPARE_CLASS_SUFFIX;
+        $$jqLite.addClass(element, prepareClassName);
+      }
+
+      animationQueue.push({
+        // this data is used by the postDigest code and passed into
+        // the driver step function
+        element: element,
+        classes: classes,
+        event: event,
+        structural: isStructural,
+        options: options,
+        beforeStart: beforeStart,
+        close: close
+      });
+
+      element.on('$destroy', handleDestroyedElement);
+
+      // we only want there to be one function called within the post digest
+      // block. This way we can group animations for all the animations that
+      // were apart of the same postDigest flush call.
+      if (animationQueue.length > 1) return runner;
+
+      $rootScope.$$postDigest(function() {
+        var animations = [];
+        forEach(animationQueue, function(entry) {
+          // the element was destroyed early on which removed the runner
+          // form its storage. This means we can't animate this element
+          // at all and it already has been closed due to destruction.
+          if (getRunner(entry.element)) {
+            animations.push(entry);
+          } else {
+            entry.close();
+          }
+        });
+
+        // now any future animations will be in another postDigest
+        animationQueue.length = 0;
+
+        var groupedAnimations = groupAnimations(animations);
+        var toBeSortedAnimations = [];
+
+        forEach(groupedAnimations, function(animationEntry) {
+          toBeSortedAnimations.push({
+            domNode: getDomNode(animationEntry.from ? animationEntry.from.element : animationEntry.element),
+            fn: function triggerAnimationStart() {
+              // it's important that we apply the `ng-animate` CSS class and the
+              // temporary classes before we do any driver invoking since these
+              // CSS classes may be required for proper CSS detection.
+              animationEntry.beforeStart();
+
+              var startAnimationFn, closeFn = animationEntry.close;
+
+              // in the event that the element was removed before the digest runs or
+              // during the RAF sequencing then we should not trigger the animation.
+              var targetElement = animationEntry.anchors
+                  ? (animationEntry.from.element || animationEntry.to.element)
+                  : animationEntry.element;
+
+              if (getRunner(targetElement)) {
+                var operation = invokeFirstDriver(animationEntry);
+                if (operation) {
+                  startAnimationFn = operation.start;
+                }
+              }
+
+              if (!startAnimationFn) {
+                closeFn();
+              } else {
+                var animationRunner = startAnimationFn();
+                animationRunner.done(function(status) {
+                  closeFn(!status);
+                });
+                updateAnimationRunners(animationEntry, animationRunner);
+              }
+            }
+          });
+        });
+
+        // we need to sort each of the animations in order of parent to child
+        // relationships. This ensures that the child classes are applied at the
+        // right time.
+        $$rAFScheduler(sortAnimations(toBeSortedAnimations));
+      });
+
+      return runner;
+
+      // TODO(matsko): change to reference nodes
+      function getAnchorNodes(node) {
+        var SELECTOR = '[' + NG_ANIMATE_REF_ATTR + ']';
+        var items = node.hasAttribute(NG_ANIMATE_REF_ATTR)
+              ? [node]
+              : node.querySelectorAll(SELECTOR);
+        var anchors = [];
+        forEach(items, function(node) {
+          var attr = node.getAttribute(NG_ANIMATE_REF_ATTR);
+          if (attr && attr.length) {
+            anchors.push(node);
+          }
+        });
+        return anchors;
+      }
+
+      function groupAnimations(animations) {
+        var preparedAnimations = [];
+        var refLookup = {};
+        forEach(animations, function(animation, index) {
+          var element = animation.element;
+          var node = getDomNode(element);
+          var event = animation.event;
+          var enterOrMove = ['enter', 'move'].indexOf(event) >= 0;
+          var anchorNodes = animation.structural ? getAnchorNodes(node) : [];
+
+          if (anchorNodes.length) {
+            var direction = enterOrMove ? 'to' : 'from';
+
+            forEach(anchorNodes, function(anchor) {
+              var key = anchor.getAttribute(NG_ANIMATE_REF_ATTR);
+              refLookup[key] = refLookup[key] || {};
+              refLookup[key][direction] = {
+                animationID: index,
+                element: jqLite(anchor)
+              };
+            });
+          } else {
+            preparedAnimations.push(animation);
+          }
+        });
+
+        var usedIndicesLookup = {};
+        var anchorGroups = {};
+        forEach(refLookup, function(operations, key) {
+          var from = operations.from;
+          var to = operations.to;
+
+          if (!from || !to) {
+            // only one of these is set therefore we can't have an
+            // anchor animation since all three pieces are required
+            var index = from ? from.animationID : to.animationID;
+            var indexKey = index.toString();
+            if (!usedIndicesLookup[indexKey]) {
+              usedIndicesLookup[indexKey] = true;
+              preparedAnimations.push(animations[index]);
+            }
+            return;
+          }
+
+          var fromAnimation = animations[from.animationID];
+          var toAnimation = animations[to.animationID];
+          var lookupKey = from.animationID.toString();
+          if (!anchorGroups[lookupKey]) {
+            var group = anchorGroups[lookupKey] = {
+              structural: true,
+              beforeStart: function() {
+                fromAnimation.beforeStart();
+                toAnimation.beforeStart();
+              },
+              close: function() {
+                fromAnimation.close();
+                toAnimation.close();
+              },
+              classes: cssClassesIntersection(fromAnimation.classes, toAnimation.classes),
+              from: fromAnimation,
+              to: toAnimation,
+              anchors: [] // TODO(matsko): change to reference nodes
+            };
+
+            // the anchor animations require that the from and to elements both have at least
+            // one shared CSS class which effectively marries the two elements together to use
+            // the same animation driver and to properly sequence the anchor animation.
+            if (group.classes.length) {
+              preparedAnimations.push(group);
+            } else {
+              preparedAnimations.push(fromAnimation);
+              preparedAnimations.push(toAnimation);
+            }
+          }
+
+          anchorGroups[lookupKey].anchors.push({
+            'out': from.element, 'in': to.element
+          });
+        });
+
+        return preparedAnimations;
+      }
+
+      function cssClassesIntersection(a,b) {
+        a = a.split(' ');
+        b = b.split(' ');
+        var matches = [];
+
+        for (var i = 0; i < a.length; i++) {
+          var aa = a[i];
+          if (aa.substring(0,3) === 'ng-') continue;
+
+          for (var j = 0; j < b.length; j++) {
+            if (aa === b[j]) {
+              matches.push(aa);
+              break;
+            }
+          }
+        }
+
+        return matches.join(' ');
+      }
+
+      function invokeFirstDriver(animationDetails) {
+        // we loop in reverse order since the more general drivers (like CSS and JS)
+        // may attempt more elements, but custom drivers are more particular
+        for (var i = drivers.length - 1; i >= 0; i--) {
+          var driverName = drivers[i];
+          var factory = $injector.get(driverName);
+          var driver = factory(animationDetails);
+          if (driver) {
+            return driver;
+          }
+        }
+      }
+
+      function beforeStart() {
+        element.addClass(NG_ANIMATE_CLASSNAME);
+        if (tempClasses) {
+          $$jqLite.addClass(element, tempClasses);
+        }
+        if (prepareClassName) {
+          $$jqLite.removeClass(element, prepareClassName);
+          prepareClassName = null;
+        }
+      }
+
+      function updateAnimationRunners(animation, newRunner) {
+        if (animation.from && animation.to) {
+          update(animation.from.element);
+          update(animation.to.element);
+        } else {
+          update(animation.element);
+        }
+
+        function update(element) {
+          var runner = getRunner(element);
+          if (runner) runner.setHost(newRunner);
+        }
+      }
+
+      function handleDestroyedElement() {
+        var runner = getRunner(element);
+        if (runner && (event !== 'leave' || !options.$$domOperationFired)) {
+          runner.end();
+        }
+      }
+
+      function close(rejected) {
+        element.off('$destroy', handleDestroyedElement);
+        removeRunner(element);
+
+        applyAnimationClasses(element, options);
+        applyAnimationStyles(element, options);
+        options.domOperation();
+
+        if (tempClasses) {
+          $$jqLite.removeClass(element, tempClasses);
+        }
+
+        element.removeClass(NG_ANIMATE_CLASSNAME);
+        runner.complete(!rejected);
+      }
+    };
+  }];
+}];
+
+/**
+ * @ngdoc directive
+ * @name ngAnimateSwap
+ * @restrict A
+ * @scope
+ *
+ * @description
+ *
+ * ngAnimateSwap is a animation-oriented directive that allows for the container to
+ * be removed and entered in whenever the associated expression changes. A
+ * common usecase for this directive is a rotating banner or slider component which
+ * contains one image being present at a time. When the active image changes
+ * then the old image will perform a `leave` animation and the new element
+ * will be inserted via an `enter` animation.
+ *
+ * @animations
+ * | Animation                        | Occurs                               |
+ * |----------------------------------|--------------------------------------|
+ * | {@link ng.$animate#enter enter}  | when the new element is inserted to the DOM  |
+ * | {@link ng.$animate#leave leave}  | when the old element is removed from the DOM |
+ *
+ * @example
+ * <example name="ngAnimateSwap-directive" module="ngAnimateSwapExample"
+ *          deps="angular-animate.js"
+ *          animations="true" fixBase="true">
+ *   <file name="index.html">
+ *     <div class="container" ng-controller="AppCtrl">
+ *       <div ng-animate-swap="number" class="cell swap-animation" ng-class="colorClass(number)">
+ *         {{ number }}
+ *       </div>
+ *     </div>
+ *   </file>
+ *   <file name="script.js">
+ *     angular.module('ngAnimateSwapExample', ['ngAnimate'])
+ *       .controller('AppCtrl', ['$scope', '$interval', function($scope, $interval) {
+ *         $scope.number = 0;
+ *         $interval(function() {
+ *           $scope.number++;
+ *         }, 1000);
+ *
+ *         var colors = ['red','blue','green','yellow','orange'];
+ *         $scope.colorClass = function(number) {
+ *           return colors[number % colors.length];
+ *         };
+ *       }]);
+ *   </file>
+ *  <file name="animations.css">
+ *  .container {
+ *    height:250px;
+ *    width:250px;
+ *    position:relative;
+ *    overflow:hidden;
+ *    border:2px solid black;
+ *  }
+ *  .container .cell {
+ *    font-size:150px;
+ *    text-align:center;
+ *    line-height:250px;
+ *    position:absolute;
+ *    top:0;
+ *    left:0;
+ *    right:0;
+ *    border-bottom:2px solid black;
+ *  }
+ *  .swap-animation.ng-enter, .swap-animation.ng-leave {
+ *    transition:0.5s linear all;
+ *  }
+ *  .swap-animation.ng-enter {
+ *    top:-250px;
+ *  }
+ *  .swap-animation.ng-enter-active {
+ *    top:0px;
+ *  }
+ *  .swap-animation.ng-leave {
+ *    top:0px;
+ *  }
+ *  .swap-animation.ng-leave-active {
+ *    top:250px;
+ *  }
+ *  .red { background:red; }
+ *  .green { background:green; }
+ *  .blue { background:blue; }
+ *  .yellow { background:yellow; }
+ *  .orange { background:orange; }
+ *  </file>
+ * </example>
+ */
+var ngAnimateSwapDirective = ['$animate', '$rootScope', function($animate, $rootScope) {
+  return {
+    restrict: 'A',
+    transclude: 'element',
+    terminal: true,
+    priority: 600, // we use 600 here to ensure that the directive is caught before others
+    link: function(scope, $element, attrs, ctrl, $transclude) {
+      var previousElement, previousScope;
+      scope.$watchCollection(attrs.ngAnimateSwap || attrs['for'], function(value) {
+        if (previousElement) {
+          $animate.leave(previousElement);
+        }
+        if (previousScope) {
+          previousScope.$destroy();
+          previousScope = null;
+        }
+        if (value || value === 0) {
+          previousScope = scope.$new();
+          $transclude(previousScope, function(element) {
+            previousElement = element;
+            $animate.enter(element, null, $element);
+          });
+        }
+      });
+    }
+  };
+}];
+
+/**
+ * @ngdoc module
+ * @name ngAnimate
+ * @description
+ *
+ * The `ngAnimate` module provides support for CSS-based animations (keyframes and transitions) as well as JavaScript-based animations via
+ * callback hooks. Animations are not enabled by default, however, by including `ngAnimate` the animation hooks are enabled for an Angular app.
+ *
+ * <div doc-module-components="ngAnimate"></div>
+ *
+ * # Usage
+ * Simply put, there are two ways to make use of animations when ngAnimate is used: by using **CSS** and **JavaScript**. The former works purely based
+ * using CSS (by using matching CSS selectors/styles) and the latter triggers animations that are registered via `module.animation()`. For
+ * both CSS and JS animations the sole requirement is to have a matching `CSS class` that exists both in the registered animation and within
+ * the HTML element that the animation will be triggered on.
+ *
+ * ## Directive Support
+ * The following directives are "animation aware":
+ *
+ * | Directive                                                                                                | Supported Animations                                                     |
+ * |----------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+ * | {@link ng.directive:ngRepeat#animations ngRepeat}                                                        | enter, leave and move                                                    |
+ * | {@link ngRoute.directive:ngView#animations ngView}                                                       | enter and leave                                                          |
+ * | {@link ng.directive:ngInclude#animations ngInclude}                                                      | enter and leave                                                          |
+ * | {@link ng.directive:ngSwitch#animations ngSwitch}                                                        | enter and leave                                                          |
+ * | {@link ng.directive:ngIf#animations ngIf}                                                                | enter and leave                                                          |
+ * | {@link ng.directive:ngClass#animations ngClass}                                                          | add and remove (the CSS class(es) present)                               |
+ * | {@link ng.directive:ngShow#animations ngShow} & {@link ng.directive:ngHide#animations ngHide}            | add and remove (the ng-hide class value)                                 |
+ * | {@link ng.directive:form#animation-hooks form} & {@link ng.directive:ngModel#animation-hooks ngModel}    | add and remove (dirty, pristine, valid, invalid & all other validations) |
+ * | {@link module:ngMessages#animations ngMessages}                                                          | add and remove (ng-active & ng-inactive)                                 |
+ * | {@link module:ngMessages#animations ngMessage}                                                           | enter and leave                                                          |
+ *
+ * (More information can be found by visiting each the documentation associated with each directive.)
+ *
+ * ## CSS-based Animations
+ *
+ * CSS-based animations with ngAnimate are unique since they require no JavaScript code at all. By using a CSS class that we reference between our HTML
+ * and CSS code we can create an animation that will be picked up by Angular when an underlying directive performs an operation.
+ *
+ * The example below shows how an `enter` animation can be made possible on an element using `ng-if`:
+ *
+ * ```html
+ * <div ng-if="bool" class="fade">
+ *    Fade me in out
+ * </div>
+ * <button ng-click="bool=true">Fade In!</button>
+ * <button ng-click="bool=false">Fade Out!</button>
+ * ```
+ *
+ * Notice the CSS class **fade**? We can now create the CSS transition code that references this class:
+ *
+ * ```css
+ * /&#42; The starting CSS styles for the enter animation &#42;/
+ * .fade.ng-enter {
+ *   transition:0.5s linear all;
+ *   opacity:0;
+ * }
+ *
+ * /&#42; The finishing CSS styles for the enter animation &#42;/
+ * .fade.ng-enter.ng-enter-active {
+ *   opacity:1;
+ * }
+ * ```
+ *
+ * The key thing to remember here is that, depending on the animation event (which each of the directives above trigger depending on what's going on) two
+ * generated CSS classes will be applied to the element; in the example above we have `.ng-enter` and `.ng-enter-active`. For CSS transitions, the transition
+ * code **must** be defined within the starting CSS class (in this case `.ng-enter`). The destination class is what the transition will animate towards.
+ *
+ * If for example we wanted to create animations for `leave` and `move` (ngRepeat triggers move) then we can do so using the same CSS naming conventions:
+ *
+ * ```css
+ * /&#42; now the element will fade out before it is removed from the DOM &#42;/
+ * .fade.ng-leave {
+ *   transition:0.5s linear all;
+ *   opacity:1;
+ * }
+ * .fade.ng-leave.ng-leave-active {
+ *   opacity:0;
+ * }
+ * ```
+ *
+ * We can also make use of **CSS Keyframes** by referencing the keyframe animation within the starting CSS class:
+ *
+ * ```css
+ * /&#42; there is no need to define anything inside of the destination
+ * CSS class since the keyframe will take charge of the animation &#42;/
+ * .fade.ng-leave {
+ *   animation: my_fade_animation 0.5s linear;
+ *   -webkit-animation: my_fade_animation 0.5s linear;
+ * }
+ *
+ * @keyframes my_fade_animation {
+ *   from { opacity:1; }
+ *   to { opacity:0; }
+ * }
+ *
+ * @-webkit-keyframes my_fade_animation {
+ *   from { opacity:1; }
+ *   to { opacity:0; }
+ * }
+ * ```
+ *
+ * Feel free also mix transitions and keyframes together as well as any other CSS classes on the same element.
+ *
+ * ### CSS Class-based Animations
+ *
+ * Class-based animations (animations that are triggered via `ngClass`, `ngShow`, `ngHide` and some other directives) have a slightly different
+ * naming convention. Class-based animations are basic enough that a standard transition or keyframe can be referenced on the class being added
+ * and removed.
+ *
+ * For example if we wanted to do a CSS animation for `ngHide` then we place an animation on the `.ng-hide` CSS class:
+ *
+ * ```html
+ * <div ng-show="bool" class="fade">
+ *   Show and hide me
+ * </div>
+ * <button ng-click="bool=!bool">Toggle</button>
+ *
+ * <style>
+ * .fade.ng-hide {
+ *   transition:0.5s linear all;
+ *   opacity:0;
+ * }
+ * </style>
+ * ```
+ *
+ * All that is going on here with ngShow/ngHide behind the scenes is the `.ng-hide` class is added/removed (when the hidden state is valid). Since
+ * ngShow and ngHide are animation aware then we can match up a transition and ngAnimate handles the rest.
+ *
+ * In addition the addition and removal of the CSS class, ngAnimate also provides two helper methods that we can use to further decorate the animation
+ * with CSS styles.
+ *
+ * ```html
+ * <div ng-class="{on:onOff}" class="highlight">
+ *   Highlight this box
+ * </div>
+ * <button ng-click="onOff=!onOff">Toggle</button>
+ *
+ * <style>
+ * .highlight {
+ *   transition:0.5s linear all;
+ * }
+ * .highlight.on-add {
+ *   background:white;
+ * }
+ * .highlight.on {
+ *   background:yellow;
+ * }
+ * .highlight.on-remove {
+ *   background:black;
+ * }
+ * </style>
+ * ```
+ *
+ * We can also make use of CSS keyframes by placing them within the CSS classes.
+ *
+ *
+ * ### CSS Staggering Animations
+ * A Staggering animation is a collection of animations that are issued with a slight delay in between each successive operation resulting in a
+ * curtain-like effect. The ngAnimate module (versions >=1.2) supports staggering animations and the stagger effect can be
+ * performed by creating a **ng-EVENT-stagger** CSS class and attaching that class to the base CSS class used for
+ * the animation. The style property expected within the stagger class can either be a **transition-delay** or an
+ * **animation-delay** property (or both if your animation contains both transitions and keyframe animations).
+ *
+ * ```css
+ * .my-animation.ng-enter {
+ *   /&#42; standard transition code &#42;/
+ *   transition: 1s linear all;
+ *   opacity:0;
+ * }
+ * .my-animation.ng-enter-stagger {
+ *   /&#42; this will have a 100ms delay between each successive leave animation &#42;/
+ *   transition-delay: 0.1s;
+ *
+ *   /&#42; As of 1.4.4, this must always be set: it signals ngAnimate
+ *     to not accidentally inherit a delay property from another CSS class &#42;/
+ *   transition-duration: 0s;
+ *
+ *   /&#42; if you are using animations instead of transitions you should configure as follows:
+ *     animation-delay: 0.1s;
+ *     animation-duration: 0s; &#42;/
+ * }
+ * .my-animation.ng-enter.ng-enter-active {
+ *   /&#42; standard transition styles &#42;/
+ *   opacity:1;
+ * }
+ * ```
+ *
+ * Staggering animations work by default in ngRepeat (so long as the CSS class is defined). Outside of ngRepeat, to use staggering animations
+ * on your own, they can be triggered by firing multiple calls to the same event on $animate. However, the restrictions surrounding this
+ * are that each of the elements must have the same CSS className value as well as the same parent element. A stagger operation
+ * will also be reset if one or more animation frames have passed since the multiple calls to `$animate` were fired.
+ *
+ * The following code will issue the **ng-leave-stagger** event on the element provided:
+ *
+ * ```js
+ * var kids = parent.children();
+ *
+ * $animate.leave(kids[0]); //stagger index=0
+ * $animate.leave(kids[1]); //stagger index=1
+ * $animate.leave(kids[2]); //stagger index=2
+ * $animate.leave(kids[3]); //stagger index=3
+ * $animate.leave(kids[4]); //stagger index=4
+ *
+ * window.requestAnimationFrame(function() {
+ *   //stagger has reset itself
+ *   $animate.leave(kids[5]); //stagger index=0
+ *   $animate.leave(kids[6]); //stagger index=1
+ *
+ *   $scope.$digest();
+ * });
+ * ```
+ *
+ * Stagger animations are currently only supported within CSS-defined animations.
+ *
+ * ### The `ng-animate` CSS class
+ *
+ * When ngAnimate is animating an element it will apply the `ng-animate` CSS class to the element for the duration of the animation.
+ * This is a temporary CSS class and it will be removed once the animation is over (for both JavaScript and CSS-based animations).
+ *
+ * Therefore, animations can be applied to an element using this temporary class directly via CSS.
+ *
+ * ```css
+ * .zipper.ng-animate {
+ *   transition:0.5s linear all;
+ * }
+ * .zipper.ng-enter {
+ *   opacity:0;
+ * }
+ * .zipper.ng-enter.ng-enter-active {
+ *   opacity:1;
+ * }
+ * .zipper.ng-leave {
+ *   opacity:1;
+ * }
+ * .zipper.ng-leave.ng-leave-active {
+ *   opacity:0;
+ * }
+ * ```
+ *
+ * (Note that the `ng-animate` CSS class is reserved and it cannot be applied on an element directly since ngAnimate will always remove
+ * the CSS class once an animation has completed.)
+ *
+ *
+ * ### The `ng-[event]-prepare` class
+ *
+ * This is a special class that can be used to prevent unwanted flickering / flash of content before
+ * the actual animation starts. The class is added as soon as an animation is initialized, but removed
+ * before the actual animation starts (after waiting for a $digest).
+ * It is also only added for *structural* animations (`enter`, `move`, and `leave`).
+ *
+ * In practice, flickering can appear when nesting elements with structural animations such as `ngIf`
+ * into elements that have class-based animations such as `ngClass`.
+ *
+ * ```html
+ * <div ng-class="{red: myProp}">
+ *   <div ng-class="{blue: myProp}">
+ *     <div class="message" ng-if="myProp"></div>
+ *   </div>
+ * </div>
+ * ```
+ *
+ * It is possible that during the `enter` animation, the `.message` div will be briefly visible before it starts animating.
+ * In that case, you can add styles to the CSS that make sure the element stays hidden before the animation starts:
+ *
+ * ```css
+ * .message.ng-enter-prepare {
+ *   opacity: 0;
+ * }
+ *
+ * ```
+ *
+ * ## JavaScript-based Animations
+ *
+ * ngAnimate also allows for animations to be consumed by JavaScript code. The approach is similar to CSS-based animations (where there is a shared
+ * CSS class that is referenced in our HTML code) but in addition we need to register the JavaScript animation on the module. By making use of the
+ * `module.animation()` module function we can register the animation.
+ *
+ * Let's see an example of a enter/leave animation using `ngRepeat`:
+ *
+ * ```html
+ * <div ng-repeat="item in items" class="slide">
+ *   {{ item }}
+ * </div>
+ * ```
+ *
+ * See the **slide** CSS class? Let's use that class to define an animation that we'll structure in our module code by using `module.animation`:
+ *
+ * ```js
+ * myModule.animation('.slide', [function() {
+ *   return {
+ *     // make note that other events (like addClass/removeClass)
+ *     // have different function input parameters
+ *     enter: function(element, doneFn) {
+ *       jQuery(element).fadeIn(1000, doneFn);
+ *
+ *       // remember to call doneFn so that angular
+ *       // knows that the animation has concluded
+ *     },
+ *
+ *     move: function(element, doneFn) {
+ *       jQuery(element).fadeIn(1000, doneFn);
+ *     },
+ *
+ *     leave: function(element, doneFn) {
+ *       jQuery(element).fadeOut(1000, doneFn);
+ *     }
+ *   }
+ * }]);
+ * ```
+ *
+ * The nice thing about JS-based animations is that we can inject other services and make use of advanced animation libraries such as
+ * greensock.js and velocity.js.
+ *
+ * If our animation code class-based (meaning that something like `ngClass`, `ngHide` and `ngShow` triggers it) then we can still define
+ * our animations inside of the same registered animation, however, the function input arguments are a bit different:
+ *
+ * ```html
+ * <div ng-class="color" class="colorful">
+ *   this box is moody
+ * </div>
+ * <button ng-click="color='red'">Change to red</button>
+ * <button ng-click="color='blue'">Change to blue</button>
+ * <button ng-click="color='green'">Change to green</button>
+ * ```
+ *
+ * ```js
+ * myModule.animation('.colorful', [function() {
+ *   return {
+ *     addClass: function(element, className, doneFn) {
+ *       // do some cool animation and call the doneFn
+ *     },
+ *     removeClass: function(element, className, doneFn) {
+ *       // do some cool animation and call the doneFn
+ *     },
+ *     setClass: function(element, addedClass, removedClass, doneFn) {
+ *       // do some cool animation and call the doneFn
+ *     }
+ *   }
+ * }]);
+ * ```
+ *
+ * ## CSS + JS Animations Together
+ *
+ * AngularJS 1.4 and higher has taken steps to make the amalgamation of CSS and JS animations more flexible. However, unlike earlier versions of Angular,
+ * defining CSS and JS animations to work off of the same CSS class will not work anymore. Therefore the example below will only result in **JS animations taking
+ * charge of the animation**:
+ *
+ * ```html
+ * <div ng-if="bool" class="slide">
+ *   Slide in and out
+ * </div>
+ * ```
+ *
+ * ```js
+ * myModule.animation('.slide', [function() {
+ *   return {
+ *     enter: function(element, doneFn) {
+ *       jQuery(element).slideIn(1000, doneFn);
+ *     }
+ *   }
+ * }]);
+ * ```
+ *
+ * ```css
+ * .slide.ng-enter {
+ *   transition:0.5s linear all;
+ *   transform:translateY(-100px);
+ * }
+ * .slide.ng-enter.ng-enter-active {
+ *   transform:translateY(0);
+ * }
+ * ```
+ *
+ * Does this mean that CSS and JS animations cannot be used together? Do JS-based animations always have higher priority? We can make up for the
+ * lack of CSS animations by using the `$animateCss` service to trigger our own tweaked-out, CSS-based animations directly from
+ * our own JS-based animation code:
+ *
+ * ```js
+ * myModule.animation('.slide', ['$animateCss', function($animateCss) {
+ *   return {
+ *     enter: function(element) {
+*        // this will trigger `.slide.ng-enter` and `.slide.ng-enter-active`.
+ *       return $animateCss(element, {
+ *         event: 'enter',
+ *         structural: true
+ *       });
+ *     }
+ *   }
+ * }]);
+ * ```
+ *
+ * The nice thing here is that we can save bandwidth by sticking to our CSS-based animation code and we don't need to rely on a 3rd-party animation framework.
+ *
+ * The `$animateCss` service is very powerful since we can feed in all kinds of extra properties that will be evaluated and fed into a CSS transition or
+ * keyframe animation. For example if we wanted to animate the height of an element while adding and removing classes then we can do so by providing that
+ * data into `$animateCss` directly:
+ *
+ * ```js
+ * myModule.animation('.slide', ['$animateCss', function($animateCss) {
+ *   return {
+ *     enter: function(element) {
+ *       return $animateCss(element, {
+ *         event: 'enter',
+ *         structural: true,
+ *         addClass: 'maroon-setting',
+ *         from: { height:0 },
+ *         to: { height: 200 }
+ *       });
+ *     }
+ *   }
+ * }]);
+ * ```
+ *
+ * Now we can fill in the rest via our transition CSS code:
+ *
+ * ```css
+ * /&#42; the transition tells ngAnimate to make the animation happen &#42;/
+ * .slide.ng-enter { transition:0.5s linear all; }
+ *
+ * /&#42; this extra CSS class will be absorbed into the transition
+ * since the $animateCss code is adding the class &#42;/
+ * .maroon-setting { background:red; }
+ * ```
+ *
+ * And `$animateCss` will figure out the rest. Just make sure to have the `done()` callback fire the `doneFn` function to signal when the animation is over.
+ *
+ * To learn more about what's possible be sure to visit the {@link ngAnimate.$animateCss $animateCss service}.
+ *
+ * ## Animation Anchoring (via `ng-animate-ref`)
+ *
+ * ngAnimate in AngularJS 1.4 comes packed with the ability to cross-animate elements between
+ * structural areas of an application (like views) by pairing up elements using an attribute
+ * called `ng-animate-ref`.
+ *
+ * Let's say for example we have two views that are managed by `ng-view` and we want to show
+ * that there is a relationship between two components situated in within these views. By using the
+ * `ng-animate-ref` attribute we can identify that the two components are paired together and we
+ * can then attach an animation, which is triggered when the view changes.
+ *
+ * Say for example we have the following template code:
+ *
+ * ```html
+ * <!-- index.html -->
+ * <div ng-view class="view-animation">
+ * </div>
+ *
+ * <!-- home.html -->
+ * <a href="#/banner-page">
+ *   <img src="./banner.jpg" class="banner" ng-animate-ref="banner">
+ * </a>
+ *
+ * <!-- banner-page.html -->
+ * <img src="./banner.jpg" class="banner" ng-animate-ref="banner">
+ * ```
+ *
+ * Now, when the view changes (once the link is clicked), ngAnimate will examine the
+ * HTML contents to see if there is a match reference between any components in the view
+ * that is leaving and the view that is entering. It will scan both the view which is being
+ * removed (leave) and inserted (enter) to see if there are any paired DOM elements that
+ * contain a matching ref value.
+ *
+ * The two images match since they share the same ref value. ngAnimate will now create a
+ * transport element (which is a clone of the first image element) and it will then attempt
+ * to animate to the position of the second image element in the next view. For the animation to
+ * work a special CSS class called `ng-anchor` will be added to the transported element.
+ *
+ * We can now attach a transition onto the `.banner.ng-anchor` CSS class and then
+ * ngAnimate will handle the entire transition for us as well as the addition and removal of
+ * any changes of CSS classes between the elements:
+ *
+ * ```css
+ * .banner.ng-anchor {
+ *   /&#42; this animation will last for 1 second since there are
+ *          two phases to the animation (an `in` and an `out` phase) &#42;/
+ *   transition:0.5s linear all;
+ * }
+ * ```
+ *
+ * We also **must** include animations for the views that are being entered and removed
+ * (otherwise anchoring wouldn't be possible since the new view would be inserted right away).
+ *
+ * ```css
+ * .view-animation.ng-enter, .view-animation.ng-leave {
+ *   transition:0.5s linear all;
+ *   position:fixed;
+ *   left:0;
+ *   top:0;
+ *   width:100%;
+ * }
+ * .view-animation.ng-enter {
+ *   transform:translateX(100%);
+ * }
+ * .view-animation.ng-leave,
+ * .view-animation.ng-enter.ng-enter-active {
+ *   transform:translateX(0%);
+ * }
+ * .view-animation.ng-leave.ng-leave-active {
+ *   transform:translateX(-100%);
+ * }
+ * ```
+ *
+ * Now we can jump back to the anchor animation. When the animation happens, there are two stages that occur:
+ * an `out` and an `in` stage. The `out` stage happens first and that is when the element is animated away
+ * from its origin. Once that animation is over then the `in` stage occurs which animates the
+ * element to its destination. The reason why there are two animations is to give enough time
+ * for the enter animation on the new element to be ready.
+ *
+ * The example above sets up a transition for both the in and out phases, but we can also target the out or
+ * in phases directly via `ng-anchor-out` and `ng-anchor-in`.
+ *
+ * ```css
+ * .banner.ng-anchor-out {
+ *   transition: 0.5s linear all;
+ *
+ *   /&#42; the scale will be applied during the out animation,
+ *          but will be animated away when the in animation runs &#42;/
+ *   transform: scale(1.2);
+ * }
+ *
+ * .banner.ng-anchor-in {
+ *   transition: 1s linear all;
+ * }
+ * ```
+ *
+ *
+ *
+ *
+ * ### Anchoring Demo
+ *
+  <example module="anchoringExample"
+           name="anchoringExample"
+           id="anchoringExample"
+           deps="angular-animate.js;angular-route.js"
+           animations="true">
+    <file name="index.html">
+      <a href="#!/">Home</a>
+      <hr />
+      <div class="view-container">
+        <div ng-view class="view"></div>
+      </div>
+    </file>
+    <file name="script.js">
+      angular.module('anchoringExample', ['ngAnimate', 'ngRoute'])
+        .config(['$routeProvider', function($routeProvider) {
+          $routeProvider.when('/', {
+            templateUrl: 'home.html',
+            controller: 'HomeController as home'
+          });
+          $routeProvider.when('/profile/:id', {
+            templateUrl: 'profile.html',
+            controller: 'ProfileController as profile'
+          });
+        }])
+        .run(['$rootScope', function($rootScope) {
+          $rootScope.records = [
+            { id: 1, title: 'Miss Beulah Roob' },
+            { id: 2, title: 'Trent Morissette' },
+            { id: 3, title: 'Miss Ava Pouros' },
+            { id: 4, title: 'Rod Pouros' },
+            { id: 5, title: 'Abdul Rice' },
+            { id: 6, title: 'Laurie Rutherford Sr.' },
+            { id: 7, title: 'Nakia McLaughlin' },
+            { id: 8, title: 'Jordon Blanda DVM' },
+            { id: 9, title: 'Rhoda Hand' },
+            { id: 10, title: 'Alexandrea Sauer' }
+          ];
+        }])
+        .controller('HomeController', [function() {
+          //empty
+        }])
+        .controller('ProfileController', ['$rootScope', '$routeParams',
+            function ProfileController($rootScope, $routeParams) {
+          var index = parseInt($routeParams.id, 10);
+          var record = $rootScope.records[index - 1];
+
+          this.title = record.title;
+          this.id = record.id;
+        }]);
+    </file>
+    <file name="home.html">
+      <h2>Welcome to the home page</h1>
+      <p>Please click on an element</p>
+      <a class="record"
+         ng-href="#!/profile/{{ record.id }}"
+         ng-animate-ref="{{ record.id }}"
+         ng-repeat="record in records">
+        {{ record.title }}
+      </a>
+    </file>
+    <file name="profile.html">
+      <div class="profile record" ng-animate-ref="{{ profile.id }}">
+        {{ profile.title }}
+      </div>
+    </file>
+    <file name="animations.css">
+      .record {
+        display:block;
+        font-size:20px;
+      }
+      .profile {
+        background:black;
+        color:white;
+        font-size:100px;
+      }
+      .view-container {
+        position:relative;
+      }
+      .view-container > .view.ng-animate {
+        position:absolute;
+        top:0;
+        left:0;
+        width:100%;
+        min-height:500px;
+      }
+      .view.ng-enter, .view.ng-leave,
+      .record.ng-anchor {
+        transition:0.5s linear all;
+      }
+      .view.ng-enter {
+        transform:translateX(100%);
+      }
+      .view.ng-enter.ng-enter-active, .view.ng-leave {
+        transform:translateX(0%);
+      }
+      .view.ng-leave.ng-leave-active {
+        transform:translateX(-100%);
+      }
+      .record.ng-anchor-out {
+        background:red;
+      }
+    </file>
+  </example>
+ *
+ * ### How is the element transported?
+ *
+ * When an anchor animation occurs, ngAnimate will clone the starting element and position it exactly where the starting
+ * element is located on screen via absolute positioning. The cloned element will be placed inside of the root element
+ * of the application (where ng-app was defined) and all of the CSS classes of the starting element will be applied. The
+ * element will then animate into the `out` and `in` animations and will eventually reach the coordinates and match
+ * the dimensions of the destination element. During the entire animation a CSS class of `.ng-animate-shim` will be applied
+ * to both the starting and destination elements in order to hide them from being visible (the CSS styling for the class
+ * is: `visibility:hidden`). Once the anchor reaches its destination then it will be removed and the destination element
+ * will become visible since the shim class will be removed.
+ *
+ * ### How is the morphing handled?
+ *
+ * CSS Anchoring relies on transitions and keyframes and the internal code is intelligent enough to figure out
+ * what CSS classes differ between the starting element and the destination element. These different CSS classes
+ * will be added/removed on the anchor element and a transition will be applied (the transition that is provided
+ * in the anchor class). Long story short, ngAnimate will figure out what classes to add and remove which will
+ * make the transition of the element as smooth and automatic as possible. Be sure to use simple CSS classes that
+ * do not rely on DOM nesting structure so that the anchor element appears the same as the starting element (since
+ * the cloned element is placed inside of root element which is likely close to the body element).
+ *
+ * Note that if the root element is on the `<html>` element then the cloned node will be placed inside of body.
+ *
+ *
+ * ## Using $animate in your directive code
+ *
+ * So far we've explored how to feed in animations into an Angular application, but how do we trigger animations within our own directives in our application?
+ * By injecting the `$animate` service into our directive code, we can trigger structural and class-based hooks which can then be consumed by animations. Let's
+ * imagine we have a greeting box that shows and hides itself when the data changes
+ *
+ * ```html
+ * <greeting-box active="onOrOff">Hi there</greeting-box>
+ * ```
+ *
+ * ```js
+ * ngModule.directive('greetingBox', ['$animate', function($animate) {
+ *   return function(scope, element, attrs) {
+ *     attrs.$observe('active', function(value) {
+ *       value ? $animate.addClass(element, 'on') : $animate.removeClass(element, 'on');
+ *     });
+ *   });
+ * }]);
+ * ```
+ *
+ * Now the `on` CSS class is added and removed on the greeting box component. Now if we add a CSS class on top of the greeting box element
+ * in our HTML code then we can trigger a CSS or JS animation to happen.
+ *
+ * ```css
+ * /&#42; normally we would create a CSS class to reference on the element &#42;/
+ * greeting-box.on { transition:0.5s linear all; background:green; color:white; }
+ * ```
+ *
+ * The `$animate` service contains a variety of other methods like `enter`, `leave`, `animate` and `setClass`. To learn more about what's
+ * possible be sure to visit the {@link ng.$animate $animate service API page}.
+ *
+ *
+ * ## Callbacks and Promises
+ *
+ * When `$animate` is called it returns a promise that can be used to capture when the animation has ended. Therefore if we were to trigger
+ * an animation (within our directive code) then we can continue performing directive and scope related activities after the animation has
+ * ended by chaining onto the returned promise that animation method returns.
+ *
+ * ```js
+ * // somewhere within the depths of the directive
+ * $animate.enter(element, parent).then(function() {
+ *   //the animation has completed
+ * });
+ * ```
+ *
+ * (Note that earlier versions of Angular prior to v1.4 required the promise code to be wrapped using `$scope.$apply(...)`. This is not the case
+ * anymore.)
+ *
+ * In addition to the animation promise, we can also make use of animation-related callbacks within our directives and controller code by registering
+ * an event listener using the `$animate` service. Let's say for example that an animation was triggered on our view
+ * routing controller to hook into that:
+ *
+ * ```js
+ * ngModule.controller('HomePageController', ['$animate', function($animate) {
+ *   $animate.on('enter', ngViewElement, function(element) {
+ *     // the animation for this route has completed
+ *   }]);
+ * }])
+ * ```
+ *
+ * (Note that you will need to trigger a digest within the callback to get angular to notice any scope-related changes.)
+ */
+
+var copy;
+var extend;
+var forEach;
+var isArray;
+var isDefined;
+var isElement;
+var isFunction;
+var isObject;
+var isString;
+var isUndefined;
+var jqLite;
+var noop;
+
+/**
+ * @ngdoc service
+ * @name $animate
+ * @kind object
+ *
+ * @description
+ * The ngAnimate `$animate` service documentation is the same for the core `$animate` service.
+ *
+ * Click here {@link ng.$animate to learn more about animations with `$animate`}.
+ */
+angular.module('ngAnimate', [], function initAngularHelpers() {
+  // Access helpers from angular core.
+  // Do it inside a `config` block to ensure `window.angular` is available.
+  noop        = angular.noop;
+  copy        = angular.copy;
+  extend      = angular.extend;
+  jqLite      = angular.element;
+  forEach     = angular.forEach;
+  isArray     = angular.isArray;
+  isString    = angular.isString;
+  isObject    = angular.isObject;
+  isUndefined = angular.isUndefined;
+  isDefined   = angular.isDefined;
+  isFunction  = angular.isFunction;
+  isElement   = angular.isElement;
+})
+  .info({ angularVersion: '1.6.6' })
+  .directive('ngAnimateSwap', ngAnimateSwapDirective)
+
+  .directive('ngAnimateChildren', $$AnimateChildrenDirective)
+  .factory('$$rAFScheduler', $$rAFSchedulerFactory)
+
+  .provider('$$animateQueue', $$AnimateQueueProvider)
+  .provider('$$animation', $$AnimationProvider)
+
+  .provider('$animateCss', $AnimateCssProvider)
+  .provider('$$animateCssDriver', $$AnimateCssDriverProvider)
+
+  .provider('$$animateJs', $$AnimateJsProvider)
+  .provider('$$animateJsDriver', $$AnimateJsDriverProvider);
+
+
+})(window, window.angular);
+
+
+/***/ }),
+/* 404 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * State-based routing for AngularJS 1.x
+ * This bundle requires the ui-router-core.js bundle from the @uirouter/core package.
+ * @version v1.0.10
+ * @link https://ui-router.github.io
+ * @license MIT License, http://www.opensource.org/licenses/MIT
+ */
+(function (global, factory) {
+	 true ? factory(exports, __webpack_require__(0), __webpack_require__(405)) :
+	typeof define === 'function' && define.amd ? define(['exports', 'angular', '@uirouter/core'], factory) :
+	(factory((global['@uirouter/angularjs'] = {}),global.angular,global['@uirouter/core']));
+}(this, (function (exports,ng_from_import,core) { 'use strict';
+
+var ng_from_global = angular;
+var ng = (ng_from_import && ng_from_import.module) ? ng_from_import : ng_from_global;
+
+function getNg1ViewConfigFactory() {
+    var templateFactory = null;
+    return function (path, view) {
+        templateFactory = templateFactory || core.services.$injector.get("$templateFactory");
+        return [new Ng1ViewConfig(path, view, templateFactory)];
+    };
+}
+var hasAnyKey = function (keys, obj) {
+    return keys.reduce(function (acc, key) { return acc || core.isDefined(obj[key]); }, false);
+};
+/**
+ * This is a [[StateBuilder.builder]] function for angular1 `views`.
+ *
+ * When the [[StateBuilder]] builds a [[StateObject]] object from a raw [[StateDeclaration]], this builder
+ * handles the `views` property with logic specific to @uirouter/angularjs (ng1).
+ *
+ * If no `views: {}` property exists on the [[StateDeclaration]], then it creates the `views` object
+ * and applies the state-level configuration to a view named `$default`.
+ */
+function ng1ViewsBuilder(state) {
+    // Do not process root state
+    if (!state.parent)
+        return {};
+    var tplKeys = ['templateProvider', 'templateUrl', 'template', 'notify', 'async'], ctrlKeys = ['controller', 'controllerProvider', 'controllerAs', 'resolveAs'], compKeys = ['component', 'bindings', 'componentProvider'], nonCompKeys = tplKeys.concat(ctrlKeys), allViewKeys = compKeys.concat(nonCompKeys);
+    // Do not allow a state to have both state-level props and also a `views: {}` property.
+    // A state without a `views: {}` property can declare properties for the `$default` view as properties of the state.
+    // However, the `$default` approach should not be mixed with a separate `views: ` block.
+    if (core.isDefined(state.views) && hasAnyKey(allViewKeys, state)) {
+        throw new Error("State '" + state.name + "' has a 'views' object. " +
+            "It cannot also have \"view properties\" at the state level.  " +
+            "Move the following properties into a view (in the 'views' object): " +
+            (" " + allViewKeys.filter(function (key) { return core.isDefined(state[key]); }).join(", ")));
+    }
+    var views = {}, viewsObject = state.views || { "$default": core.pick(state, allViewKeys) };
+    core.forEach(viewsObject, function (config, name) {
+        // Account for views: { "": { template... } }
+        name = name || "$default";
+        // Account for views: { header: "headerComponent" }
+        if (core.isString(config))
+            config = { component: config };
+        // Make a shallow copy of the config object
+        config = core.extend({}, config);
+        // Do not allow a view to mix props for component-style view with props for template/controller-style view
+        if (hasAnyKey(compKeys, config) && hasAnyKey(nonCompKeys, config)) {
+            throw new Error("Cannot combine: " + compKeys.join("|") + " with: " + nonCompKeys.join("|") + " in stateview: '" + name + "@" + state.name + "'");
+        }
+        config.resolveAs = config.resolveAs || '$resolve';
+        config.$type = "ng1";
+        config.$context = state;
+        config.$name = name;
+        var normalized = core.ViewService.normalizeUIViewTarget(config.$context, config.$name);
+        config.$uiViewName = normalized.uiViewName;
+        config.$uiViewContextAnchor = normalized.uiViewContextAnchor;
+        views[name] = config;
+    });
+    return views;
+}
+var id = 0;
+var Ng1ViewConfig = /** @class */ (function () {
+    function Ng1ViewConfig(path, viewDecl, factory) {
+        var _this = this;
+        this.path = path;
+        this.viewDecl = viewDecl;
+        this.factory = factory;
+        this.$id = id++;
+        this.loaded = false;
+        this.getTemplate = function (uiView, context) {
+            return _this.component ? _this.factory.makeComponentTemplate(uiView, context, _this.component, _this.viewDecl.bindings) : _this.template;
+        };
+    }
+    Ng1ViewConfig.prototype.load = function () {
+        var _this = this;
+        var $q = core.services.$q;
+        var context = new core.ResolveContext(this.path);
+        var params = this.path.reduce(function (acc, node) { return core.extend(acc, node.paramValues); }, {});
+        var promises = {
+            template: $q.when(this.factory.fromConfig(this.viewDecl, params, context)),
+            controller: $q.when(this.getController(context))
+        };
+        return $q.all(promises).then(function (results) {
+            core.trace.traceViewServiceEvent("Loaded", _this);
+            _this.controller = results.controller;
+            core.extend(_this, results.template); // Either { template: "tpl" } or { component: "cmpName" }
+            return _this;
+        });
+    };
+    /**
+     * Gets the controller for a view configuration.
+     *
+     * @returns {Function|Promise.<Function>} Returns a controller, or a promise that resolves to a controller.
+     */
+    Ng1ViewConfig.prototype.getController = function (context) {
+        var provider = this.viewDecl.controllerProvider;
+        if (!core.isInjectable(provider))
+            return this.viewDecl.controller;
+        var deps = core.services.$injector.annotate(provider);
+        var providerFn = core.isArray(provider) ? core.tail(provider) : provider;
+        var resolvable = new core.Resolvable("", providerFn, deps);
+        return resolvable.get(context);
+    };
+    return Ng1ViewConfig;
+}());
+
+/** @module view */
+/** for typedoc */
+/**
+ * Service which manages loading of templates from a ViewConfig.
+ */
+var TemplateFactory = /** @class */ (function () {
+    function TemplateFactory() {
+        var _this = this;
+        /** @hidden */ this._useHttp = ng.version.minor < 3;
+        /** @hidden */ this.$get = ['$http', '$templateCache', '$injector', function ($http, $templateCache, $injector) {
+                _this.$templateRequest = $injector.has && $injector.has('$templateRequest') && $injector.get('$templateRequest');
+                _this.$http = $http;
+                _this.$templateCache = $templateCache;
+                return _this;
+            }];
+    }
+    /** @hidden */
+    TemplateFactory.prototype.useHttpService = function (value) {
+        this._useHttp = value;
+    };
+    
+    /**
+     * Creates a template from a configuration object.
+     *
+     * @param config Configuration object for which to load a template.
+     * The following properties are search in the specified order, and the first one
+     * that is defined is used to create the template:
+     *
+     * @param params  Parameters to pass to the template function.
+     * @param context The resolve context associated with the template's view
+     *
+     * @return {string|object}  The template html as a string, or a promise for
+     * that string,or `null` if no template is configured.
+     */
+    TemplateFactory.prototype.fromConfig = function (config, params, context) {
+        var defaultTemplate = "<ui-view></ui-view>";
+        var asTemplate = function (result) { return core.services.$q.when(result).then(function (str) { return ({ template: str }); }); };
+        var asComponent = function (result) { return core.services.$q.when(result).then(function (str) { return ({ component: str }); }); };
+        return (core.isDefined(config.template) ? asTemplate(this.fromString(config.template, params)) :
+            core.isDefined(config.templateUrl) ? asTemplate(this.fromUrl(config.templateUrl, params)) :
+                core.isDefined(config.templateProvider) ? asTemplate(this.fromProvider(config.templateProvider, params, context)) :
+                    core.isDefined(config.component) ? asComponent(config.component) :
+                        core.isDefined(config.componentProvider) ? asComponent(this.fromComponentProvider(config.componentProvider, params, context)) :
+                            asTemplate(defaultTemplate));
+    };
+    
+    /**
+     * Creates a template from a string or a function returning a string.
+     *
+     * @param template html template as a string or function that returns an html template as a string.
+     * @param params Parameters to pass to the template function.
+     *
+     * @return {string|object} The template html as a string, or a promise for that
+     * string.
+     */
+    TemplateFactory.prototype.fromString = function (template, params) {
+        return core.isFunction(template) ? template(params) : template;
+    };
+    
+    /**
+     * Loads a template from the a URL via `$http` and `$templateCache`.
+     *
+     * @param {string|Function} url url of the template to load, or a function
+     * that returns a url.
+     * @param {Object} params Parameters to pass to the url function.
+     * @return {string|Promise.<string>} The template html as a string, or a promise
+     * for that string.
+     */
+    TemplateFactory.prototype.fromUrl = function (url, params) {
+        if (core.isFunction(url))
+            url = url(params);
+        if (url == null)
+            return null;
+        if (this._useHttp) {
+            return this.$http.get(url, { cache: this.$templateCache, headers: { Accept: 'text/html' } })
+                .then(function (response) {
+                return response.data;
+            });
+        }
+        return this.$templateRequest(url);
+    };
+    
+    /**
+     * Creates a template by invoking an injectable provider function.
+     *
+     * @param provider Function to invoke via `locals`
+     * @param {Function} injectFn a function used to invoke the template provider
+     * @return {string|Promise.<string>} The template html as a string, or a promise
+     * for that string.
+     */
+    TemplateFactory.prototype.fromProvider = function (provider, params, context) {
+        var deps = core.services.$injector.annotate(provider);
+        var providerFn = core.isArray(provider) ? core.tail(provider) : provider;
+        var resolvable = new core.Resolvable("", providerFn, deps);
+        return resolvable.get(context);
+    };
+    
+    /**
+     * Creates a component's template by invoking an injectable provider function.
+     *
+     * @param provider Function to invoke via `locals`
+     * @param {Function} injectFn a function used to invoke the template provider
+     * @return {string} The template html as a string: "<component-name input1='::$resolve.foo'></component-name>".
+     */
+    TemplateFactory.prototype.fromComponentProvider = function (provider, params, context) {
+        var deps = core.services.$injector.annotate(provider);
+        var providerFn = core.isArray(provider) ? core.tail(provider) : provider;
+        var resolvable = new core.Resolvable("", providerFn, deps);
+        return resolvable.get(context);
+    };
+    
+    /**
+     * Creates a template from a component's name
+     *
+     * This implements route-to-component.
+     * It works by retrieving the component (directive) metadata from the injector.
+     * It analyses the component's bindings, then constructs a template that instantiates the component.
+     * The template wires input and output bindings to resolves or from the parent component.
+     *
+     * @param uiView {object} The parent ui-view (for binding outputs to callbacks)
+     * @param context The ResolveContext (for binding outputs to callbacks returned from resolves)
+     * @param component {string} Component's name in camel case.
+     * @param bindings An object defining the component's bindings: {foo: '<'}
+     * @return {string} The template as a string: "<component-name input1='::$resolve.foo'></component-name>".
+     */
+    TemplateFactory.prototype.makeComponentTemplate = function (uiView, context, component, bindings) {
+        bindings = bindings || {};
+        // Bind once prefix
+        var prefix = ng.version.minor >= 3 ? "::" : "";
+        // Convert to kebob name. Add x- prefix if the string starts with `x-` or `data-`
+        var kebob = function (camelCase) {
+            var kebobed = core.kebobString(camelCase);
+            return /^(x|data)-/.exec(kebobed) ? "x-" + kebobed : kebobed;
+        };
+        var attributeTpl = function (input) {
+            var name = input.name, type = input.type;
+            var attrName = kebob(name);
+            // If the ui-view has an attribute which matches a binding on the routed component
+            // then pass that attribute through to the routed component template.
+            // Prefer ui-view wired mappings to resolve data, unless the resolve was explicitly bound using `bindings:`
+            if (uiView.attr(attrName) && !bindings[name])
+                return attrName + "='" + uiView.attr(attrName) + "'";
+            var resolveName = bindings[name] || name;
+            // Pre-evaluate the expression for "@" bindings by enclosing in {{ }}
+            // some-attr="{{ ::$resolve.someResolveName }}"
+            if (type === '@')
+                return attrName + "='{{" + prefix + "$resolve." + resolveName + "}}'";
+            // Wire "&" callbacks to resolves that return a callback function
+            // Get the result of the resolve (should be a function) and annotate it to get its arguments.
+            // some-attr="$resolve.someResolveResultName(foo, bar)"
+            if (type === '&') {
+                var res = context.getResolvable(resolveName);
+                var fn = res && res.data;
+                var args = fn && core.services.$injector.annotate(fn) || [];
+                // account for array style injection, i.e., ['foo', function(foo) {}]
+                var arrayIdxStr = core.isArray(fn) ? "[" + (fn.length - 1) + "]" : '';
+                return attrName + "='$resolve." + resolveName + arrayIdxStr + "(" + args.join(",") + ")'";
+            }
+            // some-attr="::$resolve.someResolveName"
+            return attrName + "='" + prefix + "$resolve." + resolveName + "'";
+        };
+        var attrs = getComponentBindings(component).map(attributeTpl).join(" ");
+        var kebobName = kebob(component);
+        return "<" + kebobName + " " + attrs + "></" + kebobName + ">";
+    };
+    
+    return TemplateFactory;
+}());
+// Gets all the directive(s)' inputs ('@', '=', and '<') and outputs ('&')
+function getComponentBindings(name) {
+    var cmpDefs = core.services.$injector.get(name + "Directive"); // could be multiple
+    if (!cmpDefs || !cmpDefs.length)
+        throw new Error("Unable to find component named '" + name + "'");
+    return cmpDefs.map(getBindings).reduce(core.unnestR, []);
+}
+// Given a directive definition, find its object input attributes
+// Use different properties, depending on the type of directive (component, bindToController, normal)
+var getBindings = function (def) {
+    if (core.isObject(def.bindToController))
+        return scopeBindings(def.bindToController);
+    return scopeBindings(def.scope);
+};
+// for ng 1.2 style, process the scope: { input: "=foo" }
+// for ng 1.3 through ng 1.5, process the component's bindToController: { input: "=foo" } object
+var scopeBindings = function (bindingsObj) { return Object.keys(bindingsObj || {})
+    .map(function (key) { return [key, /^([=<@&])[?]?(.*)/.exec(bindingsObj[key])]; })
+    .filter(function (tuple) { return core.isDefined(tuple) && core.isArray(tuple[1]); })
+    .map(function (tuple) { return ({ name: tuple[1][2] || tuple[0], type: tuple[1][1] }); }); };
+
+/** @module ng1 */ /** for typedoc */
+/**
+ * The Angular 1 `StateProvider`
+ *
+ * The `$stateProvider` works similar to Angular's v1 router, but it focuses purely
+ * on state.
+ *
+ * A state corresponds to a "place" in the application in terms of the overall UI and
+ * navigation. A state describes (via the controller / template / view properties) what
+ * the UI looks like and does at that place.
+ *
+ * States often have things in common, and the primary way of factoring out these
+ * commonalities in this model is via the state hierarchy, i.e. parent/child states aka
+ * nested states.
+ *
+ * The `$stateProvider` provides interfaces to declare these states for your app.
+ */
+var StateProvider = /** @class */ (function () {
+    function StateProvider(stateRegistry, stateService) {
+        this.stateRegistry = stateRegistry;
+        this.stateService = stateService;
+        core.createProxyFunctions(core.val(StateProvider.prototype), this, core.val(this));
+    }
+    /**
+     * Decorates states when they are registered
+     *
+     * Allows you to extend (carefully) or override (at your own peril) the
+     * `stateBuilder` object used internally by [[StateRegistry]].
+     * This can be used to add custom functionality to ui-router,
+     * for example inferring templateUrl based on the state name.
+     *
+     * When passing only a name, it returns the current (original or decorated) builder
+     * function that matches `name`.
+     *
+     * The builder functions that can be decorated are listed below. Though not all
+     * necessarily have a good use case for decoration, that is up to you to decide.
+     *
+     * In addition, users can attach custom decorators, which will generate new
+     * properties within the state's internal definition. There is currently no clear
+     * use-case for this beyond accessing internal states (i.e. $state.$current),
+     * however, expect this to become increasingly relevant as we introduce additional
+     * meta-programming features.
+     *
+     * **Warning**: Decorators should not be interdependent because the order of
+     * execution of the builder functions in non-deterministic. Builder functions
+     * should only be dependent on the state definition object and super function.
+     *
+     *
+     * Existing builder functions and current return values:
+     *
+     * - **parent** `{object}` - returns the parent state object.
+     * - **data** `{object}` - returns state data, including any inherited data that is not
+     *   overridden by own values (if any).
+     * - **url** `{object}` - returns a {@link ui.router.util.type:UrlMatcher UrlMatcher}
+     *   or `null`.
+     * - **navigable** `{object}` - returns closest ancestor state that has a URL (aka is
+     *   navigable).
+     * - **params** `{object}` - returns an array of state params that are ensured to
+     *   be a super-set of parent's params.
+     * - **views** `{object}` - returns a views object where each key is an absolute view
+     *   name (i.e. "viewName@stateName") and each value is the config object
+     *   (template, controller) for the view. Even when you don't use the views object
+     *   explicitly on a state config, one is still created for you internally.
+     *   So by decorating this builder function you have access to decorating template
+     *   and controller properties.
+     * - **ownParams** `{object}` - returns an array of params that belong to the state,
+     *   not including any params defined by ancestor states.
+     * - **path** `{string}` - returns the full path from the root down to this state.
+     *   Needed for state activation.
+     * - **includes** `{object}` - returns an object that includes every state that
+     *   would pass a `$state.includes()` test.
+     *
+     * #### Example:
+     * Override the internal 'views' builder with a function that takes the state
+     * definition, and a reference to the internal function being overridden:
+     * ```js
+     * $stateProvider.decorator('views', function (state, parent) {
+     *   let result = {},
+     *       views = parent(state);
+     *
+     *   angular.forEach(views, function (config, name) {
+     *     let autoName = (state.name + '.' + name).replace('.', '/');
+     *     config.templateUrl = config.templateUrl || '/partials/' + autoName + '.html';
+     *     result[name] = config;
+     *   });
+     *   return result;
+     * });
+     *
+     * $stateProvider.state('home', {
+     *   views: {
+     *     'contact.list': { controller: 'ListController' },
+     *     'contact.item': { controller: 'ItemController' }
+     *   }
+     * });
+     * ```
+     *
+     *
+     * ```js
+     * // Auto-populates list and item views with /partials/home/contact/list.html,
+     * // and /partials/home/contact/item.html, respectively.
+     * $state.go('home');
+     * ```
+     *
+     * @param {string} name The name of the builder function to decorate.
+     * @param {object} func A function that is responsible for decorating the original
+     * builder function. The function receives two parameters:
+     *
+     *   - `{object}` - state - The state config object.
+     *   - `{object}` - super - The original builder function.
+     *
+     * @return {object} $stateProvider - $stateProvider instance
+     */
+    StateProvider.prototype.decorator = function (name, func) {
+        return this.stateRegistry.decorator(name, func) || this;
+    };
+    StateProvider.prototype.state = function (name, definition) {
+        if (core.isObject(name)) {
+            definition = name;
+        }
+        else {
+            definition.name = name;
+        }
+        this.stateRegistry.register(definition);
+        return this;
+    };
+    /**
+     * Registers an invalid state handler
+     *
+     * This is a passthrough to [[StateService.onInvalid]] for ng1.
+     */
+    StateProvider.prototype.onInvalid = function (callback) {
+        return this.stateService.onInvalid(callback);
+    };
+    return StateProvider;
+}());
+
+/** @module ng1 */ /** */
+/**
+ * This is a [[StateBuilder.builder]] function for angular1 `onEnter`, `onExit`,
+ * `onRetain` callback hooks on a [[Ng1StateDeclaration]].
+ *
+ * When the [[StateBuilder]] builds a [[StateObject]] object from a raw [[StateDeclaration]], this builder
+ * ensures that those hooks are injectable for @uirouter/angularjs (ng1).
+ */
+var getStateHookBuilder = function (hookName) {
+    return function stateHookBuilder(state, parentFn) {
+        var hook = state[hookName];
+        var pathname = hookName === 'onExit' ? 'from' : 'to';
+        function decoratedNg1Hook(trans, state) {
+            var resolveContext = new core.ResolveContext(trans.treeChanges(pathname));
+            var locals = core.extend(getLocals(resolveContext), { $state$: state, $transition$: trans });
+            return core.services.$injector.invoke(hook, this, locals);
+        }
+        return hook ? decoratedNg1Hook : undefined;
+    };
+};
+
+/**
+ * Implements UI-Router LocationServices and LocationConfig using Angular 1's $location service
+ */
+var Ng1LocationServices = /** @class */ (function () {
+    function Ng1LocationServices($locationProvider) {
+        // .onChange() registry
+        this._urlListeners = [];
+        this.$locationProvider = $locationProvider;
+        var _lp = core.val($locationProvider);
+        core.createProxyFunctions(_lp, this, _lp, ['hashPrefix']);
+    }
+    Ng1LocationServices.prototype.dispose = function () { };
+    Ng1LocationServices.prototype.onChange = function (callback) {
+        var _this = this;
+        this._urlListeners.push(callback);
+        return function () { return core.removeFrom(_this._urlListeners)(callback); };
+    };
+    Ng1LocationServices.prototype.html5Mode = function () {
+        var html5Mode = this.$locationProvider.html5Mode();
+        html5Mode = core.isObject(html5Mode) ? html5Mode.enabled : html5Mode;
+        return html5Mode && this.$sniffer.history;
+    };
+    Ng1LocationServices.prototype.url = function (newUrl, replace, state) {
+        if (replace === void 0) { replace = false; }
+        if (newUrl)
+            this.$location.url(newUrl);
+        if (replace)
+            this.$location.replace();
+        if (state)
+            this.$location.state(state);
+        return this.$location.url();
+    };
+    Ng1LocationServices.prototype._runtimeServices = function ($rootScope, $location, $sniffer, $browser) {
+        var _this = this;
+        this.$location = $location;
+        this.$sniffer = $sniffer;
+        // Bind $locationChangeSuccess to the listeners registered in LocationService.onChange
+        $rootScope.$on("$locationChangeSuccess", function (evt) { return _this._urlListeners.forEach(function (fn) { return fn(evt); }); });
+        var _loc = core.val($location);
+        var _browser = core.val($browser);
+        // Bind these LocationService functions to $location
+        core.createProxyFunctions(_loc, this, _loc, ["replace", "path", "search", "hash"]);
+        // Bind these LocationConfig functions to $location
+        core.createProxyFunctions(_loc, this, _loc, ['port', 'protocol', 'host']);
+        // Bind these LocationConfig functions to $browser
+        core.createProxyFunctions(_browser, this, _browser, ['baseHref']);
+    };
+    /**
+     * Applys ng1-specific path parameter encoding
+     *
+     * The Angular 1 `$location` service is a bit weird.
+     * It doesn't allow slashes to be encoded/decoded bi-directionally.
+     *
+     * See the writeup at https://github.com/angular-ui/ui-router/issues/2598
+     *
+     * This code patches the `path` parameter type so it encoded/decodes slashes as ~2F
+     *
+     * @param router
+     */
+    Ng1LocationServices.monkeyPatchPathParameterType = function (router) {
+        var pathType = router.urlMatcherFactory.type('path');
+        pathType.encode = function (val$$1) {
+            return val$$1 != null ? val$$1.toString().replace(/(~|\/)/g, function (m) { return ({ '~': '~~', '/': '~2F' }[m]); }) : val$$1;
+        };
+        pathType.decode = function (val$$1) {
+            return val$$1 != null ? val$$1.toString().replace(/(~~|~2F)/g, function (m) { return ({ '~~': '~', '~2F': '/' }[m]); }) : val$$1;
+        };
+    };
+    return Ng1LocationServices;
+}());
+
+/** @module url */ /** */
+/**
+ * Manages rules for client-side URL
+ *
+ * ### Deprecation warning:
+ * This class is now considered to be an internal API
+ * Use the [[UrlService]] instead.
+ * For configuring URL rules, use the [[UrlRulesApi]] which can be found as [[UrlService.rules]].
+ *
+ * This class manages the router rules for what to do when the URL changes.
+ *
+ * This provider remains for backwards compatibility.
+ *
+ * @deprecated
+ */
+var UrlRouterProvider = /** @class */ (function () {
+    /** @hidden */
+    function UrlRouterProvider(router) {
+        this._router = router;
+        this._urlRouter = router.urlRouter;
+    }
+    /** @hidden */
+    UrlRouterProvider.prototype.$get = function () {
+        var urlRouter = this._urlRouter;
+        urlRouter.update(true);
+        if (!urlRouter.interceptDeferred)
+            urlRouter.listen();
+        return urlRouter;
+    };
+    /**
+     * Registers a url handler function.
+     *
+     * Registers a low level url handler (a `rule`).
+     * A rule detects specific URL patterns and returns a redirect, or performs some action.
+     *
+     * If a rule returns a string, the URL is replaced with the string, and all rules are fired again.
+     *
+     * #### Example:
+     * ```js
+     * var app = angular.module('app', ['ui.router.router']);
+     *
+     * app.config(function ($urlRouterProvider) {
+     *   // Here's an example of how you might allow case insensitive urls
+     *   $urlRouterProvider.rule(function ($injector, $location) {
+     *     var path = $location.path(),
+     *         normalized = path.toLowerCase();
+     *
+     *     if (path !== normalized) {
+     *       return normalized;
+     *     }
+     *   });
+     * });
+     * ```
+     *
+     * @param ruleFn
+     * Handler function that takes `$injector` and `$location` services as arguments.
+     * You can use them to detect a url and return a different url as a string.
+     *
+     * @return [[UrlRouterProvider]] (`this`)
+     */
+    UrlRouterProvider.prototype.rule = function (ruleFn) {
+        var _this = this;
+        if (!core.isFunction(ruleFn))
+            throw new Error("'rule' must be a function");
+        var match = function () {
+            return ruleFn(core.services.$injector, _this._router.locationService);
+        };
+        var rule = new core.BaseUrlRule(match, core.identity);
+        this._urlRouter.rule(rule);
+        return this;
+    };
+    
+    /**
+     * Defines the path or behavior to use when no url can be matched.
+     *
+     * #### Example:
+     * ```js
+     * var app = angular.module('app', ['ui.router.router']);
+     *
+     * app.config(function ($urlRouterProvider) {
+     *   // if the path doesn't match any of the urls you configured
+     *   // otherwise will take care of routing the user to the
+     *   // specified url
+     *   $urlRouterProvider.otherwise('/index');
+     *
+     *   // Example of using function rule as param
+     *   $urlRouterProvider.otherwise(function ($injector, $location) {
+     *     return '/a/valid/url';
+     *   });
+     * });
+     * ```
+     *
+     * @param rule
+     * The url path you want to redirect to or a function rule that returns the url path or performs a `$state.go()`.
+     * The function version is passed two params: `$injector` and `$location` services, and should return a url string.
+     *
+     * @return {object} `$urlRouterProvider` - `$urlRouterProvider` instance
+     */
+    UrlRouterProvider.prototype.otherwise = function (rule) {
+        var _this = this;
+        var urlRouter = this._urlRouter;
+        if (core.isString(rule)) {
+            urlRouter.otherwise(rule);
+        }
+        else if (core.isFunction(rule)) {
+            urlRouter.otherwise(function () { return rule(core.services.$injector, _this._router.locationService); });
+        }
+        else {
+            throw new Error("'rule' must be a string or function");
+        }
+        return this;
+    };
+    
+    /**
+     * Registers a handler for a given url matching.
+     *
+     * If the handler is a string, it is
+     * treated as a redirect, and is interpolated according to the syntax of match
+     * (i.e. like `String.replace()` for `RegExp`, or like a `UrlMatcher` pattern otherwise).
+     *
+     * If the handler is a function, it is injectable.
+     * It gets invoked if `$location` matches.
+     * You have the option of inject the match object as `$match`.
+     *
+     * The handler can return
+     *
+     * - **falsy** to indicate that the rule didn't match after all, then `$urlRouter`
+     *   will continue trying to find another one that matches.
+     * - **string** which is treated as a redirect and passed to `$location.url()`
+     * - **void** or any **truthy** value tells `$urlRouter` that the url was handled.
+     *
+     * #### Example:
+     * ```js
+     * var app = angular.module('app', ['ui.router.router']);
+     *
+     * app.config(function ($urlRouterProvider) {
+     *   $urlRouterProvider.when($state.url, function ($match, $stateParams) {
+     *     if ($state.$current.navigable !== state ||
+     *         !equalForKeys($match, $stateParams) {
+     *      $state.transitionTo(state, $match, false);
+     *     }
+     *   });
+     * });
+     * ```
+     *
+     * @param what A pattern string to match, compiled as a [[UrlMatcher]].
+     * @param handler The path (or function that returns a path) that you want to redirect your user to.
+     * @param ruleCallback [optional] A callback that receives the `rule` registered with [[UrlMatcher.rule]]
+     *
+     * Note: the handler may also invoke arbitrary code, such as `$state.go()`
+     */
+    UrlRouterProvider.prototype.when = function (what, handler) {
+        if (core.isArray(handler) || core.isFunction(handler)) {
+            handler = UrlRouterProvider.injectableHandler(this._router, handler);
+        }
+        this._urlRouter.when(what, handler);
+        return this;
+    };
+    
+    UrlRouterProvider.injectableHandler = function (router, handler) {
+        return function (match) {
+            return core.services.$injector.invoke(handler, null, { $match: match, $stateParams: router.globals.params });
+        };
+    };
+    /**
+     * Disables monitoring of the URL.
+     *
+     * Call this method before UI-Router has bootstrapped.
+     * It will stop UI-Router from performing the initial url sync.
+     *
+     * This can be useful to perform some asynchronous initialization before the router starts.
+     * Once the initialization is complete, call [[listen]] to tell UI-Router to start watching and synchronizing the URL.
+     *
+     * #### Example:
+     * ```js
+     * var app = angular.module('app', ['ui.router']);
+     *
+     * app.config(function ($urlRouterProvider) {
+     *   // Prevent $urlRouter from automatically intercepting URL changes;
+     *   $urlRouterProvider.deferIntercept();
+     * })
+     *
+     * app.run(function (MyService, $urlRouter, $http) {
+     *   $http.get("/stuff").then(function(resp) {
+     *     MyService.doStuff(resp.data);
+     *     $urlRouter.listen();
+     *     $urlRouter.sync();
+     *   });
+     * });
+     * ```
+     *
+     * @param defer Indicates whether to defer location change interception.
+     *        Passing no parameter is equivalent to `true`.
+     */
+    UrlRouterProvider.prototype.deferIntercept = function (defer) {
+        this._urlRouter.deferIntercept(defer);
+    };
+    
+    return UrlRouterProvider;
+}());
+
+/**
+ * # Angular 1 types
+ *
+ * UI-Router core provides various Typescript types which you can use for code completion and validating parameter values, etc.
+ * The customizations to the core types for Angular UI-Router are documented here.
+ *
+ * The optional [[$resolve]] service is also documented here.
+ *
+ * @module ng1
+ * @preferred
+ */
+/** for typedoc */
+ng.module("ui.router.angular1", []);
+var mod_init = ng.module('ui.router.init', []);
+var mod_util = ng.module('ui.router.util', ['ng', 'ui.router.init']);
+var mod_rtr = ng.module('ui.router.router', ['ui.router.util']);
+var mod_state = ng.module('ui.router.state', ['ui.router.router', 'ui.router.util', 'ui.router.angular1']);
+var mod_main = ng.module('ui.router', ['ui.router.init', 'ui.router.state', 'ui.router.angular1']);
+var mod_cmpt = ng.module('ui.router.compat', ['ui.router']); // tslint:disable-line
+var router = null;
+$uiRouter.$inject = ['$locationProvider'];
+/** This angular 1 provider instantiates a Router and exposes its services via the angular injector */
+function $uiRouter($locationProvider) {
+    // Create a new instance of the Router when the $uiRouterProvider is initialized
+    router = this.router = new core.UIRouter();
+    router.stateProvider = new StateProvider(router.stateRegistry, router.stateService);
+    // Apply ng1 specific StateBuilder code for `views`, `resolve`, and `onExit/Retain/Enter` properties
+    router.stateRegistry.decorator("views", ng1ViewsBuilder);
+    router.stateRegistry.decorator("onExit", getStateHookBuilder("onExit"));
+    router.stateRegistry.decorator("onRetain", getStateHookBuilder("onRetain"));
+    router.stateRegistry.decorator("onEnter", getStateHookBuilder("onEnter"));
+    router.viewService._pluginapi._viewConfigFactory('ng1', getNg1ViewConfigFactory());
+    var ng1LocationService = router.locationService = router.locationConfig = new Ng1LocationServices($locationProvider);
+    Ng1LocationServices.monkeyPatchPathParameterType(router);
+    // backwards compat: also expose router instance as $uiRouterProvider.router
+    router['router'] = router;
+    router['$get'] = $get;
+    $get.$inject = ['$location', '$browser', '$sniffer', '$rootScope', '$http', '$templateCache'];
+    function $get($location, $browser, $sniffer, $rootScope, $http, $templateCache) {
+        ng1LocationService._runtimeServices($rootScope, $location, $sniffer, $browser);
+        delete router['router'];
+        delete router['$get'];
+        return router;
+    }
+    return router;
+}
+var getProviderFor = function (serviceName) { return ['$uiRouterProvider', function ($urp) {
+        var service = $urp.router[serviceName];
+        service["$get"] = function () { return service; };
+        return service;
+    }]; };
+// This effectively calls $get() on `$uiRouterProvider` to trigger init (when ng enters runtime)
+runBlock.$inject = ['$injector', '$q', '$uiRouter'];
+function runBlock($injector, $q, $uiRouter) {
+    core.services.$injector = $injector;
+    core.services.$q = $q;
+    // The $injector is now available.
+    // Find any resolvables that had dependency annotation deferred
+    $uiRouter.stateRegistry.get()
+        .map(function (x) { return x.$$state().resolvables; })
+        .reduce(core.unnestR, [])
+        .filter(function (x) { return x.deps === "deferred"; })
+        .forEach(function (resolvable) { return resolvable.deps = $injector.annotate(resolvable.resolveFn, $injector.strictDi); });
+}
+// $urlRouter service and $urlRouterProvider
+var getUrlRouterProvider = function (uiRouter) {
+    return uiRouter.urlRouterProvider = new UrlRouterProvider(uiRouter);
+};
+// $state service and $stateProvider
+// $urlRouter service and $urlRouterProvider
+var getStateProvider = function () {
+    return core.extend(router.stateProvider, { $get: function () { return router.stateService; } });
+};
+watchDigests.$inject = ['$rootScope'];
+function watchDigests($rootScope) {
+    $rootScope.$watch(function () { core.trace.approximateDigests++; });
+}
+mod_init.provider("$uiRouter", $uiRouter);
+mod_rtr.provider('$urlRouter', ['$uiRouterProvider', getUrlRouterProvider]);
+mod_util.provider('$urlService', getProviderFor('urlService'));
+mod_util.provider('$urlMatcherFactory', ['$uiRouterProvider', function () { return router.urlMatcherFactory; }]);
+mod_util.provider('$templateFactory', function () { return new TemplateFactory(); });
+mod_state.provider('$stateRegistry', getProviderFor('stateRegistry'));
+mod_state.provider('$uiRouterGlobals', getProviderFor('globals'));
+mod_state.provider('$transitions', getProviderFor('transitionService'));
+mod_state.provider('$state', ['$uiRouterProvider', getStateProvider]);
+mod_state.factory('$stateParams', ['$uiRouter', function ($uiRouter) { return $uiRouter.globals.params; }]);
+mod_main.factory('$view', function () { return router.viewService; });
+mod_main.service("$trace", function () { return core.trace; });
+mod_main.run(watchDigests);
+mod_util.run(['$urlMatcherFactory', function ($urlMatcherFactory) { }]);
+mod_state.run(['$state', function ($state) { }]);
+mod_rtr.run(['$urlRouter', function ($urlRouter) { }]);
+mod_init.run(runBlock);
+/** @hidden TODO: find a place to move this */
+var getLocals = function (ctx) {
+    var tokens = ctx.getTokens().filter(core.isString);
+    var tuples = tokens.map(function (key) {
+        var resolvable = ctx.getResolvable(key);
+        var waitPolicy = ctx.getPolicy(resolvable).async;
+        return [key, waitPolicy === 'NOWAIT' ? resolvable.promise : resolvable.data];
+    });
+    return tuples.reduce(core.applyPairs, {});
+};
+
+/**
+ * # Angular 1 injectable services
+ *
+ * This is a list of the objects which can be injected using angular's injector.
+ *
+ * There are three different kind of injectable objects:
+ *
+ * ## **Provider** objects
+ * #### injectable into a `.config()` block during configtime
+ *
+ * - [[$uiRouterProvider]]: The UI-Router instance
+ * - [[$stateProvider]]: State registration
+ * - [[$transitionsProvider]]: Transition hooks
+ * - [[$urlServiceProvider]]: All URL related public APIs
+ *
+ * - [[$uiViewScrollProvider]]: Disable ui-router view scrolling
+ * - [[$urlRouterProvider]]: (deprecated) Url matching rules
+ * - [[$urlMatcherFactoryProvider]]: (deprecated) Url parsing config
+ *
+ * ## **Service** objects
+ * #### injectable globally during runtime
+ *
+ * - [[$uiRouter]]: The UI-Router instance
+ * - [[$trace]]: Enable transition trace/debug
+ * - [[$transitions]]: Transition hooks
+ * - [[$state]]: Imperative state related APIs
+ * - [[$stateRegistry]]: State registration
+ * - [[$urlService]]: All URL related public APIs
+ * - [[$uiRouterGlobals]]: Global variables
+ * - [[$uiViewScroll]]: Scroll an element into view
+ *
+ * - [[$stateParams]]: (deprecated) Global state param values
+ * - [[$urlRouter]]: (deprecated) URL synchronization
+ * - [[$urlMatcherFactory]]: (deprecated) URL parsing config
+ *
+ * ## **Per-Transition** objects
+ *
+ * - These kind of objects are injectable into:
+ *   - Resolves ([[Ng1StateDeclaration.resolve]]),
+ *   - Transition Hooks ([[TransitionService.onStart]], etc),
+ *   - Routed Controllers ([[Ng1ViewDeclaration.controller]])
+ *
+ * #### Different instances are injected based on the [[Transition]]
+ *
+ * - [[$transition$]]: The current Transition object
+ * - [[$stateParams]]: State param values for pending Transition (deprecated)
+ * - Any resolve data defined using [[Ng1StateDeclaration.resolve]]
+ *
+ * @ng1api
+ * @preferred
+ * @module injectables
+ */ /** */
+/**
+ * The current (or pending) State Parameters
+ *
+ * An injectable global **Service Object** which holds the state parameters for the latest **SUCCESSFUL** transition.
+ *
+ * The values are not updated until *after* a `Transition` successfully completes.
+ *
+ * **Also:** an injectable **Per-Transition Object** object which holds the pending state parameters for the pending `Transition` currently running.
+ *
+ * ### Deprecation warning:
+ *
+ * The value injected for `$stateParams` is different depending on where it is injected.
+ *
+ * - When injected into an angular service, the object injected is the global **Service Object** with the parameter values for the latest successful `Transition`.
+ * - When injected into transition hooks, resolves, or view controllers, the object is the **Per-Transition Object** with the parameter values for the running `Transition`.
+ *
+ * Because of these confusing details, this service is deprecated.
+ *
+ * ### Instead of using the global `$stateParams` service object,
+ * inject [[$uiRouterGlobals]] and use [[UIRouterGlobals.params]]
+ *
+ * ```js
+ * MyService.$inject = ['$uiRouterGlobals'];
+ * function MyService($uiRouterGlobals) {
+ *   return {
+ *     paramValues: function () {
+ *       return $uiRouterGlobals.params;
+ *     }
+ *   }
+ * }
+ * ```
+ *
+ * ### Instead of using the per-transition `$stateParams` object,
+ * inject the current `Transition` (as [[$transition$]]) and use [[Transition.params]]
+ *
+ * ```js
+ * MyController.$inject = ['$transition$'];
+ * function MyController($transition$) {
+ *   var username = $transition$.params().username;
+ *   // .. do something with username
+ * }
+ * ```
+ *
+ * ---
+ *
+ * This object can be injected into other services.
+ *
+ * #### Deprecated Example:
+ * ```js
+ * SomeService.$inject = ['$http', '$stateParams'];
+ * function SomeService($http, $stateParams) {
+ *   return {
+ *     getUser: function() {
+ *       return $http.get('/api/users/' + $stateParams.username);
+ *     }
+ *   }
+ * };
+ * angular.service('SomeService', SomeService);
+ * ```
+ * @deprecated
+ */
+
+/**
+ * # Angular 1 Directives
+ *
+ * These are the directives included in UI-Router for Angular 1.
+ * These directives are used in templates to create viewports and link/navigate to states.
+ *
+ * @ng1api
+ * @preferred
+ * @module directives
+ */ /** for typedoc */
+/** @hidden */
+function parseStateRef(ref) {
+    var paramsOnly = ref.match(/^\s*({[^}]*})\s*$/), parsed;
+    if (paramsOnly)
+        ref = '(' + paramsOnly[1] + ')';
+    parsed = ref.replace(/\n/g, " ").match(/^\s*([^(]*?)\s*(\((.*)\))?\s*$/);
+    if (!parsed || parsed.length !== 4)
+        throw new Error("Invalid state ref '" + ref + "'");
+    return { state: parsed[1] || null, paramExpr: parsed[3] || null };
+}
+/** @hidden */
+function stateContext(el) {
+    var $uiView = el.parent().inheritedData('$uiView');
+    var path = core.parse('$cfg.path')($uiView);
+    return path ? core.tail(path).state.name : undefined;
+}
+/** @hidden */
+function processedDef($state, $element, def) {
+    var uiState = def.uiState || $state.current.name;
+    var uiStateOpts = core.extend(defaultOpts($element, $state), def.uiStateOpts || {});
+    var href = $state.href(uiState, def.uiStateParams, uiStateOpts);
+    return { uiState: uiState, uiStateParams: def.uiStateParams, uiStateOpts: uiStateOpts, href: href };
+}
+/** @hidden */
+function getTypeInfo(el) {
+    // SVGAElement does not use the href attribute, but rather the 'xlinkHref' attribute.
+    var isSvg = Object.prototype.toString.call(el.prop('href')) === '[object SVGAnimatedString]';
+    var isForm = el[0].nodeName === "FORM";
+    return {
+        attr: isForm ? "action" : (isSvg ? 'xlink:href' : 'href'),
+        isAnchor: el.prop("tagName").toUpperCase() === "A",
+        clickable: !isForm
+    };
+}
+/** @hidden */
+function clickHook(el, $state, $timeout, type, getDef) {
+    return function (e) {
+        var button = e.which || e.button, target = getDef();
+        if (!(button > 1 || e.ctrlKey || e.metaKey || e.shiftKey || el.attr('target'))) {
+            // HACK: This is to allow ng-clicks to be processed before the transition is initiated:
+            var transition = $timeout(function () {
+                $state.go(target.uiState, target.uiStateParams, target.uiStateOpts);
+            });
+            e.preventDefault();
+            // if the state has no URL, ignore one preventDefault from the <a> directive.
+            var ignorePreventDefaultCount = type.isAnchor && !target.href ? 1 : 0;
+            e.preventDefault = function () {
+                if (ignorePreventDefaultCount-- <= 0)
+                    $timeout.cancel(transition);
+            };
+        }
+    };
+}
+/** @hidden */
+function defaultOpts(el, $state) {
+    return {
+        relative: stateContext(el) || $state.$current,
+        inherit: true,
+        source: "sref"
+    };
+}
+/** @hidden */
+function bindEvents(element, scope, hookFn, uiStateOpts) {
+    var events;
+    if (uiStateOpts) {
+        events = uiStateOpts.events;
+    }
+    if (!core.isArray(events)) {
+        events = ['click'];
+    }
+    var on = element.on ? 'on' : 'bind';
+    for (var _i = 0, events_1 = events; _i < events_1.length; _i++) {
+        var event_1 = events_1[_i];
+        element[on](event_1, hookFn);
+    }
+    scope.$on('$destroy', function () {
+        var off = element.off ? 'off' : 'unbind';
+        for (var _i = 0, events_2 = events; _i < events_2.length; _i++) {
+            var event_2 = events_2[_i];
+            element[off](event_2, hookFn);
+        }
+    });
+}
+/**
+ * `ui-sref`: A directive for linking to a state
+ *
+ * A directive which links to a state (and optionally, parameters).
+ * When clicked, this directive activates the linked state with the supplied parameter values.
+ *
+ * ### Linked State
+ * The attribute value of the `ui-sref` is the name of the state to link to.
+ *
+ * #### Example:
+ * This will activate the `home` state when the link is clicked.
+ * ```html
+ * <a ui-sref="home">Home</a>
+ * ```
+ *
+ * ### Relative Links
+ * You can also use relative state paths within `ui-sref`, just like a relative path passed to `$state.go()` ([[StateService.go]]).
+ * You just need to be aware that the path is relative to the state that *created* the link.
+ * This allows a state to create a relative `ui-sref` which always targets the same destination.
+ *
+ * #### Example:
+ * Both these links are relative to the parent state, even when a child state is currently active.
+ * ```html
+ * <a ui-sref=".child1">child 1 state</a>
+ * <a ui-sref=".child2">child 2 state</a>
+ * ```
+ *
+ * This link activates the parent state.
+ * ```html
+ * <a ui-sref="^">Return</a>
+ * ```
+ *
+ * ### hrefs
+ * If the linked state has a URL, the directive will automatically generate and
+ * update the `href` attribute (using the [[StateService.href]]  method).
+ *
+ * #### Example:
+ * Assuming the `users` state has a url of `/users/`
+ * ```html
+ * <a ui-sref="users" href="/users/">Users</a>
+ * ```
+ *
+ * ### Parameter Values
+ * In addition to the state name, a `ui-sref` can include parameter values which are applied when activating the state.
+ * Param values can be provided in the `ui-sref` value after the state name, enclosed by parentheses.
+ * The content inside the parentheses is an expression, evaluated to the parameter values.
+ *
+ * #### Example:
+ * This example renders a list of links to users.
+ * The state's `userId` parameter value comes from each user's `user.id` property.
+ * ```html
+ * <li ng-repeat="user in users">
+ *   <a ui-sref="users.detail({ userId: user.id })">{{ user.displayName }}</a>
+ * </li>
+ * ```
+ *
+ * Note:
+ * The parameter values expression is `$watch`ed for updates.
+ *
+ * ### Transition Options
+ * You can specify [[TransitionOptions]] to pass to [[StateService.go]] by using the `ui-sref-opts` attribute.
+ * Options are restricted to `location`, `inherit`, and `reload`.
+ *
+ * #### Example:
+ * ```html
+ * <a ui-sref="home" ui-sref-opts="{ reload: true }">Home</a>
+ * ```
+ *
+ * ### Other DOM Events
+ *
+ * You can also customize which DOM events to respond to (instead of `click`) by
+ * providing an `events` array in the `ui-sref-opts` attribute.
+ *
+ * #### Example:
+ * ```html
+ * <input type="text" ui-sref="contacts" ui-sref-opts="{ events: ['change', 'blur'] }">
+ * ```
+ *
+ * ### Highlighting the active link
+ * This directive can be used in conjunction with [[uiSrefActive]] to highlight the active link.
+ *
+ * ### Examples
+ * If you have the following template:
+ *
+ * ```html
+ * <a ui-sref="home">Home</a>
+ * <a ui-sref="about">About</a>
+ * <a ui-sref="{page: 2}">Next page</a>
+ *
+ * <ul>
+ *     <li ng-repeat="contact in contacts">
+ *         <a ui-sref="contacts.detail({ id: contact.id })">{{ contact.name }}</a>
+ *     </li>
+ * </ul>
+ * ```
+ *
+ * Then (assuming the current state is `contacts`) the rendered html including hrefs would be:
+ *
+ * ```html
+ * <a href="#/home" ui-sref="home">Home</a>
+ * <a href="#/about" ui-sref="about">About</a>
+ * <a href="#/contacts?page=2" ui-sref="{page: 2}">Next page</a>
+ *
+ * <ul>
+ *     <li ng-repeat="contact in contacts">
+ *         <a href="#/contacts/1" ui-sref="contacts.detail({ id: contact.id })">Joe</a>
+ *     </li>
+ *     <li ng-repeat="contact in contacts">
+ *         <a href="#/contacts/2" ui-sref="contacts.detail({ id: contact.id })">Alice</a>
+ *     </li>
+ *     <li ng-repeat="contact in contacts">
+ *         <a href="#/contacts/3" ui-sref="contacts.detail({ id: contact.id })">Bob</a>
+ *     </li>
+ * </ul>
+ *
+ * <a href="#/home" ui-sref="home" ui-sref-opts="{reload: true}">Home</a>
+ * ```
+ *
+ * ### Notes
+ *
+ * - You can use `ui-sref` to change **only the parameter values** by omitting the state name and parentheses.
+ * #### Example:
+ * Sets the `lang` parameter to `en` and remains on the same state.
+ *
+ * ```html
+ * <a ui-sref="{ lang: 'en' }">English</a>
+ * ```
+ *
+ * - A middle-click, right-click, or ctrl-click is handled (natively) by the browser to open the href in a new window, for example.
+ *
+ * - Unlike the parameter values expression, the state name is not `$watch`ed (for performance reasons).
+ * If you need to dynamically update the state being linked to, use the fully dynamic [[uiState]] directive.
+ */
+var uiSref;
+uiSref = ['$uiRouter', '$timeout',
+    function $StateRefDirective($uiRouter, $timeout) {
+        var $state = $uiRouter.stateService;
+        return {
+            restrict: 'A',
+            require: ['?^uiSrefActive', '?^uiSrefActiveEq'],
+            link: function (scope, element, attrs, uiSrefActive) {
+                var type = getTypeInfo(element);
+                var active = uiSrefActive[1] || uiSrefActive[0];
+                var unlinkInfoFn = null;
+                var hookFn;
+                var rawDef = {};
+                var getDef = function () { return processedDef($state, element, rawDef); };
+                var ref = parseStateRef(attrs.uiSref);
+                rawDef.uiState = ref.state;
+                rawDef.uiStateOpts = attrs.uiSrefOpts ? scope.$eval(attrs.uiSrefOpts) : {};
+                function update() {
+                    var def = getDef();
+                    if (unlinkInfoFn)
+                        unlinkInfoFn();
+                    if (active)
+                        unlinkInfoFn = active.$$addStateInfo(def.uiState, def.uiStateParams);
+                    if (def.href != null)
+                        attrs.$set(type.attr, def.href);
+                }
+                if (ref.paramExpr) {
+                    scope.$watch(ref.paramExpr, function (val$$1) {
+                        rawDef.uiStateParams = core.extend({}, val$$1);
+                        update();
+                    }, true);
+                    rawDef.uiStateParams = core.extend({}, scope.$eval(ref.paramExpr));
+                }
+                update();
+                scope.$on('$destroy', $uiRouter.stateRegistry.onStatesChanged(update));
+                scope.$on('$destroy', $uiRouter.transitionService.onSuccess({}, update));
+                if (!type.clickable)
+                    return;
+                hookFn = clickHook(element, $state, $timeout, type, getDef);
+                bindEvents(element, scope, hookFn, rawDef.uiStateOpts);
+            }
+        };
+    }];
+/**
+ * `ui-state`: A fully dynamic directive for linking to a state
+ *
+ * A directive which links to a state (and optionally, parameters).
+ * When clicked, this directive activates the linked state with the supplied parameter values.
+ *
+ * **This directive is very similar to [[uiSref]], but it `$observe`s and `$watch`es/evaluates all its inputs.**
+ *
+ * A directive which links to a state (and optionally, parameters).
+ * When clicked, this directive activates the linked state with the supplied parameter values.
+ *
+ * ### Linked State
+ * The attribute value of `ui-state` is an expression which is `$watch`ed and evaluated as the state to link to.
+ * **This is in contrast with `ui-sref`, which takes a state name as a string literal.**
+ *
+ * #### Example:
+ * Create a list of links.
+ * ```html
+ * <li ng-repeat="link in navlinks">
+ *   <a ui-state="link.state">{{ link.displayName }}</a>
+ * </li>
+ * ```
+ *
+ * ### Relative Links
+ * If the expression evaluates to a relative path, it is processed like [[uiSref]].
+ * You just need to be aware that the path is relative to the state that *created* the link.
+ * This allows a state to create relative `ui-state` which always targets the same destination.
+ *
+ * ### hrefs
+ * If the linked state has a URL, the directive will automatically generate and
+ * update the `href` attribute (using the [[StateService.href]]  method).
+ *
+ * ### Parameter Values
+ * In addition to the state name expression, a `ui-state` can include parameter values which are applied when activating the state.
+ * Param values should be provided using the `ui-state-params` attribute.
+ * The `ui-state-params` attribute value is `$watch`ed and evaluated as an expression.
+ *
+ * #### Example:
+ * This example renders a list of links with param values.
+ * The state's `userId` parameter value comes from each user's `user.id` property.
+ * ```html
+ * <li ng-repeat="link in navlinks">
+ *   <a ui-state="link.state" ui-state-params="link.params">{{ link.displayName }}</a>
+ * </li>
+ * ```
+ *
+ * ### Transition Options
+ * You can specify [[TransitionOptions]] to pass to [[StateService.go]] by using the `ui-state-opts` attribute.
+ * Options are restricted to `location`, `inherit`, and `reload`.
+ * The value of the `ui-state-opts` is `$watch`ed and evaluated as an expression.
+ *
+ * #### Example:
+ * ```html
+ * <a ui-state="returnto.state" ui-state-opts="{ reload: true }">Home</a>
+ * ```
+ *
+ * ### Other DOM Events
+ *
+ * You can also customize which DOM events to respond to (instead of `click`) by
+ * providing an `events` array in the `ui-state-opts` attribute.
+ *
+ * #### Example:
+ * ```html
+ * <input type="text" ui-state="contacts" ui-state-opts="{ events: ['change', 'blur'] }">
+ * ```
+ *
+ * ### Highlighting the active link
+ * This directive can be used in conjunction with [[uiSrefActive]] to highlight the active link.
+ *
+ * ### Notes
+ *
+ * - You can use `ui-params` to change **only the parameter values** by omitting the state name and supplying only `ui-state-params`.
+ *   However, it might be simpler to use [[uiSref]] parameter-only links.
+ *
+ * #### Example:
+ * Sets the `lang` parameter to `en` and remains on the same state.
+ *
+ * ```html
+ * <a ui-state="" ui-state-params="{ lang: 'en' }">English</a>
+ * ```
+ *
+ * - A middle-click, right-click, or ctrl-click is handled (natively) by the browser to open the href in a new window, for example.
+ * ```
+ */
+var uiState;
+uiState = ['$uiRouter', '$timeout',
+    function $StateRefDynamicDirective($uiRouter, $timeout) {
+        var $state = $uiRouter.stateService;
+        return {
+            restrict: 'A',
+            require: ['?^uiSrefActive', '?^uiSrefActiveEq'],
+            link: function (scope, element, attrs, uiSrefActive) {
+                var type = getTypeInfo(element);
+                var active = uiSrefActive[1] || uiSrefActive[0];
+                var unlinkInfoFn = null;
+                var hookFn;
+                var rawDef = {};
+                var getDef = function () { return processedDef($state, element, rawDef); };
+                var inputAttrs = ['uiState', 'uiStateParams', 'uiStateOpts'];
+                var watchDeregFns = inputAttrs.reduce(function (acc, attr) { return (acc[attr] = core.noop, acc); }, {});
+                function update() {
+                    var def = getDef();
+                    if (unlinkInfoFn)
+                        unlinkInfoFn();
+                    if (active)
+                        unlinkInfoFn = active.$$addStateInfo(def.uiState, def.uiStateParams);
+                    if (def.href != null)
+                        attrs.$set(type.attr, def.href);
+                }
+                inputAttrs.forEach(function (field) {
+                    rawDef[field] = attrs[field] ? scope.$eval(attrs[field]) : null;
+                    attrs.$observe(field, function (expr) {
+                        watchDeregFns[field]();
+                        watchDeregFns[field] = scope.$watch(expr, function (newval) {
+                            rawDef[field] = newval;
+                            update();
+                        }, true);
+                    });
+                });
+                update();
+                scope.$on('$destroy', $uiRouter.stateRegistry.onStatesChanged(update));
+                scope.$on('$destroy', $uiRouter.transitionService.onSuccess({}, update));
+                if (!type.clickable)
+                    return;
+                hookFn = clickHook(element, $state, $timeout, type, getDef);
+                bindEvents(element, scope, hookFn, rawDef.uiStateOpts);
+            }
+        };
+    }];
+/**
+ * `ui-sref-active` and `ui-sref-active-eq`: A directive that adds a CSS class when a `ui-sref` is active
+ *
+ * A directive working alongside [[uiSref]] and [[uiState]] to add classes to an element when the
+ * related directive's state is active (and remove them when it is inactive).
+ *
+ * The primary use-case is to highlight the active link in navigation menus,
+ * distinguishing it from the inactive menu items.
+ *
+ * ### Linking to a `ui-sref` or `ui-state`
+ * `ui-sref-active` can live on the same element as `ui-sref`/`ui-state`, or it can be on a parent element.
+ * If a `ui-sref-active` is a parent to more than one `ui-sref`/`ui-state`, it will apply the CSS class when **any of the links are active**.
+ *
+ * ### Matching
+ *
+ * The `ui-sref-active` directive applies the CSS class when the `ui-sref`/`ui-state`'s target state **or any child state is active**.
+ * This is a "fuzzy match" which uses [[StateService.includes]].
+ *
+ * The `ui-sref-active-eq` directive applies the CSS class when the `ui-sref`/`ui-state`'s target state is directly active (not when child states are active).
+ * This is an "exact match" which uses [[StateService.is]].
+ *
+ * ### Parameter values
+ * If the `ui-sref`/`ui-state` includes parameter values, the current parameter values must match the link's values for the link to be highlighted.
+ * This allows a list of links to the same state with different parameters to be rendered, and the correct one highlighted.
+ *
+ * #### Example:
+ * ```html
+ * <li ng-repeat="user in users" ui-sref-active="active">
+ *   <a ui-sref="user.details({ userId: user.id })">{{ user.lastName }}</a>
+ * </li>
+ * ```
+ *
+ * ### Examples
+ *
+ * Given the following template:
+ * #### Example:
+ * ```html
+ * <ul>
+ *   <li ui-sref-active="active" class="item">
+ *     <a href ui-sref="app.user({user: 'bilbobaggins'})">@bilbobaggins</a>
+ *   </li>
+ * </ul>
+ * ```
+ *
+ * When the app state is `app.user` (or any child state),
+ * and contains the state parameter "user" with value "bilbobaggins",
+ * the resulting HTML will appear as (note the 'active' class):
+ *
+ * ```html
+ * <ul>
+ *   <li ui-sref-active="active" class="item active">
+ *     <a ui-sref="app.user({user: 'bilbobaggins'})" href="/users/bilbobaggins">@bilbobaggins</a>
+ *   </li>
+ * </ul>
+ * ```
+ *
+ * ### Glob mode
+ *
+ * It is possible to pass `ui-sref-active` an expression that evaluates to an object.
+ * The objects keys represent active class names and values represent the respective state names/globs.
+ * `ui-sref-active` will match if the current active state **includes** any of
+ * the specified state names/globs, even the abstract ones.
+ *
+ * #### Example:
+ * Given the following template, with "admin" being an abstract state:
+ * ```html
+ * <div ui-sref-active="{'active': 'admin.**'}">
+ *   <a ui-sref-active="active" ui-sref="admin.roles">Roles</a>
+ * </div>
+ * ```
+ *
+ * When the current state is "admin.roles" the "active" class will be applied to both the <div> and <a> elements.
+ * It is important to note that the state names/globs passed to `ui-sref-active` override any state provided by a linked `ui-sref`.
+ *
+ * ### Notes:
+ *
+ * - The class name is interpolated **once** during the directives link time (any further changes to the
+ * interpolated value are ignored).
+ *
+ * - Multiple classes may be specified in a space-separated format: `ui-sref-active='class1 class2 class3'`
+ */
+var uiSrefActive;
+uiSrefActive = ['$state', '$stateParams', '$interpolate', '$uiRouter',
+    function $StateRefActiveDirective($state, $stateParams, $interpolate, $uiRouter) {
+        return {
+            restrict: "A",
+            controller: ['$scope', '$element', '$attrs',
+                function ($scope, $element, $attrs) {
+                    var states = [], activeEqClass, uiSrefActive;
+                    // There probably isn't much point in $observing this
+                    // uiSrefActive and uiSrefActiveEq share the same directive object with some
+                    // slight difference in logic routing
+                    activeEqClass = $interpolate($attrs.uiSrefActiveEq || '', false)($scope);
+                    try {
+                        uiSrefActive = $scope.$eval($attrs.uiSrefActive);
+                    }
+                    catch (e) {
+                        // Do nothing. uiSrefActive is not a valid expression.
+                        // Fall back to using $interpolate below
+                    }
+                    uiSrefActive = uiSrefActive || $interpolate($attrs.uiSrefActive || '', false)($scope);
+                    if (core.isObject(uiSrefActive)) {
+                        core.forEach(uiSrefActive, function (stateOrName, activeClass) {
+                            if (core.isString(stateOrName)) {
+                                var ref = parseStateRef(stateOrName);
+                                addState(ref.state, $scope.$eval(ref.paramExpr), activeClass);
+                            }
+                        });
+                    }
+                    // Allow uiSref to communicate with uiSrefActive[Equals]
+                    this.$$addStateInfo = function (newState, newParams) {
+                        // we already got an explicit state provided by ui-sref-active, so we
+                        // shadow the one that comes from ui-sref
+                        if (core.isObject(uiSrefActive) && states.length > 0) {
+                            return;
+                        }
+                        var deregister = addState(newState, newParams, uiSrefActive);
+                        update();
+                        return deregister;
+                    };
+                    function updateAfterTransition(trans) {
+                        trans.promise.then(update, core.noop);
+                    }
+                    $scope.$on('$stateChangeSuccess', update);
+                    $scope.$on('$destroy', $uiRouter.transitionService.onStart({}, updateAfterTransition));
+                    if ($uiRouter.globals.transition) {
+                        updateAfterTransition($uiRouter.globals.transition);
+                    }
+                    function addState(stateName, stateParams, activeClass) {
+                        var state = $state.get(stateName, stateContext($element));
+                        var stateInfo = {
+                            state: state || { name: stateName },
+                            params: stateParams,
+                            activeClass: activeClass
+                        };
+                        states.push(stateInfo);
+                        return function removeState() {
+                            core.removeFrom(states)(stateInfo);
+                        };
+                    }
+                    // Update route state
+                    function update() {
+                        var splitClasses = function (str) {
+                            return str.split(/\s/).filter(core.identity);
+                        };
+                        var getClasses = function (stateList) {
+                            return stateList.map(function (x) { return x.activeClass; }).map(splitClasses).reduce(core.unnestR, []);
+                        };
+                        var allClasses = getClasses(states).concat(splitClasses(activeEqClass)).reduce(core.uniqR, []);
+                        var fuzzyClasses = getClasses(states.filter(function (x) { return $state.includes(x.state.name, x.params); }));
+                        var exactlyMatchesAny = !!states.filter(function (x) { return $state.is(x.state.name, x.params); }).length;
+                        var exactClasses = exactlyMatchesAny ? splitClasses(activeEqClass) : [];
+                        var addClasses = fuzzyClasses.concat(exactClasses).reduce(core.uniqR, []);
+                        var removeClasses = allClasses.filter(function (cls) { return !core.inArray(addClasses, cls); });
+                        $scope.$evalAsync(function () {
+                            addClasses.forEach(function (className) { return $element.addClass(className); });
+                            removeClasses.forEach(function (className) { return $element.removeClass(className); });
+                        });
+                    }
+                    update();
+                }]
+        };
+    }];
+ng.module('ui.router.state')
+    .directive('uiSref', uiSref)
+    .directive('uiSrefActive', uiSrefActive)
+    .directive('uiSrefActiveEq', uiSrefActive)
+    .directive('uiState', uiState);
+
+/** @module ng1 */ /** for typedoc */
+/**
+ * `isState` Filter: truthy if the current state is the parameter
+ *
+ * Translates to [[StateService.is]] `$state.is("stateName")`.
+ *
+ * #### Example:
+ * ```html
+ * <div ng-if="'stateName' | isState">show if state is 'stateName'</div>
+ * ```
+ */
+$IsStateFilter.$inject = ['$state'];
+function $IsStateFilter($state) {
+    var isFilter = function (state, params, options) {
+        return $state.is(state, params, options);
+    };
+    isFilter.$stateful = true;
+    return isFilter;
+}
+/**
+ * `includedByState` Filter: truthy if the current state includes the parameter
+ *
+ * Translates to [[StateService.includes]]` $state.is("fullOrPartialStateName")`.
+ *
+ * #### Example:
+ * ```html
+ * <div ng-if="'fullOrPartialStateName' | includedByState">show if state includes 'fullOrPartialStateName'</div>
+ * ```
+ */
+$IncludedByStateFilter.$inject = ['$state'];
+function $IncludedByStateFilter($state) {
+    var includesFilter = function (state, params, options) {
+        return $state.includes(state, params, options);
+    };
+    includesFilter.$stateful = true;
+    return includesFilter;
+}
+ng.module('ui.router.state')
+    .filter('isState', $IsStateFilter)
+    .filter('includedByState', $IncludedByStateFilter);
+
+/**
+ * @ng1api
+ * @module directives
+ */ /** for typedoc */
+/**
+ * `ui-view`: A viewport directive which is filled in by a view from the active state.
+ *
+ * ### Attributes
+ *
+ * - `name`: (Optional) A view name.
+ *   The name should be unique amongst the other views in the same state.
+ *   You can have views of the same name that live in different states.
+ *   The ui-view can be targeted in a View using the name ([[Ng1StateDeclaration.views]]).
+ *
+ * - `autoscroll`: an expression. When it evaluates to true, the `ui-view` will be scrolled into view when it is activated.
+ *   Uses [[$uiViewScroll]] to do the scrolling.
+ *
+ * - `onload`: Expression to evaluate whenever the view updates.
+ *
+ * #### Example:
+ * A view can be unnamed or named.
+ * ```html
+ * <!-- Unnamed -->
+ * <div ui-view></div>
+ *
+ * <!-- Named -->
+ * <div ui-view="viewName"></div>
+ *
+ * <!-- Named (different style) -->
+ * <ui-view name="viewName"></ui-view>
+ * ```
+ *
+ * You can only have one unnamed view within any template (or root html). If you are only using a
+ * single view and it is unnamed then you can populate it like so:
+ *
+ * ```html
+ * <div ui-view></div>
+ * $stateProvider.state("home", {
+ *   template: "<h1>HELLO!</h1>"
+ * })
+ * ```
+ *
+ * The above is a convenient shortcut equivalent to specifying your view explicitly with the
+ * [[Ng1StateDeclaration.views]] config property, by name, in this case an empty name:
+ *
+ * ```js
+ * $stateProvider.state("home", {
+ *   views: {
+ *     "": {
+ *       template: "<h1>HELLO!</h1>"
+ *     }
+ *   }
+ * })
+ * ```
+ *
+ * But typically you'll only use the views property if you name your view or have more than one view
+ * in the same template. There's not really a compelling reason to name a view if its the only one,
+ * but you could if you wanted, like so:
+ *
+ * ```html
+ * <div ui-view="main"></div>
+ * ```
+ *
+ * ```js
+ * $stateProvider.state("home", {
+ *   views: {
+ *     "main": {
+ *       template: "<h1>HELLO!</h1>"
+ *     }
+ *   }
+ * })
+ * ```
+ *
+ * Really though, you'll use views to set up multiple views:
+ *
+ * ```html
+ * <div ui-view></div>
+ * <div ui-view="chart"></div>
+ * <div ui-view="data"></div>
+ * ```
+ *
+ * ```js
+ * $stateProvider.state("home", {
+ *   views: {
+ *     "": {
+ *       template: "<h1>HELLO!</h1>"
+ *     },
+ *     "chart": {
+ *       template: "<chart_thing/>"
+ *     },
+ *     "data": {
+ *       template: "<data_thing/>"
+ *     }
+ *   }
+ * })
+ * ```
+ *
+ * #### Examples for `autoscroll`:
+ * ```html
+ * <!-- If autoscroll present with no expression,
+ *      then scroll ui-view into view -->
+ * <ui-view autoscroll/>
+ *
+ * <!-- If autoscroll present with valid expression,
+ *      then scroll ui-view into view if expression evaluates to true -->
+ * <ui-view autoscroll='true'/>
+ * <ui-view autoscroll='false'/>
+ * <ui-view autoscroll='scopeVariable'/>
+ * ```
+ *
+ * Resolve data:
+ *
+ * The resolved data from the state's `resolve` block is placed on the scope as `$resolve` (this
+ * can be customized using [[Ng1ViewDeclaration.resolveAs]]).  This can be then accessed from the template.
+ *
+ * Note that when `controllerAs` is being used, `$resolve` is set on the controller instance *after* the
+ * controller is instantiated.  The `$onInit()` hook can be used to perform initialization code which
+ * depends on `$resolve` data.
+ *
+ * #### Example:
+ * ```js
+ * $stateProvider.state('home', {
+ *   template: '<my-component user="$resolve.user"></my-component>',
+ *   resolve: {
+ *     user: function(UserService) { return UserService.fetchUser(); }
+ *   }
+ * });
+ * ```
+ */
+var uiView;
+uiView = ['$view', '$animate', '$uiViewScroll', '$interpolate', '$q',
+    function $ViewDirective($view, $animate, $uiViewScroll, $interpolate, $q) {
+        function getRenderer(attrs, scope) {
+            return {
+                enter: function (element, target, cb) {
+                    if (ng.version.minor > 2) {
+                        $animate.enter(element, null, target).then(cb);
+                    }
+                    else {
+                        $animate.enter(element, null, target, cb);
+                    }
+                },
+                leave: function (element, cb) {
+                    if (ng.version.minor > 2) {
+                        $animate.leave(element).then(cb);
+                    }
+                    else {
+                        $animate.leave(element, cb);
+                    }
+                }
+            };
+        }
+        function configsEqual(config1, config2) {
+            return config1 === config2;
+        }
+        var rootData = {
+            $cfg: { viewDecl: { $context: $view._pluginapi._rootViewContext() } },
+            $uiView: {}
+        };
+        var directive = {
+            count: 0,
+            restrict: 'ECA',
+            terminal: true,
+            priority: 400,
+            transclude: 'element',
+            compile: function (tElement, tAttrs, $transclude) {
+                return function (scope, $element, attrs) {
+                    var previousEl, currentEl, currentScope, unregister, onloadExp = attrs['onload'] || '', autoScrollExp = attrs['autoscroll'], renderer = getRenderer(attrs, scope), viewConfig = undefined, inherited = $element.inheritedData('$uiView') || rootData, name = $interpolate(attrs['uiView'] || attrs['name'] || '')(scope) || '$default';
+                    var activeUIView = {
+                        $type: 'ng1',
+                        id: directive.count++,
+                        name: name,
+                        fqn: inherited.$uiView.fqn ? inherited.$uiView.fqn + "." + name : name,
+                        config: null,
+                        configUpdated: configUpdatedCallback,
+                        get creationContext() {
+                            var fromParentTagConfig = core.parse('$cfg.viewDecl.$context')(inherited);
+                            // Allow <ui-view name="foo"><ui-view name="bar"></ui-view></ui-view>
+                            // See https://github.com/angular-ui/ui-router/issues/3355
+                            var fromParentTag = core.parse('$uiView.creationContext')(inherited);
+                            return fromParentTagConfig || fromParentTag;
+                        }
+                    };
+                    core.trace.traceUIViewEvent("Linking", activeUIView);
+                    function configUpdatedCallback(config) {
+                        if (config && !(config instanceof Ng1ViewConfig))
+                            return;
+                        if (configsEqual(viewConfig, config))
+                            return;
+                        core.trace.traceUIViewConfigUpdated(activeUIView, config && config.viewDecl && config.viewDecl.$context);
+                        viewConfig = config;
+                        updateView(config);
+                    }
+                    $element.data('$uiView', { $uiView: activeUIView });
+                    updateView();
+                    unregister = $view.registerUIView(activeUIView);
+                    scope.$on("$destroy", function () {
+                        core.trace.traceUIViewEvent("Destroying/Unregistering", activeUIView);
+                        unregister();
+                    });
+                    function cleanupLastView() {
+                        if (previousEl) {
+                            core.trace.traceUIViewEvent("Removing (previous) el", previousEl.data('$uiView'));
+                            previousEl.remove();
+                            previousEl = null;
+                        }
+                        if (currentScope) {
+                            core.trace.traceUIViewEvent("Destroying scope", activeUIView);
+                            currentScope.$destroy();
+                            currentScope = null;
+                        }
+                        if (currentEl) {
+                            var _viewData_1 = currentEl.data('$uiViewAnim');
+                            core.trace.traceUIViewEvent("Animate out", _viewData_1);
+                            renderer.leave(currentEl, function () {
+                                _viewData_1.$$animLeave.resolve();
+                                previousEl = null;
+                            });
+                            previousEl = currentEl;
+                            currentEl = null;
+                        }
+                    }
+                    function updateView(config) {
+                        var newScope = scope.$new();
+                        var animEnter = $q.defer(), animLeave = $q.defer();
+                        var $uiViewData = {
+                            $cfg: config,
+                            $uiView: activeUIView,
+                        };
+                        var $uiViewAnim = {
+                            $animEnter: animEnter.promise,
+                            $animLeave: animLeave.promise,
+                            $$animLeave: animLeave
+                        };
+                        /**
+                         * @ngdoc event
+                         * @name ui.router.state.directive:ui-view#$viewContentLoading
+                         * @eventOf ui.router.state.directive:ui-view
+                         * @eventType emits on ui-view directive scope
+                         * @description
+                         *
+                         * Fired once the view **begins loading**, *before* the DOM is rendered.
+                         *
+                         * @param {Object} event Event object.
+                         * @param {string} viewName Name of the view.
+                         */
+                        newScope.$emit('$viewContentLoading', name);
+                        var cloned = $transclude(newScope, function (clone) {
+                            clone.data('$uiViewAnim', $uiViewAnim);
+                            clone.data('$uiView', $uiViewData);
+                            renderer.enter(clone, $element, function onUIViewEnter() {
+                                animEnter.resolve();
+                                if (currentScope)
+                                    currentScope.$emit('$viewContentAnimationEnded');
+                                if (core.isDefined(autoScrollExp) && !autoScrollExp || scope.$eval(autoScrollExp)) {
+                                    $uiViewScroll(clone);
+                                }
+                            });
+                            cleanupLastView();
+                        });
+                        currentEl = cloned;
+                        currentScope = newScope;
+                        /**
+                         * @ngdoc event
+                         * @name ui.router.state.directive:ui-view#$viewContentLoaded
+                         * @eventOf ui.router.state.directive:ui-view
+                         * @eventType emits on ui-view directive scope
+                         * @description           *
+                         * Fired once the view is **loaded**, *after* the DOM is rendered.
+                         *
+                         * @param {Object} event Event object.
+                         */
+                        currentScope.$emit('$viewContentLoaded', config || viewConfig);
+                        currentScope.$eval(onloadExp);
+                    }
+                };
+            }
+        };
+        return directive;
+    }];
+$ViewDirectiveFill.$inject = ['$compile', '$controller', '$transitions', '$view', '$q', '$timeout'];
+/** @hidden */
+function $ViewDirectiveFill($compile, $controller, $transitions, $view, $q, $timeout) {
+    var getControllerAs = core.parse('viewDecl.controllerAs');
+    var getResolveAs = core.parse('viewDecl.resolveAs');
+    return {
+        restrict: 'ECA',
+        priority: -400,
+        compile: function (tElement) {
+            var initial = tElement.html();
+            tElement.empty();
+            return function (scope, $element) {
+                var data = $element.data('$uiView');
+                if (!data) {
+                    $element.html(initial);
+                    $compile($element.contents())(scope);
+                    return;
+                }
+                var cfg = data.$cfg || { viewDecl: {}, getTemplate: ng_from_import.noop };
+                var resolveCtx = cfg.path && new core.ResolveContext(cfg.path);
+                $element.html(cfg.getTemplate($element, resolveCtx) || initial);
+                core.trace.traceUIViewFill(data.$uiView, $element.html());
+                var link = $compile($element.contents());
+                var controller = cfg.controller;
+                var controllerAs = getControllerAs(cfg);
+                var resolveAs = getResolveAs(cfg);
+                var locals = resolveCtx && getLocals(resolveCtx);
+                scope[resolveAs] = locals;
+                if (controller) {
+                    var controllerInstance = $controller(controller, core.extend({}, locals, { $scope: scope, $element: $element }));
+                    if (controllerAs) {
+                        scope[controllerAs] = controllerInstance;
+                        scope[controllerAs][resolveAs] = locals;
+                    }
+                    // TODO: Use $view service as a central point for registering component-level hooks
+                    // Then, when a component is created, tell the $view service, so it can invoke hooks
+                    // $view.componentLoaded(controllerInstance, { $scope: scope, $element: $element });
+                    // scope.$on('$destroy', () => $view.componentUnloaded(controllerInstance, { $scope: scope, $element: $element }));
+                    $element.data('$ngControllerController', controllerInstance);
+                    $element.children().data('$ngControllerController', controllerInstance);
+                    registerControllerCallbacks($q, $transitions, controllerInstance, scope, cfg);
+                }
+                // Wait for the component to appear in the DOM
+                if (core.isString(cfg.viewDecl.component)) {
+                    var cmp_1 = cfg.viewDecl.component;
+                    var kebobName = core.kebobString(cmp_1);
+                    var tagRegexp_1 = new RegExp("^(x-|data-)?" + kebobName + "$", "i");
+                    var getComponentController = function () {
+                        var directiveEl = [].slice.call($element[0].children)
+                            .filter(function (el) { return el && el.tagName && tagRegexp_1.exec(el.tagName); });
+                        return directiveEl && ng.element(directiveEl).data("$" + cmp_1 + "Controller");
+                    };
+                    var deregisterWatch_1 = scope.$watch(getComponentController, function (ctrlInstance) {
+                        if (!ctrlInstance)
+                            return;
+                        registerControllerCallbacks($q, $transitions, ctrlInstance, scope, cfg);
+                        deregisterWatch_1();
+                    });
+                }
+                link(scope);
+            };
+        }
+    };
+}
+/** @hidden */
+var hasComponentImpl = typeof ng.module('ui.router')['component'] === 'function';
+/** @hidden incrementing id */
+var _uiCanExitId = 0;
+/** @hidden TODO: move these callbacks to $view and/or `/hooks/components.ts` or something */
+function registerControllerCallbacks($q, $transitions, controllerInstance, $scope, cfg) {
+    // Call $onInit() ASAP
+    if (core.isFunction(controllerInstance.$onInit) && !(cfg.viewDecl.component && hasComponentImpl)) {
+        controllerInstance.$onInit();
+    }
+    var viewState = core.tail(cfg.path).state.self;
+    var hookOptions = { bind: controllerInstance };
+    // Add component-level hook for onParamsChange
+    if (core.isFunction(controllerInstance.uiOnParamsChanged)) {
+        var resolveContext = new core.ResolveContext(cfg.path);
+        var viewCreationTrans_1 = resolveContext.getResolvable('$transition$').data;
+        // Fire callback on any successful transition
+        var paramsUpdated = function ($transition$) {
+            // Exit early if the $transition$ is the same as the view was created within.
+            // Exit early if the $transition$ will exit the state the view is for.
+            if ($transition$ === viewCreationTrans_1 || $transition$.exiting().indexOf(viewState) !== -1)
+                return;
+            var toParams = $transition$.params("to");
+            var fromParams = $transition$.params("from");
+            var toSchema = $transition$.treeChanges().to.map(function (node) { return node.paramSchema; }).reduce(core.unnestR, []);
+            var fromSchema = $transition$.treeChanges().from.map(function (node) { return node.paramSchema; }).reduce(core.unnestR, []);
+            // Find the to params that have different values than the from params
+            var changedToParams = toSchema.filter(function (param) {
+                var idx = fromSchema.indexOf(param);
+                return idx === -1 || !fromSchema[idx].type.equals(toParams[param.id], fromParams[param.id]);
+            });
+            // Only trigger callback if a to param has changed or is new
+            if (changedToParams.length) {
+                var changedKeys_1 = changedToParams.map(function (x) { return x.id; });
+                // Filter the params to only changed/new to params.  `$transition$.params()` may be used to get all params.
+                var newValues = core.filter(toParams, function (val$$1, key) { return changedKeys_1.indexOf(key) !== -1; });
+                controllerInstance.uiOnParamsChanged(newValues, $transition$);
+            }
+        };
+        $scope.$on('$destroy', $transitions.onSuccess({}, paramsUpdated, hookOptions));
+    }
+    // Add component-level hook for uiCanExit
+    if (core.isFunction(controllerInstance.uiCanExit)) {
+        var id_1 = _uiCanExitId++;
+        var cacheProp_1 = '_uiCanExitIds';
+        // Returns true if a redirect transition already answered truthy
+        var prevTruthyAnswer_1 = function (trans) {
+            return !!trans && (trans[cacheProp_1] && trans[cacheProp_1][id_1] === true || prevTruthyAnswer_1(trans.redirectedFrom()));
+        };
+        // If a user answered yes, but the transition was later redirected, don't also ask for the new redirect transition
+        var wrappedHook = function (trans) {
+            var promise, ids = trans[cacheProp_1] = trans[cacheProp_1] || {};
+            if (!prevTruthyAnswer_1(trans)) {
+                promise = $q.when(controllerInstance.uiCanExit(trans));
+                promise.then(function (val$$1) { return ids[id_1] = (val$$1 !== false); });
+            }
+            return promise;
+        };
+        var criteria = { exiting: viewState.name };
+        $scope.$on('$destroy', $transitions.onBefore(criteria, wrappedHook, hookOptions));
+    }
+}
+ng.module('ui.router.state').directive('uiView', uiView);
+ng.module('ui.router.state').directive('uiView', $ViewDirectiveFill);
+
+/** @module ng1 */ /** */
+/** @hidden */
+function $ViewScrollProvider() {
+    var useAnchorScroll = false;
+    this.useAnchorScroll = function () {
+        useAnchorScroll = true;
+    };
+    this.$get = ['$anchorScroll', '$timeout', function ($anchorScroll, $timeout) {
+            if (useAnchorScroll) {
+                return $anchorScroll;
+            }
+            return function ($element) {
+                return $timeout(function () {
+                    $element[0].scrollIntoView();
+                }, 0, false);
+            };
+        }];
+}
+ng.module('ui.router.state').provider('$uiViewScroll', $ViewScrollProvider);
+
+/**
+ * Main entry point for angular 1.x build
+ * @module ng1
+ */ /** */
+var index = "ui.router";
+
+exports['default'] = index;
+exports.core = core;
+exports.watchDigests = watchDigests;
+exports.getLocals = getLocals;
+exports.getNg1ViewConfigFactory = getNg1ViewConfigFactory;
+exports.ng1ViewsBuilder = ng1ViewsBuilder;
+exports.Ng1ViewConfig = Ng1ViewConfig;
+exports.StateProvider = StateProvider;
+exports.UrlRouterProvider = UrlRouterProvider;
+Object.keys(core).forEach(function (key) { exports[key] = core[key]; });
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+})));
+//# sourceMappingURL=ui-router-angularjs.js.map
+
+
+/***/ }),
+/* 405 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/**
+ * @coreapi
+ * @module common
+ */ /** */
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(5));
+__export(__webpack_require__(407));
+__export(__webpack_require__(408));
+__export(__webpack_require__(409));
+__export(__webpack_require__(410));
+__export(__webpack_require__(420));
+__export(__webpack_require__(421));
+__export(__webpack_require__(422));
+__export(__webpack_require__(44));
+__export(__webpack_require__(39));
+__export(__webpack_require__(423));
+__export(__webpack_require__(426));
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 406 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 407 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(10));
+__export(__webpack_require__(32));
+__export(__webpack_require__(33));
+__export(__webpack_require__(24));
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 408 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+/** @module path */ /** for typedoc */
+__export(__webpack_require__(23));
+__export(__webpack_require__(16));
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 409 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+/** @module resolve */ /** for typedoc */
+__export(__webpack_require__(31));
+__export(__webpack_require__(13));
+__export(__webpack_require__(17));
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 410 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(34));
+__export(__webpack_require__(20));
+__export(__webpack_require__(35));
+__export(__webpack_require__(36));
+__export(__webpack_require__(37));
+__export(__webpack_require__(38));
+__export(__webpack_require__(9));
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 411 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/** @module hooks */ /** */
+var transition_1 = __webpack_require__(15);
+var router_1 = __webpack_require__(39);
+function addCoreResolvables(trans) {
+    trans.addResolvable({ token: router_1.UIRouter, deps: [], resolveFn: function () { return trans.router; }, data: trans.router }, "");
+    trans.addResolvable({ token: transition_1.Transition, deps: [], resolveFn: function () { return trans; }, data: trans }, "");
+    trans.addResolvable({ token: '$transition$', deps: [], resolveFn: function () { return trans; }, data: trans }, "");
+    trans.addResolvable({ token: '$stateParams', deps: [], resolveFn: function () { return trans.params(); }, data: trans.params() }, "");
+    trans.entering().forEach(function (state) {
+        trans.addResolvable({ token: '$state$', deps: [], resolveFn: function () { return state; }, data: state }, state);
+    });
+}
+exports.registerAddCoreResolvables = function (transitionService) {
+    return transitionService.onCreate({}, addCoreResolvables);
+};
+//# sourceMappingURL=coreResolvables.js.map
+
+/***/ }),
+/* 412 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/** @module hooks */ /** */
+var predicates_1 = __webpack_require__(2);
+var coreservices_1 = __webpack_require__(4);
+var targetState_1 = __webpack_require__(9);
+/**
+ * A [[TransitionHookFn]] that redirects to a different state or params
+ *
+ * Registered using `transitionService.onStart({ to: (state) => !!state.redirectTo }, redirectHook);`
+ *
+ * See [[StateDeclaration.redirectTo]]
+ */
+var redirectToHook = function (trans) {
+    var redirect = trans.to().redirectTo;
+    if (!redirect)
+        return;
+    var $state = trans.router.stateService;
+    function handleResult(result) {
+        if (!result)
+            return;
+        if (result instanceof targetState_1.TargetState)
+            return result;
+        if (predicates_1.isString(result))
+            return $state.target(result, trans.params(), trans.options());
+        if (result['state'] || result['params'])
+            return $state.target(result['state'] || trans.to(), result['params'] || trans.params(), trans.options());
+    }
+    if (predicates_1.isFunction(redirect)) {
+        return coreservices_1.services.$q.when(redirect(trans)).then(handleResult);
+    }
+    return handleResult(redirect);
+};
+exports.registerRedirectToHook = function (transitionService) {
+    return transitionService.onStart({ to: function (state) { return !!state.redirectTo; } }, redirectToHook);
+};
+//# sourceMappingURL=redirectTo.js.map
+
+/***/ }),
+/* 413 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * A factory which creates an onEnter, onExit or onRetain transition hook function
+ *
+ * The returned function invokes the (for instance) state.onEnter hook when the
+ * state is being entered.
+ *
+ * @hidden
+ */
+function makeEnterExitRetainHook(hookName) {
+    return function (transition, state) {
+        var _state = state.$$state();
+        var hookFn = _state[hookName];
+        return hookFn(transition, state);
+    };
+}
+/**
+ * The [[TransitionStateHookFn]] for onExit
+ *
+ * When the state is being exited, the state's .onExit function is invoked.
+ *
+ * Registered using `transitionService.onExit({ exiting: (state) => !!state.onExit }, onExitHook);`
+ *
+ * See: [[IHookRegistry.onExit]]
+ */
+var onExitHook = makeEnterExitRetainHook('onExit');
+exports.registerOnExitHook = function (transitionService) {
+    return transitionService.onExit({ exiting: function (state) { return !!state.onExit; } }, onExitHook);
+};
+/**
+ * The [[TransitionStateHookFn]] for onRetain
+ *
+ * When the state was already entered, and is not being exited or re-entered, the state's .onRetain function is invoked.
+ *
+ * Registered using `transitionService.onRetain({ retained: (state) => !!state.onRetain }, onRetainHook);`
+ *
+ * See: [[IHookRegistry.onRetain]]
+ */
+var onRetainHook = makeEnterExitRetainHook('onRetain');
+exports.registerOnRetainHook = function (transitionService) {
+    return transitionService.onRetain({ retained: function (state) { return !!state.onRetain; } }, onRetainHook);
+};
+/**
+ * The [[TransitionStateHookFn]] for onEnter
+ *
+ * When the state is being entered, the state's .onEnter function is invoked.
+ *
+ * Registered using `transitionService.onEnter({ entering: (state) => !!state.onEnter }, onEnterHook);`
+ *
+ * See: [[IHookRegistry.onEnter]]
+ */
+var onEnterHook = makeEnterExitRetainHook('onEnter');
+exports.registerOnEnterHook = function (transitionService) {
+    return transitionService.onEnter({ entering: function (state) { return !!state.onEnter; } }, onEnterHook);
+};
+//# sourceMappingURL=onEnterExitRetain.js.map
+
+/***/ }),
+/* 414 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/** @module hooks */
+/** for typedoc */
+var common_1 = __webpack_require__(1);
+var resolveContext_1 = __webpack_require__(17);
+var hof_1 = __webpack_require__(3);
+/**
+ * A [[TransitionHookFn]] which resolves all EAGER Resolvables in the To Path
+ *
+ * Registered using `transitionService.onStart({}, eagerResolvePath);`
+ *
+ * When a Transition starts, this hook resolves all the EAGER Resolvables, which the transition then waits for.
+ *
+ * See [[StateDeclaration.resolve]]
+ */
+var eagerResolvePath = function (trans) {
+    return new resolveContext_1.ResolveContext(trans.treeChanges().to)
+        .resolvePath("EAGER", trans)
+        .then(common_1.noop);
+};
+exports.registerEagerResolvePath = function (transitionService) {
+    return transitionService.onStart({}, eagerResolvePath, { priority: 1000 });
+};
+/**
+ * A [[TransitionHookFn]] which resolves all LAZY Resolvables for the state (and all its ancestors) in the To Path
+ *
+ * Registered using `transitionService.onEnter({ entering: () => true }, lazyResolveState);`
+ *
+ * When a State is being entered, this hook resolves all the Resolvables for this state, which the transition then waits for.
+ *
+ * See [[StateDeclaration.resolve]]
+ */
+var lazyResolveState = function (trans, state) {
+    return new resolveContext_1.ResolveContext(trans.treeChanges().to)
+        .subContext(state.$$state())
+        .resolvePath("LAZY", trans)
+        .then(common_1.noop);
+};
+exports.registerLazyResolveState = function (transitionService) {
+    return transitionService.onEnter({ entering: hof_1.val(true) }, lazyResolveState, { priority: 1000 });
+};
+//# sourceMappingURL=resolve.js.map
+
+/***/ }),
+/* 415 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/** @module hooks */ /** for typedoc */
+var common_1 = __webpack_require__(1);
+var coreservices_1 = __webpack_require__(4);
+/**
+ * A [[TransitionHookFn]] which waits for the views to load
+ *
+ * Registered using `transitionService.onStart({}, loadEnteringViews);`
+ *
+ * Allows the views to do async work in [[ViewConfig.load]] before the transition continues.
+ * In angular 1, this includes loading the templates.
+ */
+var loadEnteringViews = function (transition) {
+    var $q = coreservices_1.services.$q;
+    var enteringViews = transition.views("entering");
+    if (!enteringViews.length)
+        return;
+    return $q.all(enteringViews.map(function (view) { return $q.when(view.load()); })).then(common_1.noop);
+};
+exports.registerLoadEnteringViews = function (transitionService) {
+    return transitionService.onFinish({}, loadEnteringViews);
+};
+/**
+ * A [[TransitionHookFn]] which activates the new views when a transition is successful.
+ *
+ * Registered using `transitionService.onSuccess({}, activateViews);`
+ *
+ * After a transition is complete, this hook deactivates the old views from the previous state,
+ * and activates the new views from the destination state.
+ *
+ * See [[ViewService]]
+ */
+var activateViews = function (transition) {
+    var enteringViews = transition.views("entering");
+    var exitingViews = transition.views("exiting");
+    if (!enteringViews.length && !exitingViews.length)
+        return;
+    var $view = transition.router.viewService;
+    exitingViews.forEach(function (vc) { return $view.deactivateViewConfig(vc); });
+    enteringViews.forEach(function (vc) { return $view.activateViewConfig(vc); });
+    $view.sync();
+};
+exports.registerActivateViews = function (transitionService) {
+    return transitionService.onSuccess({}, activateViews);
+};
+//# sourceMappingURL=views.js.map
+
+/***/ }),
+/* 416 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var common_1 = __webpack_require__(1);
+/**
+ * A [[TransitionHookFn]] which updates global UI-Router state
+ *
+ * Registered using `transitionService.onBefore({}, updateGlobalState);`
+ *
+ * Before a [[Transition]] starts, updates the global value of "the current transition" ([[Globals.transition]]).
+ * After a successful [[Transition]], updates the global values of "the current state"
+ * ([[Globals.current]] and [[Globals.$current]]) and "the current param values" ([[Globals.params]]).
+ *
+ * See also the deprecated properties:
+ * [[StateService.transition]], [[StateService.current]], [[StateService.params]]
+ */
+var updateGlobalState = function (trans) {
+    var globals = trans.router.globals;
+    var transitionSuccessful = function () {
+        globals.successfulTransitions.enqueue(trans);
+        globals.$current = trans.$to();
+        globals.current = globals.$current.self;
+        common_1.copy(trans.params(), globals.params);
+    };
+    var clearCurrentTransition = function () {
+        // Do not clear globals.transition if a different transition has started in the meantime
+        if (globals.transition === trans)
+            globals.transition = null;
+    };
+    trans.onSuccess({}, transitionSuccessful, { priority: 10000 });
+    trans.promise.then(clearCurrentTransition, clearCurrentTransition);
+};
+exports.registerUpdateGlobalState = function (transitionService) {
+    return transitionService.onCreate({}, updateGlobalState);
+};
+//# sourceMappingURL=updateGlobals.js.map
+
+/***/ }),
+/* 417 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * A [[TransitionHookFn]] which updates the URL after a successful transition
+ *
+ * Registered using `transitionService.onSuccess({}, updateUrl);`
+ */
+var updateUrl = function (transition) {
+    var options = transition.options();
+    var $state = transition.router.stateService;
+    var $urlRouter = transition.router.urlRouter;
+    // Dont update the url in these situations:
+    // The transition was triggered by a URL sync (options.source === 'url')
+    // The user doesn't want the url to update (options.location === false)
+    // The destination state, and all parents have no navigable url
+    if (options.source !== 'url' && options.location && $state.$current.navigable) {
+        var urlOptions = { replace: options.location === 'replace' };
+        $urlRouter.push($state.$current.navigable.url, $state.params, urlOptions);
+    }
+    $urlRouter.update(true);
+};
+exports.registerUpdateUrl = function (transitionService) {
+    return transitionService.onSuccess({}, updateUrl, { priority: 9999 });
+};
+//# sourceMappingURL=url.js.map
+
+/***/ }),
+/* 418 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/** @module hooks */ /** */
+Object.defineProperty(exports, "__esModule", { value: true });
+var trace_1 = __webpack_require__(7);
+var rejectFactory_1 = __webpack_require__(11);
+/**
+ * A [[TransitionHookFn]] that skips a transition if it should be ignored
+ *
+ * This hook is invoked at the end of the onBefore phase.
+ *
+ * If the transition should be ignored (because no parameter or states changed)
+ * then the transition is ignored and not processed.
+ */
+function ignoredHook(trans) {
+    var ignoredReason = trans._ignoredReason();
+    if (!ignoredReason)
+        return;
+    trace_1.trace.traceTransitionIgnored(trans);
+    var pending = trans.router.globals.transition;
+    // The user clicked a link going back to the *current state* ('A')
+    // However, there is also a pending transition in flight (to 'B')
+    // Abort the transition to 'B' because the user now wants to be back at 'A'.
+    if (ignoredReason === 'SameAsCurrent' && pending) {
+        pending.abort();
+    }
+    return rejectFactory_1.Rejection.ignored().toPromise();
+}
+exports.registerIgnoredTransitionHook = function (transitionService) {
+    return transitionService.onBefore({}, ignoredHook, { priority: -9999 });
+};
+//# sourceMappingURL=ignoredTransition.js.map
+
+/***/ }),
+/* 419 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/** @module hooks */ /** */
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * A [[TransitionHookFn]] that rejects the Transition if it is invalid
+ *
+ * This hook is invoked at the end of the onBefore phase.
+ * If the transition is invalid (for example, param values do not validate)
+ * then the transition is rejected.
+ */
+function invalidTransitionHook(trans) {
+    if (!trans.valid()) {
+        throw new Error(trans.error());
+    }
+}
+exports.registerInvalidTransitionHook = function (transitionService) {
+    return transitionService.onBefore({}, invalidTransitionHook, { priority: -10000 });
+};
+//# sourceMappingURL=invalidTransition.js.map
+
+/***/ }),
+/* 420 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * # Transition subsystem
+ *
+ * This module contains APIs related to a Transition.
+ *
+ * See:
+ * - [[TransitionService]]
+ * - [[Transition]]
+ * - [[HookFn]], [[TransitionHookFn]], [[TransitionStateHookFn]], [[HookMatchCriteria]], [[HookResult]]
+ *
+ * @coreapi
+ * @preferred
+ * @module transition
+ */ /** for typedoc */
+__export(__webpack_require__(8));
+__export(__webpack_require__(30));
+__export(__webpack_require__(22));
+__export(__webpack_require__(11));
+__export(__webpack_require__(15));
+__export(__webpack_require__(12));
+__export(__webpack_require__(47));
+__export(__webpack_require__(25));
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 421 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(18));
+__export(__webpack_require__(40));
+__export(__webpack_require__(41));
+__export(__webpack_require__(42));
+__export(__webpack_require__(45));
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 422 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(43));
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 423 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @internalapi
+ * @module vanilla
+ */
+/** */
+__export(__webpack_require__(424));
+//# sourceMappingURL=vanilla.js.map
+
+/***/ }),
+/* 424 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(48));
+__export(__webpack_require__(49));
+__export(__webpack_require__(19));
+__export(__webpack_require__(50));
+__export(__webpack_require__(51));
+__export(__webpack_require__(52));
+__export(__webpack_require__(53));
+__export(__webpack_require__(54));
+__export(__webpack_require__(26));
+__export(__webpack_require__(425));
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 425 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * @internalapi
+ * @module vanilla
+ */
+/** */
+var browserLocationConfig_1 = __webpack_require__(54);
+var hashLocationService_1 = __webpack_require__(50);
+var utils_1 = __webpack_require__(26);
+var pushStateLocationService_1 = __webpack_require__(52);
+var memoryLocationService_1 = __webpack_require__(51);
+var memoryLocationConfig_1 = __webpack_require__(53);
+var injector_1 = __webpack_require__(49);
+var q_1 = __webpack_require__(48);
+var coreservices_1 = __webpack_require__(4);
+function servicesPlugin(router) {
+    coreservices_1.services.$injector = injector_1.$injector;
+    coreservices_1.services.$q = q_1.$q;
+    return { name: "vanilla.services", $q: q_1.$q, $injector: injector_1.$injector, dispose: function () { return null; } };
+}
+exports.servicesPlugin = servicesPlugin;
+/** A `UIRouterPlugin` uses the browser hash to get/set the current location */
+exports.hashLocationPlugin = utils_1.locationPluginFactory('vanilla.hashBangLocation', false, hashLocationService_1.HashLocationService, browserLocationConfig_1.BrowserLocationConfig);
+/** A `UIRouterPlugin` that gets/sets the current location using the browser's `location` and `history` apis */
+exports.pushStateLocationPlugin = utils_1.locationPluginFactory("vanilla.pushStateLocation", true, pushStateLocationService_1.PushStateLocationService, browserLocationConfig_1.BrowserLocationConfig);
+/** A `UIRouterPlugin` that gets/sets the current location from an in-memory object */
+exports.memoryLocationPlugin = utils_1.locationPluginFactory("vanilla.memoryLocation", false, memoryLocationService_1.MemoryLocationService, memoryLocationConfig_1.MemoryLocationConfig);
+//# sourceMappingURL=plugins.js.map
+
+/***/ }),
+/* 426 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/**
+ * # Core classes and interfaces
+ *
+ * The classes and interfaces that are core to ui-router and do not belong
+ * to a more specific subsystem (such as resolve).
+ *
+ * @coreapi
+ * @preferred
+ * @module core
+ */ /** for typedoc */
+Object.defineProperty(exports, "__esModule", { value: true });
+/** @internalapi */
+var UIRouterPluginBase = /** @class */ (function () {
+    function UIRouterPluginBase() {
+    }
+    UIRouterPluginBase.prototype.dispose = function (router) { };
+    return UIRouterPluginBase;
+}());
+exports.UIRouterPluginBase = UIRouterPluginBase;
+//# sourceMappingURL=interface.js.map
 
 /***/ })
 /******/ ]);
