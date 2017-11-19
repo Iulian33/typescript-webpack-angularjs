@@ -1,4 +1,4 @@
-import ITopic from './ITopic';
+import ITopic from '../ITopic';
 
 interface IWorkshop {
     getTopics(): ITopic[];

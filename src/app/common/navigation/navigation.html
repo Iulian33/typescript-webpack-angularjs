@@ -1,35 +1,21 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="#">Navbar</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+<nav class="navbar navbar-expand-lg sticky-top navbar-light bg-light navigation">
+    <a class="navbar-brand" ui-sref="home">
+        <img src="/assets/img/navigation/ts.svg" class="d-inline-block align-top navigation__brand-logo" alt="TS Logo">
+        <span class="navigation__brand-title">TypeScript</span>
+    </a>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-                <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">Link</a>
-            </li>
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Dropdown
-                </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" href="#">Action</a>
-                    <a class="dropdown-item" href="#">Another action</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="#">Something else here</a>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link disabled" href="#">Disabled</a>
-            </li>
-        </ul>
-        <form class="form-inline my-2 my-lg-0">
-            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-        </form>
-    </div>
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item" ng-repeat="option in $ctrl.navigationOptions">
+            <a class="nav-link" ui-sref="{{ option.state }}">{{ option.label }}</a>
+        </li>
+    </ul>
+
+    <form class="form-inline my-2 my-lg-0">
+        <input class="form-control mr-sm-2"
+               type="search"
+               placeholder="Search"
+               aria-label="Search"
+               ng-model="$ctrl.searchModel"
+               ng-keyup="$ctrl.search()">
+    </form>
 </nav>

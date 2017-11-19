@@ -1,4 +1,4 @@
-import ITopic from '../ITopic';
+import ITopic from '../../ITopic';
 import IWorkshop from '../IWorkshop';
 
 class RealWorldService implements IWorkshop {
