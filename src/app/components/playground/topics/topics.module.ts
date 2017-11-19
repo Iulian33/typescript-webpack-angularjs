@@ -1,3 +1,4 @@
+import './topics.scss';
 import * as angular from 'angular';
 import {IModule} from 'angular';
 import AdvancedTypesModule from './advanced-types/advanced-types.module';

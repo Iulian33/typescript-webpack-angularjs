@@ -1,6 +1,6 @@
 import {IAttributes, IDirective, IDirectiveFactory, IScope} from 'angular';
 import hljs = require('highlight.js');
-import $ from 'jquery';
+import $ = require('jquery');
 
 class HighlighterDirective implements IDirective {
     public static $inject: string[] = [];

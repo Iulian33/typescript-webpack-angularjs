@@ -8,11 +8,15 @@ class NavigationController implements IComponentController {
 
     public searchModel: string;
 
+    private navigationSearchStatus: boolean;
+
     private navigationSearchData: ITopic[];
 
     public $onChanges(changes: any) {
-        if (changes.navigationSearchData) {
+        // clone object to prevent passing objects by reference and update parent data
+        if (changes.navigationSearchData.currentValue) {
             this.navigationSearchData = Object.assign([], this.navigationSearchData);
+            this.navigationSearchStatus = true;
         }
     }
 

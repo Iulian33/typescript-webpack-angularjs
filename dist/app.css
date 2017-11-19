@@ -142,7 +142,7 @@
   opacity: 0;
   transform: scale(1.2); }
 .workshop {
-  margin: 30px 30px; }
+  margin-top: 20px; }
   .workshop .workshop__topics {
     margin-top: 30px;
     list-style-type: none; }
@@ -181,6 +181,12 @@
 
 .home .home__real {
   width: 70px; }
+.topic {
+  margin-top: 30px;
+  margin-left: 30px; }
+  .topic .topic__title {
+    margin: 0;
+    font-size: 1.6rem; }
 .copyright {
   margin-top: 150px;
   text-align: center;
@@ -194,9 +200,7 @@
   .navigation .navigation__brand-title {
     margin-left: 10px; }
 .highlighter {
-  max-width: 1000px;
-  width: 100%;
-  margin: 0 auto; }
+  max-width: 900px; }
   .highlighter .highlighter__label {
     position: relative;
     top: 30px;
