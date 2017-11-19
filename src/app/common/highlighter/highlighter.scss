@@ -4,6 +4,12 @@
   max-width: 1000px;
   width: 100%;
   margin: 0 auto;
+
+  .highlighter__label {
+    position: relative;
+    top: 30px;
+    margin-bottom: 0;
+  }
 }
 
 .highlighter__code {

@@ -4,6 +4,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextWebpackPlugin = require('extract-text-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 
 module.exports = () => {
     return {
@@ -99,7 +100,24 @@ module.exports = () => {
             new CopyWebpackPlugin([
                 {from: 'assets/img', to: 'assets/img'},
                 {from: 'assets/fonts', to: 'assets/fonts'}
-            ])
+            ]),
+            new FaviconsWebpackPlugin({
+                logo: path.resolve(__dirname, 'assets', 'img', 'navigation', 'ts.svg'),
+                emitStats: false,
+                persistentCache: true,
+                icons: {
+                    android: false,
+                    appleIcon: false,
+                    appleStartup: false,
+                    coast: false,
+                    favicons: true,
+                    firefox: false,
+                    opengraph: false,
+                    twitter: false,
+                    yandex: false,
+                    windows: false
+                }
+            }),
         ],
         devServer: {
             contentBase: path.resolve(__dirname),

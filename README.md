@@ -40,7 +40,7 @@ open  `http://localhost:3000` to run the app in the browser
 - Angular 1.6 `component` based architecture using Typescript
 - `Typescript` out of the box
 - `Webpack` module bundler
-- Node.js `express`, for serving the app
+- Node.js `express`, for serving the app + Node.js TypeScript example
 - `Stateful`, `stateless` and `routed` components
 - One-way data flow
 - Lifecycle hooks
@@ -244,6 +244,7 @@ open  `http://localhost:3000` to run the app in the browser
 │   │   │    │     ├── highlighter.module.ts
 │   │   │    │     ├── highlighter.component.ts
 │   │   │    │     ├── highlighter.controller.ts
+│   │   │    │     ├── highlighter.directive.ts
 │   │   │    │     ├── highlighter.html
 │   │   │    │     └── highlighter.scss
 │   │   │    ├── logger/
@@ -280,6 +281,8 @@ open  `http://localhost:3000` to run the app in the browser
 │   │   │     ├── background.png
 │   │   │     ├── play.svg
 │   │   │     └── real.svg
+│   │   ├── navigation/
+│   │   │     └── ts.svg
 │   ├── styles
 │   │   ├── base/
 │   │   │     ├── _colors.scss
