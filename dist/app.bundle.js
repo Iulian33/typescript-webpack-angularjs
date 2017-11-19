@@ -54093,7 +54093,7 @@ exports.default = VariableDeclarationsController;
 /* 177 */
 /***/ (function(module, exports) {
 
-module.exports = "<navigation navigation-options=\"$ctrl.navigationOptions\"></navigation>\n<div class=\"topic\">\n    <h3 class=\"topic__title\">Variable Declarations</h3>\n\n    <highlighter code-label=\"Variable Declarations in TypeScript\">\n        const x: number = 10;\n        const y: string = \"Steve\";\n        // This is some comment\n    </highlighter>\n\n    <highlighter code-label=\"Variable Declarations in TypeScript\">\n        const x: number = 10;\n        const y: string = \"Steve\";\n        // This is some comment\n    </highlighter>\n</div>";
+module.exports = "<navigation navigation-options=\"$ctrl.navigationOptions\"></navigation>\n<div class=\"topic\">\n    <h3 class=\"topic__title\">Variable Declarations</h3>\n\n    <highlighter code-label=\"Variable Declarations in TypeScript\">\n        const x: number = 10;\n        const y: string = \"Steve\";\n        // This is some comment\n    </highlighter>\n\n    <highlighter code-label=\"Variable Declarations in TypeScript\">\n        const x: number = 10;\n        const y: string = \"Steve\";\n        // This is some comment\n    </highlighter>\n\n    <logger>\n        <b>Note:</b> Lorem ipsum dolor sit amet, consectetur adipisicing elit.\n        Dolorum eaque eius in maxime quos repellat saepe veritatis.\n        Animi autem dolorum facere harum molestias nihil sint voluptatum. Aliquid beatae impedit ipsa.\n    </logger>\n\n    <highlighter code-label=\"Variable Declarations in TypeScript\">\n        const x: number = 10;\n        const y: string = \"Steve\";\n        // This is some comment\n    </highlighter>\n</div>";
 
 /***/ }),
 /* 178 */
@@ -54626,7 +54626,7 @@ exports.default = HighlighterController;
 /* 211 */
 /***/ (function(module, exports) {
 
-module.exports = "<pre class=\"highlighter\" highlighter-directive>\n    <p class=\"highlighter__label\" ng-if=\"$ctrl.codeLabel\">{{ $ctrl.codeLabel }}</p>\n    <code class=\"highlighter__code\" ng-transclude></code>\n</pre>";
+module.exports = "<div class=\"highlighter\">\n    <p class=\"highlighter__label\" ng-if=\"$ctrl.codeLabel\">{{ $ctrl.codeLabel }}</p>\n\n    <pre highlighter-directive>\n        <code class=\"highlighter__code\" ng-transclude></code>\n    </pre>\n</div>";
 
 /***/ }),
 /* 212 */
@@ -72252,7 +72252,8 @@ var logger_controller_1 = __webpack_require__(394);
 var template = __webpack_require__(395);
 var LoggerComponent = {
     template: template,
-    controller: logger_controller_1.default
+    controller: logger_controller_1.default,
+    transclude: true
 };
 exports.default = LoggerComponent;
 
@@ -72277,7 +72278,7 @@ exports.default = LoggerController;
 /* 395 */
 /***/ (function(module, exports) {
 
-module.exports = "";
+module.exports = "<div class=\"logger\">\n    <div class=\"logger__text\" ng-transclude></div>\n</div>";
 
 /***/ }),
 /* 396 */

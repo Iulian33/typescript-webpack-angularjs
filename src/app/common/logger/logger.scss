@@ -1,0 +1,13 @@
+.logger {
+  padding-right: 30px;
+  margin-bottom: 30px;
+
+  .logger__label {
+    font-style: italic;
+  }
+
+  .logger__text {
+    border-left: 6px solid #127CC9;
+    padding-left: 20px;
+  }
+}

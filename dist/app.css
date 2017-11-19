@@ -200,16 +200,26 @@
   .navigation .navigation__brand-title {
     margin-left: 10px; }
 .highlighter {
-  max-width: 900px; }
+  margin-top: 30px;
+  padding-right: 30px; }
   .highlighter .highlighter__label {
     position: relative;
-    top: 30px;
-    margin-bottom: 0; }
+    top: 10px;
+    margin-bottom: 0;
+    font-style: italic; }
 
 .highlighter__code {
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px; }
+.logger {
+  padding-right: 30px;
+  margin-bottom: 30px; }
+  .logger .logger__label {
+    font-style: italic; }
+  .logger .logger__text {
+    border-left: 6px solid #127CC9;
+    padding-left: 20px; }
 @font-face {
   font-family: 'Julius Sans One';
   src: url("/assets/fonts/julius-sans-one/julius-sans-one.eot");
@@ -246,13 +256,13 @@
     -webkit-animation: node 1.5s infinite alternate;
     -webkit-animation-timing-function: ease-out; }
     .loader .loader__head .loader__eyes {
-      width: 20px;
+      width: 16px;
       height: 8px;
       background-color: #111111;
       border-radius: 0 0 50px 50px;
       position: relative;
       top: 40px;
-      left: 10px;
+      left: 12px;
       box-shadow: 40px 0 0 0 #111111; }
   .loader .loader__body {
     position: relative;
@@ -286,10 +296,10 @@
     margin: -10px auto;
     -webkit-font-smoothing: antialiased;
     font-family: 'Julius Sans One', sans-serif;
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 400;
     color: #111111;
-    left: 10%;
+    left: 15%;
     top: 0; }
 
 @-webkit-keyframes node {

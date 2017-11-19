@@ -35,13 +35,13 @@
     -webkit-animation-timing-function: ease-out;
 
     .loader__eyes {
-      width: 20px;
+      width: 16px;
       height: 8px;
       background-color: $black;
       border-radius: 0 0 50px 50px;
       position: relative;
       top: 40px;
-      left: 10px;
+      left: 12px;
       box-shadow: 40px 0 0 0 $black;
     }
   }
@@ -82,10 +82,10 @@
     margin: -10px auto;
     -webkit-font-smoothing: antialiased;
     font-family: 'Julius Sans One', sans-serif;
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 400;
     color: $black;
-    left: 10%;
+    left: 15%;
     top: 0;
   }
 }
