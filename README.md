@@ -226,7 +226,6 @@ open  `http://localhost:3000` to run the app in the browser
 │   │   │    │     └── └── todos.scss
 │   │   │    ├── components.module.ts
 │   │   │    ├── components.scss
-│   │   │    ├── ITopic.ts
 │   │   │    └── IWorkshop.ts
 │   │   ├── common/
 │   │   │    ├── navigation/
@@ -266,6 +265,7 @@ open  `http://localhost:3000` to run the app in the browser
 │   │   ├── app.component.ts
 │   │   ├── app.service.ts
 │   │   ├── app.config.ts
+│   │   ├── ITopic.ts
 │   │   └── app.scss
 │   └──
 │
