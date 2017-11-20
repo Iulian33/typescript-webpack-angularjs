@@ -305,3 +305,7 @@ open  `http://localhost:3000` to run the app in the browser
 > For another project architecture please check out this example
 [AngularJS 1.5 component architecture app - Todd Motto](https://github.com/toddmotto/angular-1-5-components-app/tree/ES2015).
 ---
+
+> For differences between TypeScript and Flow have a look here
+[Flowtype vs TypeScript](https://gist.github.com/niieani/af8a8c8b572268551e5a3a1fc0c6bdca).
+---
