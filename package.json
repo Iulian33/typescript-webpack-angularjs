@@ -12,7 +12,7 @@
     "ntsc": "rm -rf ./ntsc && ntsc -p . --listEmittedFiles --outDir ./ntsc -t ES5"
   },
   "engines": {
-    "node": "8.9.1",
+    "node": "^9.2.0",
     "npm": "5.5.1"
   },
   "repository": "https://github.com/steevehook/typescript.git",
