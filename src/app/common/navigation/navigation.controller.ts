@@ -2,7 +2,7 @@ import {IComponentController} from 'angular';
 import ITopic from '../../ITopic';
 
 class NavigationController implements IComponentController {
-    public static $inject: string[] = ['PlaygroundService'];
+    public static $inject: string[] = [];
 
     public navigationSearchFunction: (searchData: { searchData: ITopic[] }) => any;
 

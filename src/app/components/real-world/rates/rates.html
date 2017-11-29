@@ -1,1 +1,53 @@
-<h1>Fixer API</h1>
+<div class="rates">
+    <h1>Fixer API</h1>
+
+    <div class="row">
+        <div class="col-6">
+            <form>
+                <div class="form-group">
+                    <label for="from">From</label>
+                    <select class="form-control" id="from" ng-model="$ctrl.base">
+                        <option ng-repeat="rate in $ctrl.ratesData">{{ rate.name }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="amountFrom">Amount From</label>
+                    <input type="number" class="form-control" id="amountFrom" placeholder="Amount From">
+                </div>
+
+                <div class="form-group">
+                    <label for="to">To</label>
+                    <select class="form-control" id="to" ng-model="$ctrl.to">
+                        <option ng-repeat="rate in $ctrl.ratesData">{{ rate.name }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="amountTo">Amount To</label>
+                    <input type="number" class="form-control" id="amountTo" placeholder="Amount To">
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-primary rates__base">
+        Base Currency: <span class="badge badge-light">{{ $ctrl.base }}</span>
+    </button>
+    <button type="button" class="btn btn-primary rates__base">
+        Date: <span>{{ $ctrl.date | date }}</span>
+    </button>
+
+    <div class="row rates__list">
+        <div class="col-6">
+            <div class="list-group" id="list-tab" role="tablist">
+                <span class="list-group-item list-group-item-action"
+                      data-toggle="list"
+                      role="tab"
+                      ng-repeat="rate in $ctrl.ratesData">
+                    {{ rate.name }} | {{ rate.value }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

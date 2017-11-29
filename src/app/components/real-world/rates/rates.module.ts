@@ -13,7 +13,10 @@ const RatesModule: IModule = angular
         $stateProvider
             .state('rates', {
                 component: 'rates',
-                url: '/real-world/rates'
+                url: '/real-world/rates',
+                resolve: {
+                    rates: (RatesService: RatesService) => RatesService.getRates()
+                }
             });
         $urlRouterProvider.otherwise('/');
     });

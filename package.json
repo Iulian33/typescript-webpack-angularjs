@@ -4,10 +4,10 @@
   "description": "Typescript language presentation...",
   "main": "index.js",
   "scripts": {
-    "start": "npm run gulp; npm run webpack; node server.js",
+    "start": "npm run build; node server.js",
     "serve": "npm run webpack-dev-server",
+    "build": "gulp; webpack",
     "gulp": "gulp",
-    "webpack": "webpack",
     "webpack-dev-server": "webpack-dev-server",
     "ntsc": "rm -rf ./ntsc && ntsc -p . --listEmittedFiles --outDir ./ntsc -t ES5"
   },

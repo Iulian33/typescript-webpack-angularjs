@@ -36,7 +36,8 @@
     }],
     "no-trailing-whitespace": [true, "ignore-blank-lines"],
     "semicolon": [true, "ignore-bound-class-methods"],
-    "arrow-parens": false
+    "arrow-parens": false,
+    "no-shadowed-variable": false
   },
   "jsRules": {
     "max-line-length": {
