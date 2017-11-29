@@ -5,10 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run build; node server.js",
-    "serve": "npm run webpack-dev-server",
+    "serve": "webpack-dev-server",
     "build": "gulp; webpack",
-    "gulp": "gulp",
-    "webpack-dev-server": "webpack-dev-server",
     "ntsc": "rm -rf ./ntsc && ntsc -p . --listEmittedFiles --outDir ./ntsc -t ES5"
   },
   "engines": {

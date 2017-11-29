@@ -6,28 +6,17 @@ Make sure you have node installed
 
 If you are using yarn package manager:
 1. `$ yarn install` - Install all necessary dependencies
-2. `$ yarn run webpack` - Run project build
-3. `$ yarn run webpack-dev-server` - Run project build (dev server)
-4. `$ yarn run ntsc` - Run typescript compiler
-5. `$ yarn start` - Run production ready app
-6. `$ yarn run serve` - Run development ready app
+2. `$ yarn start` - Run production ready app
+3. `$ yarn serve` - Run development ready app
+4. `$ yarn build` - Run project build
+5. `$ yarn ntsc` - Run typescript compiler
 
 If you are using npm package manager:
 1. `$ npm install` - Install all necessary dependencies
-2. `$ npm run webpack` - Run project build
-3. `$ npm run webpack-dev-server` - Run project build (dev server)
-4. `$ npm run ntsc` - Run typescript compiler
-5. `$ npm start` - Run production ready app
-6. `$ npm run serve` - Run development ready app
-
-#### Up and Running:
-Production ready:
-1. `$ yarn start` - if you are using yarn
-2. `$ npm start` - if you are using npm
-
-Development ready:
-1. `$ yarn run serve` - if you are using yarn
-2. `$ npm run serve` - if you are using npm
+2. `$ npm start` - Run production ready app
+3. `$ npm run serve` - Run development ready app
+4. `$ npm run build` - Run project build
+5. `$ npm run ntsc` - Run typescript compiler
 
 open  `http://localhost:3000` to run the app in the browser
 
